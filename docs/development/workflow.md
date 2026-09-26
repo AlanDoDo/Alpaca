@@ -10,9 +10,13 @@ npm run build
 npm run content:audit
 ```
 
-提交前根据改动范围运行 lint、typecheck 和 build；文章内容调整后运行 `npm run content:audit`，检查 frontmatter 和本地图片引用。构建依赖所需的环境变量应使用无敏感信息的示例值。
+按用户任务要求和改动范围选择验证命令；纯文档修改检查内容与链接即可。文章内容验证可使用 `npm run content:audit` 检查 frontmatter 和本地图片引用；安全回归命令为 `node scripts/security-check.mjs`。构建依赖所需的环境变量应使用无敏感信息的示例值。
 
-## 实施顺序
+当前开发、线上发布与排障流程以 [项目手册](project-guide.md) 为入口。提交只暂存本次文件；推送前核对远端是否有线上工作台发布的新文章，不使用 force push。
+
+## 早期实施顺序（历史规划）
+
+以下不是当前待办清单；社区和 Supabase 仍未接入。当前状态与后续边界见项目手册。
 
 1. 项目骨架、全局 Layout、设计 tokens。
 2. 首页和可复用文章列表。

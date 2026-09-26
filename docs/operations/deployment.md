@@ -1,10 +1,18 @@
 # 部署指南
 
+## 当前生产状态（2026-09-27）
+
+- 正式网站：https://www.alandodo.cn；alandodo.cn 跳转到 www。
+- 项目：techalpaca-projects/alpaca；GitHub AlanDoDo/Alpaca/main 自动部署。
+- Node.js 24.x；仓库 vercel.json 使用 npm install / npm run build。
+- Production NEXT_PUBLIC_SITE_URL 为 https://www.alandodo.cn；后台凭据为服务端 Secret，Preview 不使用生产写入 Token。
+- 腾讯云 DNSPod 提供解析，两个域名已验证。完整开发、发布与域名维护见 [项目手册](../development/project-guide.md)。
+
 ## 本地准备
 
 1. 安装 Node.js 24.x 和 npm。
 2. 运行 `npm install`。
-3. 复制 `.env.example` 到 `.env.local`。
+3. 首次复制 `.env.example` 到 `.env.local`；已有配置时不覆盖。
 4. 设置 `NEXT_PUBLIC_SITE_URL=http://localhost:3000`。
 5. 运行 `npm run dev`，确认首页、文章列表和文章详情可访问。
 
@@ -16,7 +24,7 @@
 
 1. 将代码推送到 GitHub 仓库并在 Vercel 导入。
 2. 使用 Next.js 默认框架预设和 `npm run build`。
-3. 分别设置 Preview 与 Production 环境变量。
+3. 分别设置 Preview 与 Production 环境变量；Preview 如需后台验证使用独立测试凭据和测试分支。
 4. Preview 部署确认文章路由、metadata、窄屏布局与 404。
 5. 将自定义域名指向 Production，确认 `NEXT_PUBLIC_SITE_URL` 使用最终 HTTPS 域名后重新部署。
 

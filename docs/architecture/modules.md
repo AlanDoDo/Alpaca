@@ -18,20 +18,23 @@ src/
     ui/                   # 无业务含义的基础 UI
     layout/               # 全站导航与页脚
     blog/                 # 文章展示组件
-    forum/                # 论坛展示组件
-    profile/              # 用户资料展示组件
+    admin/                # Markdown 工作台与文章库
   modules/
     content/              # Markdown 读取、解析、查询和文章类型
     identity/             # 用户身份映射、profile、Auth 适配器
     community/            # 帖子、评论、点赞、收藏、关注
     search/               # 内容索引与搜索用例
-    shared/               # 验证、错误和跨模块基础类型
   lib/
-    supabase/             # Supabase 客户端构造器（server/browser 分开）
+    admin-auth.ts         # 管理员签名会话
+    request-origin.ts     # 同源校验
+    request-json.ts       # 请求流大小与 JSON 校验
+    login-rate-limit.ts   # 实例内登录限流
+    parse-frontmatter.ts  # 禁用可执行元数据
+    site-url.ts           # 统一正式站点地址
+    supabase/             # 预留说明，未接入客户端
     utils/                # 通用纯函数
-  types/                  # 真正跨模块的基础类型
 content/blog/              # 受版本控制的文章
-supabase/migrations/       # 可重复执行的数据库结构变更
+content/finance/           # 投机/投资笔记
 docs/                      # 产品、架构、运维和决策文档
 ```
 
@@ -62,9 +65,9 @@ app routes -> feature components -> module public API -> adapters (filesystem / 
 
 对外提供帖子、回复、点赞、收藏和关注用例。写操作必须确认用户身份、校验输入，并依赖 RLS 再做数据库层约束。帖子计数由受控函数/查询计算或事务更新，不信任客户端传入计数。
 
-### search（规划）
+### search（已实现轻量文件索引）
 
-先从文章元数据和正文建立轻量索引。搜索接口返回统一的结果类型；内容来源可由 MDX 切换到 PostgreSQL 全文检索，不让页面耦合搜索实现。
+当前索引位于 content 模块，搜索元数据和正文；/api/search 返回最多 10 个摘要，UI 使用弹窗、防抖、请求取消和短时缓存。modules/search 仍是预留说明，尚未实现独立搜索服务；将来可迁移到数据库全文检索。
 
 ## 新增模块的完成清单
 
