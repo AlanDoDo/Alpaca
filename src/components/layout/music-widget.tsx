@@ -55,6 +55,20 @@ export function MusicWidget() {
   const [draftId, setDraftId] = useState(DEFAULT_ID);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
+  const [playerReady, setPlayerReady] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    function schedulePlayer() {
+      // Keep third-party requests out of the document load's critical path.
+      timer = setTimeout(() => setPlayerReady(true), 1500);
+    }
+    if (document.readyState === "complete") schedulePlayer();
+    else window.addEventListener("load", schedulePlayer, { once: true });
+    return () => {
+      window.removeEventListener("load", schedulePlayer);
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  }, []);
   useEffect(() => {
     try {
       if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
@@ -66,6 +80,7 @@ export function MusicWidget() {
 
   useEffect(() => {
     function openPlayer() {
+      setPlayerReady(true);
       setHovered(false);
       setManualOpen(true);
     }
@@ -78,7 +93,7 @@ export function MusicWidget() {
   const open = hovered || manualOpen;
 
   function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse") setHovered(true);
+    if (event.pointerType === "mouse") { setPlayerReady(true); setHovered(true); }
   }
 
   function handlePointerLeave(event: PointerEvent<HTMLDivElement>) {
@@ -86,6 +101,7 @@ export function MusicWidget() {
   }
 
   function toggleManually() {
+    setPlayerReady(true);
     setHovered(false);
     setManualOpen((current) => !current);
   }
@@ -134,7 +150,7 @@ export function MusicWidget() {
           <button type="button" onClick={closeCard} aria-label="收起音乐卡片" className="rounded p-1 text-[var(--muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"><X size={17} /></button>
         </div>
         <div className="p-3">
-          <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="block rounded-md border-0" />
+          {playerReady ? <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="block rounded-md border-0" /> : <div className="flex h-[110px] items-center justify-center text-xs text-[var(--muted)]">音乐将在页面加载后准备</div>}
           <div className="flex items-center justify-between gap-3 px-1 pt-2 text-xs text-[var(--muted)]">
             <span>歌单 · 按列表顺序播放</span>
             <button type="button" onClick={() => { setDraftId(selection.id); setEditing((current) => !current); setError(""); }} className="shrink-0 hover:text-[var(--ink)]">{editing ? "取消更换" : "更换歌单"}</button>
