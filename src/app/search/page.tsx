@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { ArticleRow } from "@/components/blog/article-row";
-import { searchArticles } from "@/modules/content";
+import { searchContent } from "@/modules/content/connected";
 
 export const metadata: Metadata = { title: "Search", description: "搜索 TechAlpaca 的文章。" };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
-  const results = searchArticles(q);
+  const results = searchContent(q);
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 md:py-24">
       <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">SEARCH</p>
@@ -17,7 +17,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <button className="shrink-0 border-b border-[var(--ink)] px-3 text-sm sm:px-4" type="submit">搜索</button>
       </form>
       {q && <p className="mt-6 text-sm text-[var(--muted)] sm:mt-8">“{q}” 的搜索结果：{results.length} 篇</p>}
-      <div className="mt-2 sm:mt-4">{results.map((article) => <ArticleRow key={article.slug} article={article} />)}</div>
+      <div className="mt-2 sm:mt-4">{results.map((article) => <ArticleRow key={article.href ?? article.slug} article={article} />)}</div>
       {q && results.length === 0 && <p className="mt-6 text-sm text-[var(--muted)] sm:mt-8">没有找到相关文章。</p>}
     </div>
   );

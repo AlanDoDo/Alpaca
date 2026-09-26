@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "./code-block";
 import { ReadingImages } from "./reading-images";
 import type { ArticleHeading } from "@/modules/content/headings";
@@ -14,8 +16,8 @@ export function ArticleBody({ source, headings, images = {} }: { source: string;
   return (
     <div className="article-body prose prose-neutral mt-8 max-w-none break-words prose-headings:font-semibold prose-a:text-[var(--accent)] prose-blockquote:border-l-[var(--accent)] prose-pre:max-w-full prose-pre:overflow-x-auto sm:mt-12">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeRaw, rehypeSanitize, [rehypeKatex, { strict: "ignore", trust: false }]]}
         components={{
           pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
           table: ({ children }) => <div className="reading-table-scroll" tabIndex={0} role="region" aria-label="文章表格，可横向滚动"><table>{children}</table></div>,
@@ -36,7 +38,7 @@ export function ArticleBody({ source, headings, images = {} }: { source: string;
           },
         }}
       >
-        {source}
+        {source.replace(/\u200b/g, "")}
       </ReactMarkdown>
       <ReadingImages source={source} />
     </div>

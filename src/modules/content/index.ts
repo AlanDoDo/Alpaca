@@ -25,12 +25,12 @@ function readArticle(fileName: string): Article {
   const cjkCharacters = content.match(/[\u3400-\u9fff]/g)?.length ?? 0;
   const latinWords = content.replace(/[\u3400-\u9fff]/g, " ").match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
   const readingTime = Math.max(1, Math.ceil(cjkCharacters / 400 + latinWords / 200));
-  return { slug: fileName.replace(/\.mdx?$/, ""), title, description, date, category, tags: Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === "string") : [], readingTime, featured: data.featured === true, cover, content };
+  return { researchTopic: typeof data.researchTopic === "string" ? data.researchTopic : undefined, id: typeof data.id === "string" ? data.id : `blog:${fileName.replace(/\.mdx?$/, "")}`, aliases: Array.isArray(data.aliases) ? data.aliases.filter((item): item is string => typeof item === "string") : [], slug: fileName.replace(/\.mdx?$/, ""), title, description, date, category, tags: Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === "string") : [], readingTime, featured: data.featured === true, cover, content };
 }
 const getArticleFiles = createFileCollection(contentDirectory, readArticle);
 const searchIndexes = new WeakMap<Article[], { article: Article; text: string }[]>();
-function summarize({ slug, title, description, date, category, tags, readingTime, featured, cover }: Article): ArticleSummary {
-  return { slug, title, description, date, category, tags, readingTime, featured, cover };
+function summarize({ researchTopic, id, aliases, slug, title, description, date, category, tags, readingTime, featured, cover }: Article): ArticleSummary {
+  return { researchTopic, id, aliases, slug, title, description, date, category, tags, readingTime, featured, cover };
 }
 const byFeaturedDate = (a: Article, b: Article) => Number(b.featured) - Number(a.featured) || b.date.localeCompare(a.date);
 export function getAllArticles(): ArticleSummary[] {

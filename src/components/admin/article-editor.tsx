@@ -2,6 +2,7 @@
 
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { ArticleBody } from "@/components/blog/article-body";
+import { researchCategories } from "@/modules/content/research";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
 import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, Link2, X } from "lucide-react";
 import Link from "next/link";
@@ -9,17 +10,24 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "编程", "工程技术", "设计", "杂谈"];
-type Draft = { slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+type Draft = { researchTopic?: string; contentType?: "blog"; id?: string; aliases?: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 type Status = "saved" | "saving" | "changed";
 const localDate = () => { const date = new Date(); return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-"); };
-const blankDraft = (slug = "article-muhzgyj2"): Draft => ({ slug, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
+const blankDraft = (slug = "article-muhzgyj2"): Draft => ({ researchTopic: "control", slug, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
 
 function draftKey(slug: string) { return `techalpaca:article-draft:${slug || "new"}`; }
 
 export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [draft, setDraft] = useState<Draft>(() => blankDraft());
   const previewContent = useDeferredValue(draft.content);
-  const previewBody = useMemo(() => <ArticleBody source={previewContent || "开始输入 Markdown，文章预览会即时更新。\n\n## 章节标题\n\n支持 **粗体**、列表、链接、代码和表格。"} headings={[]} />, [previewContent]);
+  const linkedPreview = useMemo(() => previewContent.split(/(```[^]*?```|~~~[^]*?~~~|`[^`\n]*`)/g).map((part, index) => index % 2 ? part : part.replace(/(?<!!)\[\[([^\]\n]+)\]\]/g, (_match, reference: string) => {
+    const [target, label] = reference.split("|");
+    const name = target.split("#")[0].trim().replace(/\.mdx?$/, "").normalize("NFKC").toLocaleLowerCase();
+    const matches = articles.filter((item) => [item.id ?? `blog:${item.slug}`, item.slug, item.title, ...(item.aliases ?? [])].some((value) => value.normalize("NFKC").toLocaleLowerCase() === name));
+    const text = (label || target).replace(/[\[\]\n]/g, "");
+    return matches.length === 1 ? `[${text}](${matches[0].href ?? `/article/${matches[0].slug}`})` : text;
+  })).join(""), [previewContent, articles]);
+  const previewBody = useMemo(() => <ArticleBody source={linkedPreview || "开始输入 Markdown，文章预览会即时更新。\n\n## 章节标题\n\n支持 **粗体**、列表、链接、代码和表格。"} headings={[]} />, [linkedPreview]);
   const router = useRouter();
   const [status, setStatus] = useState<Status>("saved");
   const [notice, setNotice] = useState("");
@@ -36,14 +44,14 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const articleMenuRef = useRef<HTMLDivElement>(null);
   const draftReadyRef = useRef(false);
   const draftRef = useRef(draft);
-  const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
+  const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug} ${"博客文章"}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
   const visibleArticles = showAllArticles ? filteredArticles : filteredArticles.slice(0, 6);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       try {
         const latestSlug = window.localStorage.getItem("techalpaca:article-draft:latest");
-        const latest = latestSlug ? window.localStorage.getItem(draftKey(latestSlug)) : null;
+        const latest = latestSlug ? window.localStorage.getItem(`techalpaca:article-draft:${latestSlug}`) : null;
         if (latest) {
           const restored = JSON.parse(latest) as Draft;
           if (restored.slug === latestSlug && typeof restored.content === "string") {
@@ -122,7 +130,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
       const saved = window.localStorage.getItem(draftKey(base.slug));
       if (saved) {
         const parsed = JSON.parse(saved) as Draft & { localSavedAt?: string };
-        if (parsed.slug === base.slug) return { ...base, ...parsed, expectedSha: base.expectedSha };
+        if (parsed.slug === base.slug) return { ...base, ...parsed, expectedSha: base.expectedSha, contentType: base.contentType, id: base.id };
       }
     } catch { /* Ignore an invalid stale browser draft. */ }
     return base;
@@ -131,18 +139,18 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   function createArticle() {
     if (!saveDraft(draftRef.current)) return;
     setNotice("");
-    const nextDraft = loadLocalDraft(blankDraft(`article-${Date.now().toString(36)}`));
+    const nextDraft = loadLocalDraft({ ...blankDraft(`article-${Date.now().toString(36)}`), contentType: "blog", researchTopic: "control" });
     draftRef.current = nextDraft;
     setDraft(nextDraft);
     setMobileTab("edit");
   }
 
-  async function editArticle(slug: string) {
+  async function editArticle(slug: string, contentType: "blog" = "blog") {
     setLoadingArticleSlug(slug);
     setNotice("");
-    saveDraft(draftRef.current);
+    if (!saveDraft(draftRef.current)) { setLoadingArticleSlug(null); return; }
     try {
-      const response = await fetch(`/api/admin/articles?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+      const response = await fetch(`/api/admin/articles?slug=${encodeURIComponent(slug)}&type=${contentType}`, { cache: "no-store" });
       const data = await response.json() as Draft & { error?: string };
       if (!response.ok) throw new Error(data.error ?? "文章载入失败，请稍后重试。");
       const nextDraft = loadLocalDraft(data);
@@ -205,7 +213,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
 
   function exportDraft() {
     try {
-      const fields = { title: draft.title, description: draft.description, date: draft.date, category: draft.category, tags: draft.tags, author: draft.author, featured: draft.featured, ...(draft.cover ? { cover: draft.cover } : {}) };
+      const fields = { id: draft.id ?? `${draft.contentType ?? "blog"}:${draft.slug}`, aliases: draft.aliases ?? [], ...(draft.researchTopic ? { researchTopic: draft.researchTopic } : {}), title: draft.title, description: draft.description, date: draft.date, category: draft.category, tags: draft.tags, author: draft.author, featured: draft.featured, ...(draft.cover ? { cover: draft.cover } : {}) };
       const markdown = `---\n${Object.entries(fields).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n")}\n---\n\n${draft.content}`;
       const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
       const link = document.createElement("a");
@@ -232,6 +240,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
         <button title="行内代码" onClick={() => insertMarkdown("`", "`", "code")}><Code2 /></button>
         <button title="无序列表" onClick={() => insertMarkdown("- ", "", "列表内容")}><List /></button>
         <button title="链接" onClick={() => insertMarkdown("[", "](https://)", "链接文字")}><Link2 /></button>
+        <button title="文章双向链接" aria-label="插入文章双向链接" onClick={() => insertMarkdown("[[", "]]", "blog:stm32|STM32 学习笔记")}><BookOpen /></button>
       </div>
       <textarea ref={textareaRef} aria-label="文章 Markdown 正文" className="admin-markdown-textarea" onChange={(event) => update("content", event.target.value)} placeholder={"从这里开始写作…\n\n支持 Markdown 与 GFM：标题、列表、链接、代码、表格和引用。"} spellCheck value={draft.content} />
       <div className="admin-pane-footer"><span>支持标准 Markdown 与 GitHub Flavored Markdown</span><button className="admin-quiet-button" type="button" disabled={!draft.content} onClick={() => { if (window.confirm("确定清空正文吗？建议先导出 Markdown 备份。")) update("content", ""); }}>清空正文</button></div>
@@ -252,7 +261,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
           <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}</div><div className="flex items-center gap-2">
             <div className="admin-article-menu-wrap" ref={articleMenuRef}>
               <button aria-controls="admin-article-menu" aria-expanded={showArticleMenu} aria-haspopup="dialog" className="admin-secondary-button" onClick={() => setShowArticleMenu((current) => !current)} type="button"><BookOpen className="size-4" /><span>文章库</span><ChevronDown className={`size-3 transition-transform ${showArticleMenu ? "rotate-180" : ""}`} /></button>
-              {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog"><label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label><div className="admin-library-list">{visibleArticles.map((article) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={article.slug} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <>{article.category} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div><p className="admin-article-menu-count">共 {articles.length} 篇文章 · 点击载入编辑器</p></div>}
+              {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog"><label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label><div className="admin-library-list">{visibleArticles.map((article) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={`${article.contentType}:${article.slug}`} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <>{article.category} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div><p className="admin-article-menu-count">共 {articles.length} 篇文章 · 点击载入编辑器</p></div>}
             </div>
             <button className="admin-secondary-button" onClick={exportDraft} type="button"><ArrowDownToLine className="size-4" />导出 .md</button>
             <button className="admin-secondary-button" onClick={createArticle} type="button"><FilePlus2 className="size-4" /><span>新建</span></button>
@@ -266,9 +275,11 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
           </div></div>
 
           <div className="admin-meta-card">
-            <div className="admin-field-row"><label className="admin-field admin-field-wide"><span>文章标题</span><input maxLength={160} onChange={(event) => update("title", event.target.value)} placeholder="写一个清晰、有吸引力的标题" value={draft.title} /></label><label className="admin-field admin-slug-field"><span>文章路径</span><input autoCapitalize="none" onChange={(event) => update("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-"))} placeholder="article-slug" value={draft.slug} /><small>/article/{draft.slug || "…"}</small></label></div>
+            <label className="admin-field mb-4"><span>Research 分类 <em>可选</em></span><select value={draft.researchTopic ?? ""} onChange={(event) => update("researchTopic", event.target.value)}><option value="">不指定（机器人分类自动归类）</option>{researchCategories.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select><small>选择方向后，这篇文章也会出现在 Research；主分类和标签保持独立。</small></label>
+            <p className="mb-4 text-xs leading-6 text-[var(--muted)]">双向链接写法：<code>[[blog:stm32|STM32 学习笔记]]</code>，也可以填写文章标题。发布后自动生成反向引用。</p>
+            <div className="admin-field-row"><label className="admin-field admin-field-wide"><span>文章标题</span><input maxLength={160} onChange={(event) => update("title", event.target.value)} placeholder="写一个清晰、有吸引力的标题" value={draft.title} /></label><label className="admin-field admin-slug-field"><span>文章路径</span><input disabled={Boolean(draft.expectedSha || draft.id)} autoCapitalize="none" onChange={(event) => update("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-"))} placeholder="article-slug" value={draft.slug} /><small>/article/{draft.slug || "…"}</small></label></div>
             <label className="admin-field mt-4"><span>文章摘要</span><textarea maxLength={320} onChange={(event) => update("description", event.target.value)} placeholder="用一两句话概括文章内容" rows={2} value={draft.description} /><small className="text-right">{draft.description.length}/320</small></label>
-            <div className="admin-field-row mt-4"><label className="admin-field"><span>分类</span><select onChange={(event) => update("category", event.target.value as ArticleCategory)} value={draft.category}>{categories.map((category) => <option key={category}>{category}</option>)}</select></label><label className="admin-field"><span>日期</span><input onChange={(event) => update("date", event.target.value)} type="date" value={draft.date} /></label><label className="admin-field"><span>作者</span><input maxLength={80} onChange={(event) => update("author", event.target.value)} value={draft.author} /></label></div>
+            <div className="admin-field-row mt-4"><label className="admin-field"><span>分类</span><select onChange={(event) => { update("category", event.target.value as ArticleCategory); if (event.target.value !== "机器人") update("researchTopic", ""); }} value={draft.category}>{categories.map((category) => <option key={category}>{category}</option>)}</select></label><label className="admin-field"><span>日期</span><input onChange={(event) => update("date", event.target.value)} type="date" value={draft.date} /></label><label className="admin-field"><span>作者</span><input maxLength={80} onChange={(event) => update("author", event.target.value)} value={draft.author} /></label></div>
             <div className="admin-field-row mt-4"><label className="admin-field"><span>标签 <em>逗号分隔</em></span><input onChange={(event) => update("tags", event.target.value.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 20))} placeholder="具身智能, 机器人" value={draft.tags.join(", ")} /></label><label className="admin-field"><span>封面图 <em>可选</em></span><input onChange={(event) => update("cover", event.target.value)} placeholder="https://… 留空表示不使用封面" type="url" value={draft.cover} />{draft.cover && <span className="admin-cover-hint">封面已加载到右侧预览；无法显示时请检查 HTTPS 图片地址。</span>}</label></div>
             <label className="admin-featured-toggle"><input checked={draft.featured} onChange={(event) => update("featured", event.target.checked)} type="checkbox" /><span>设为首页精选</span><small>精选文章会优先展示</small></label>
           </div>

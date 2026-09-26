@@ -1,3 +1,4 @@
+@import "katex/dist/katex.min.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -518,3 +519,19 @@ body { transition: background-color 180ms ease, color 180ms ease; }
 .music-embed-action:hover { color:#222; background:#e9e9e9; }
 @media(max-width:640px) { .music-capsule { width:140px; height:48px; gap:8px; padding-right:14px; } .music-capsule-record { width:34px; height:34px; } .music-capsule-copy { font-size:13px; } .music-capsule-copy small { display:none; } }
 @media(prefers-reduced-motion:reduce) { .music-capsule,.music-embed-panel { transition:none; } }
+
+/* Research: one article list, eight directions, compact mobile filters. */
+.robotics-home-section { margin-top:36px; }
+@media(max-width:639px) {
+  .research-topic-tabs { flex-wrap:nowrap; overflow-x:auto; max-width:100%; padding-bottom:12px; scrollbar-width:thin; }
+  .research-topic-tabs a { flex-shrink:0; white-space:nowrap; }
+  .robotics-home-section { margin-top:24px; }
+}
+.document-relations { margin-top:32px; border-top:1px solid var(--line); padding-top:12px; }
+.document-relations details { padding:12px 0; font-size:14px; }
+.document-relations summary { cursor:pointer; font-weight:500; }
+.document-relations summary span { color:var(--muted); font-size:12px; margin-left:8px; }
+.document-relations ul { list-style:none; padding:12px 0 0 18px; display:grid; gap:10px; color:var(--muted); line-height:1.6; }
+.document-relations a:hover { color:var(--accent); }
+
+.article-body .katex-display { overflow-x:auto; overflow-y:hidden; padding:4px 0; }

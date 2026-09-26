@@ -155,7 +155,7 @@ export function SearchFloatingButton() {
                 <div className="search-results">
                   <p className="search-results-label">{results.length === 10 ? "展示前 10 篇匹配文章，输入更具体的关键词可缩小范围" : `找到 ${results.length} 篇文章`}</p>
                   {results.map((article) => (
-                    <Link prefetch={false} key={article.slug} href={"/article/" + article.slug} onClick={() => setOpen(false)} className="search-result">
+                    <Link prefetch={false} key={article.href ?? article.slug} href={article.href ?? "/article/" + article.slug} onClick={() => setOpen(false)} className="search-result">
                       <span className="search-result-copy"><span className="search-result-meta">{article.category} <i>/</i> {article.date}</span><strong><Highlight text={article.title} query={normalizedQuery} /></strong><small><Highlight text={article.description} query={normalizedQuery} /></small></span>
                       <ArrowUpRight size={17} aria-hidden="true" />
                     </Link>

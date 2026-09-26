@@ -1,0 +1,68 @@
+---
+id: "blog:yolo"
+date: "2026-09-27"
+aliases: ["YOLO系列文档", "knowledge:yolo"]
+title: "YOLO 学习资料"
+description: "整理目标检测与 YOLO 系列的学习资料。"
+researchTopic: "perception"
+category: "AI"
+source: "YOLO系列文档.md"
+---
+
+## 前言
+
+YOLO 是一系列实时计算机视觉模型，用于目标检测、实例分割、语义分割、深度估计、分类、姿态估计、定向边界框和跟踪，可通过一个 Python 包和命令行界面 (CLI) 使用。
+
+[文档](https://docs.ultralytics.com/)
+
+## 安装
+
+```shell
+# Install or upgrade the ultralytics package from PyPI
+pip install -U ultralytics
+```
+
+## 训练
+
+使用 YOLO 模型在 COCO8 数据集上训练 100 个[epoch](https://www.ultralytics.com/glossary/epoch)，图像尺寸为 640。训练设备可以通过参数指定`device`。如果未传递参数，`device=0`则在可用时使用 GPU；否则`device='cpu'`使用普通设备。
+
+```python
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO("yolo26n.yaml")  # build a new model from YAML
+model = YOLO("yolo26n.pt")  # load a pretrained model (recommended for training)
+model = YOLO("yolo26n.yaml").load("yolo26n.pt")  # build from YAML and transfer weights
+
+# Train the model
+results = model.train(data="coco8.yaml", epochs=100, imgsz=640)
+```
+
+使用预留数据验证训练好的模型，以检查其在实际应用中的准确性，然后将其导出为 ONNX、TensorRT 或其他部署格式。如果您使用自己的数据而不是 COCO8 数据集进行训练，请先按照[数据集指南](https://docs.ultralytics.com/datasets)进行格式化。
+
+## 验证
+
+验证过程会存储除分类任务外所有任务的每张图像的精确率、召回率、F1 值、真阳性 (TP)、假阳性 (FP) 和假阴性 (FN) 指标（IoU 阈值为 0.5）。验证完成后，可通过以下方式访问这些指标：`results.box.image_metrics`检测和 OBB 任务、`results.seg.image_metrics` 分割任务以及`results.pose.image_metrics`姿态任务。
+
+```python
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO("yolo26n.pt")
+
+# Validate and access per-image metrics
+results = model.val(data="coco8.yaml")
+
+# image_metrics is a dictionary with image filenames as keys
+print(results.box.image_metrics)
+# Output: {'image1.jpg': {'precision': 0.85, 'recall': 0.92, 'f1': 0.88, 'tp': 17, 'fp': 3, 'fn': 1}, ...}
+
+# Access metrics for a specific image
+results.box.image_metrics["image1.jpg"]  # {'precision': 0.85, 'recall': 0.92, 'f1': 0.88, 'tp': 17, 'fp': 3, 'fn': 1}
+```
+
+## 预测
+
+## 相关学习
+
+- [[blog:ros2|ROS 2 入门]]

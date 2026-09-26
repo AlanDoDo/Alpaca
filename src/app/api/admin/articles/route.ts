@@ -3,6 +3,7 @@ import { parseFrontmatter } from "@/lib/parse-frontmatter";
 import { readJsonObject, RequestBodyError } from "@/lib/request-json";
 import fs from "node:fs";
 import path from "node:path";
+import { isRoboticsArticle, researchCategories, researchTopic } from "@/modules/content/research";
 import { getArticleBySlug } from "@/modules/content";
 import { adminAuthConfigured, verifyAdminSessionValue, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { isSameOriginRequest } from "@/lib/request-origin";
@@ -16,11 +17,11 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const maxArticleBytes = 500_000;
 
 type ArticleDraft = {
-  slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
+  researchTopic?: unknown; contentType?: unknown; id?: unknown; aliases?: unknown; slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
   tags?: unknown; author?: unknown; featured?: unknown; cover?: unknown; content?: unknown; expectedSha?: unknown;
 };
 
-type ValidatedDraft = { slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+type ValidatedDraft = { researchTopic?: string; contentType: "blog"; id: string; aliases: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 function authorized(request: NextRequest) {
   return adminAuthConfigured() && verifyAdminSessionValue(request.cookies.get(ADMIN_COOKIE)?.value);
 }
@@ -43,6 +44,9 @@ function githubFileUrl(owner: string, repo: string, slug: string) {
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "请先登录管理员后台。" }, { status: 401 });
+  const requestedType = request.nextUrl.searchParams.get("type") ?? "blog";
+  if (requestedType !== "blog") return NextResponse.json({ error: "内容类型无效。" }, { status: 400 });
+  const contentType = "blog" as const;
   const slug = request.nextUrl.searchParams.get("slug") ?? "";
   if (!slugPattern.test(slug) || slug.length > 100) return NextResponse.json({ error: "文章标识无效。" }, { status: 400 });
 
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
         if (!file.content || file.encoding !== "base64" || !file.sha) return NextResponse.json({ error: "暂时无法读取这篇文章。" }, { status: 502 });
         const raw = Buffer.from(file.content.replace(/\n/g, ""), "base64").toString("utf8");
         const parsed = parseFrontmatter(raw);
-        return NextResponse.json({ slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: parsed.data.date ?? "", category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
+        return NextResponse.json({ researchTopic: (parsed.data.researchTopic || parsed.data.category === "机器人") ? researchTopic({ researchTopic: parsed.data.researchTopic, title: parsed.data.title ?? "", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [] }) : undefined, contentType, id: parsed.data.id ?? `${contentType}:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: typeof parsed.data.date === "string" ? parsed.data.date : new Date().toISOString().slice(0, 10), category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
       }
       if (response.status !== 404) return NextResponse.json({ error: "从 GitHub 读取文章失败，请稍后重试。" }, { status: 502 });
     } catch {
@@ -67,10 +71,16 @@ export async function GET(request: NextRequest) {
   if (!article) return NextResponse.json({ error: "文章不存在，或 GitHub 尚未配置。" }, { status: 404 });
   const filePath = [".mdx", ".md"].map((extension) => path.join(process.cwd(), "content/blog", slug + extension)).find((candidate) => fs.existsSync(candidate));
   const parsed = parseFrontmatter(filePath ? fs.readFileSync(filePath, "utf8") : "");
-  return NextResponse.json({ slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
+  return NextResponse.json({ researchTopic: isRoboticsArticle(article) ? researchTopic(article) : undefined, contentType, id: parsed.data.id ?? `blog:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
 }
 
 function validateDraft(body: ArticleDraft) {
+  const contentType = body.contentType === undefined ? "blog" : body.contentType;
+  if (contentType !== "blog") return { error: "内容类型无效。" };
+  const topic = typeof body.researchTopic === "string" && body.researchTopic ? body.researchTopic : undefined;
+  if (topic && !researchCategories.some((item) => item.id === topic)) return { error: "机器人方向无效。" };
+  const aliases = Array.isArray(body.aliases) ? body.aliases.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
+  if (aliases.length > 20 || aliases.some((item) => item.length > 160)) return { error: "别名最多 20 个，每个不能超过 160 字。" };
   const slug = typeof body.slug === "string" ? body.slug.trim() : "";
   const title = typeof body.title === "string" ? body.title.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
@@ -92,11 +102,16 @@ function validateDraft(body: ArticleDraft) {
   if (!content.trim() || Buffer.byteLength(content, "utf8") > maxArticleBytes) return { error: "正文不能为空，且不能超过 500 KB。" };
   if (typeof body.expectedSha !== "string" && body.expectedSha !== null) return { error: "文章版本信息无效，请重新打开文章。" };
   if (typeof body.expectedSha === "string" && !/^[a-f0-9]{40}$/.test(body.expectedSha)) return { error: "文章版本信息无效，请重新打开文章。" };
-  return { value: { slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } };
+  const id = `${contentType}:${slug}`;
+  if (body.id !== undefined && body.id !== id) return { error: "内容标识不匹配，请重新打开文章。" };
+  return { value: { researchTopic: topic, contentType, id, aliases, slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } satisfies ValidatedDraft };
 }
 
 function frontmatter(value: ValidatedDraft) {
   const fields = [
+    `id: ${JSON.stringify(value.id)}`,
+    `aliases: ${JSON.stringify(value.aliases)}`,
+    ...(value.researchTopic ? [`researchTopic: ${JSON.stringify(value.researchTopic)}`] : []),
     `title: ${JSON.stringify(value.title)}`,
     `description: ${JSON.stringify(value.description)}`,
     `date: ${JSON.stringify(value.date)}`,
@@ -130,8 +145,15 @@ export async function POST(request: NextRequest) {
     const existingResponse = await fetch(`${url}?ref=${encodeURIComponent(config.branch)}`, { headers: githubHeaders(config.token), cache: "no-store" });
     let currentSha: string | null = null;
     if (existingResponse.ok) {
-      const existing = await existingResponse.json() as { sha?: string };
+      const existing = await existingResponse.json() as { sha?: string; content?: string; encoding?: string };
       currentSha = existing.sha ?? null;
+      if (existing.content && existing.encoding === "base64") {
+        const previous = parseFrontmatter(Buffer.from(existing.content.replace(/\n/g, ""), "base64").toString("utf8"));
+        const oldAliases = Array.isArray(previous.data.aliases) ? previous.data.aliases.filter((item): item is string => typeof item === "string") : [];
+        const oldTitle = typeof previous.data.title === "string" && previous.data.title !== value.title ? [previous.data.title] : [];
+        value.aliases = [...new Set([...oldAliases, ...value.aliases, ...oldTitle])];
+        if (value.aliases.length > 20) return NextResponse.json({ error: "历史别名超过 20 个，请整理别名后再发布。" }, { status: 400 });
+      }
     } else if (existingResponse.status !== 404) {
       return NextResponse.json({ error: "检查 GitHub 文章版本失败，请稍后重试。" }, { status: 502 });
     }

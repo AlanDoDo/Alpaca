@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllArticles, getArticleBySlug } from "@/modules/content";
 import { extractArticleHeadings } from "@/modules/content/headings";
+import { renderKnowledgeLinks } from "@/modules/content/connected";
+import { DocumentRelations } from "@/components/blog/document-relations";
 import { ArticleBody } from "@/components/blog/article-body";
 import { ArticleTableOfContents } from "@/components/blog/article-toc";
 import { ArticleEndNavigation } from "@/components/blog/article-end-navigation";
@@ -25,7 +27,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = getArticleBySlug(slug);
   if (!article) notFound();
 
-  const headings = extractArticleHeadings(article.content);
+  const linkedContent = renderKnowledgeLinks(article.content);
+  const headings = extractArticleHeadings(linkedContent);
   const allArticles = getAllArticles();
   const chronology = allArticles.slice().sort((a, b) => b.date.localeCompare(a.date) || b.slug.localeCompare(a.slug));
   const articleIndex = chronology.findIndex((item) => item.slug === article.slug);
@@ -50,7 +53,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <p className="mt-4 text-base leading-7 text-[var(--muted)] sm:mt-6 sm:text-lg sm:leading-8">{article.description}</p>
         <p className="mt-5 border-b border-[var(--line)] pb-5 text-xs text-[var(--muted)] sm:mt-6 sm:pb-6 sm:text-sm">TechAlpaca · {article.date} · {article.readingTime} 分钟阅读</p>
         {article.cover && <Image src={article.cover} alt={article.title} width={1200} height={675} sizes="(min-width: 768px) 768px, 100vw" priority unoptimized={article.cover.includes("techalpaca.vercel.app")} className="mt-6 aspect-[16/9] w-full rounded-sm object-cover sm:mt-8" />}
-        <ArticleBody source={article.content} headings={showToc ? headings : []} />
+        <ArticleBody source={linkedContent} headings={showToc ? headings : []} />
+        <DocumentRelations href={`/article/${slug}`} />
         <ArticleEndNavigation previous={previous} next={next} related={related} />
       </article>
       {showToc && <aside className="hidden min-w-0 lg:block"><ArticleTableOfContents headings={headings} /></aside>}

@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
     "/admin/articles": ["./content/blog/**/*"],
     "/blog": ["./content/blog/**/*"],
     "/forum": ["./content/blog/**/*"],
+    "/forum/notes/[slug]": ["./content/blog/**/*"],
+    "/article/[slug]": ["./content/blog/**/*"],
     "/search": ["./content/blog/**/*"],
     "/feed.xml": ["./content/blog/**/*"],
   },

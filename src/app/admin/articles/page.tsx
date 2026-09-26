@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getAllArticles } from "@/modules/content";
+import { contentSummaries } from "@/modules/content/connected";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { ArticleEditor } from "@/components/admin/article-editor";
 
@@ -9,6 +9,6 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminArticlesPage() {
   if (!await isAdminAuthenticated()) redirect("/admin/login");
-  const articles = getAllArticles();
+  const articles = contentSummaries();
   return <ArticleEditor articles={articles} />;
 }

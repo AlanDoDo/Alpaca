@@ -1,0 +1,323 @@
+---
+id: "blog:ros2"
+date: "2026-09-27"
+aliases: ["2023-6-22-Ros2", "knowledge:ros2"]
+title: "ROS 2 入门"
+description: "认识工作空间、功能包、节点、消息与通信机制。"
+researchTopic: "systems"
+category: "机器人"
+source: "2023-6-22-Ros2.md"
+---
+
+## 概念总览
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x51.jpg)
+
+## 工作空间
+### 工作空间是什么
+
+针对机器人某些功能进行代码开始时，各种编写的代码、参数、脚本等文件，也需要放置在某一个文件夹里进行管理，这个文件夹在ROS系统中就叫做**工作空间**。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220524111415729.png)
+
+**src，代码空间**，未来编写的代码、脚本，都需要人为的放置到这里；
+**build，编译空间**，保存编译过程中产生的中间文件；
+**install，安装空间**，放置编译得到的可执行文件和脚本；
+**log，日志空间**，编译和运行过程中，保存各种警告、错误、信息等日志。
+
+### 创建工作空间
+```
+$ mkdir -p ~/dev_ws/src
+$ cd ~/dev_ws/src
+$ git clone https://gitee.com/guyuehome/ros2_21_tutorials.git
+```
+### 自动安装依赖
+```
+$ sudo apt install -y python3-pip
+$ sudo pip3 install rosdepc
+$ sudo rosdepc init
+$ rosdepc update
+$ cd ..
+$ rosdepc install -i --from-path src --rosdistro humble -y
+```
+### 编译工作空间
+依赖安装完成后，就可以使用如下命令编译工作空间啦，如果有缺少的依赖，或者代码有错误，编译过程中会有报错，否则编译过程应该不会出现任何错误：
+```
+$ sudo apt install python3-colcon-ros
+$ cd ~/dev_ws/
+$ colcon build
+```
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220524111804569.jpg)
+
+### 设置环境变量
+编译成功后，为了让系统能够找到我们的功能包和可执行文件，还需要设置环境变量：
+```
+$ source install/local_setup.sh # 仅在当前终端生效
+$ echo " source ~/dev_ws/install/local_setup.sh" >> ~/.bashrc # 所有终端均生效
+```
+## 功能包
+我们把不同功能的代码划分到不同的功能包中，尽量降低他们之间的耦合关系，当需要在ROS社区中分享给别人的时候，只需要说明这个功能包该如何使用，别人很快就可以用起来了。
+
+所以功能包的机制，是提高ROS中软件复用率的重要方法之一。
+
+### 创建功能包
+
+```
+$ ros2 pkg create --build-type <build-type> <package_name>
+```
+
+**pkg**：表示功能包相关的功能；
+**create**：表示创建功能包；
+**build-type**：表示新创建的功能包是C++还是Python的，如果使用C++或者C，那这里就跟ament_cmake，如果使用Python，就跟ament_python；
+**package_name**：新建功能包的名字。
+
+比如在终端中分别创建C++和Python版本的功能包
+```
+$ cd ~/dev_ws/src
+$ ros2 pkg create --build-type ament_cmake learning_pkg_c               # C++
+$ ros2 pkg create --build-type ament_python learning_pkg_python # Python
+```
+
+### 编译功能包
+在创建好的功能包中，我们可以继续完成代码的编写，之后需要编译和配置环境变量，才能正常运行
+```
+$ cd ~/dev_ws
+$ colcon build   # 编译工作空间所有功能包
+$ source install/local_setup.bash
+```
+
+## 节点
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220526231417594.png)
+
+节点在机器人系统中的职责就是**执行某些具体的任务**，从计算机操作系统的角度来看，也叫做进程；
+
+每个节点都是一个可以**独立运行的可执行文件**，比如执行某一个python程序，或者执行C++编译生成的结果，都算是运行了一个节点；
+
+既然每个节点都是独立的执行文件，那自然就可以想到，得到这个执行文件的**编程语言可以是不同的**，比如C++、Python，乃至Java、Ruby等更多语言。
+
+这些节点是功能各不相同的细胞，根据系统设计的不同，可能位于计算机A，也可能位于计算机B，还有可能运行在云端，这叫做**分布式**，也就是可以分布在不同的硬件载体上；
+
+每一个节点都需要有**唯一的命名**，当我们想要去找到某一个节点的时候，或者想要查询某一个节点的状态时，可以通过节点的名称来做查询。
+
+### 创建节点流程
+
+* 编程接口初始化
+* 创建节点并初始化
+* 实现节点功能
+* 销毁节点并关闭接口
+
+```
+$ ros2 run learning_node node_helloworld
+```
+```py
+#!/usr/bin/env python3 
+# -*- coding: utf-8 -*-
+
+"""
+@说明: ROS2节点示例-发布“Hello World”日志信息, 使用面向过程的实现方式
+"""
+
+import rclpy                                   # ROS2 Python接口库
+from rclpy.node import Node                    # ROS2 节点类
+import time
+
+def main(args=None):                           # ROS2节点主入口main函数
+    rclpy.init(args=args)                      # ROS2 Python接口初始化
+    node = Node("node_helloworld")             # 创建ROS2节点对象并进行初始化
+
+    while rclpy.ok():                          # ROS2系统是否正常运行
+        node.get_logger().info("Hello World")  # ROS2日志输出
+        time.sleep(0.5)                        # 休眠控制循环时间
+
+    node.destroy_node()                        # 销毁节点对象    
+    rclpy.shutdown()                           # 关闭ROS2 Python接口
+
+```
+
+在一个ROS机器人的系统中，节点并不是孤立的，他们之间会有很多种机制保持联系
+
+## 话题
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220526231417594.png)
+
+节点实现了机器人各种各样的功能，但这些功能并不是独立的，之间会有千丝万缕的联系，其中最重要的一种联系方式就是话题，它是**节点间传递数据的桥梁**。
+
+话题数据传输的特性是从一个节点到另外一个节点，发送数据的对象称之为**发布者**，接收数据的对象称之为**订阅者**，每一个话题都需要有一个名字，传输的数据也需要有固定的数据类型。
+
+## 服务
+
+话题通信可以实现多个ROS节点之间数据的单向传输，使用这种异步通信机制，发布者无法准确知道订阅者是否收到消息，ROS另外一种常用的通信方法——**服务**，可以实现类似**你问我答的同步通信**效果。
+
+```
+$ ros2 run learning_service service_adder_server
+$ ros2 run learning_service service_adder_client 2 3
+```
+
+客户端代码解析
+```py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+@说明: ROS2服务示例-发送两个加数，请求加法器计算
+"""
+
+import sys
+
+import rclpy                                  # ROS2 Python接口库
+from rclpy.node   import Node                 # ROS2 节点类
+from learning_interface.srv import AddTwoInts # 自定义的服务接口
+
+class adderClient(Node):
+    def __init__(self, name):
+        super().__init__(name)                                       # ROS2节点父类初始化
+        self.client = self.create_client(AddTwoInts, 'add_two_ints') # 创建服务客户端对象（服务接口类型，服务名）
+        while not self.client.wait_for_service(timeout_sec=1.0):     # 循环等待服务器端成功启动
+            self.get_logger().info('service not available, waiting again...') 
+        self.request = AddTwoInts.Request()                          # 创建服务请求的数据对象
+
+    def send_request(self):                                          # 创建一个发送服务请求的函数
+        self.request.a = int(sys.argv[1])
+        self.request.b = int(sys.argv[2])
+        self.future = self.client.call_async(self.request)           # 异步方式发送服务请求
+
+def main(args=None):
+    rclpy.init(args=args)                        # ROS2 Python接口初始化
+    node = adderClient("service_adder_client")   # 创建ROS2节点对象并进行初始化
+    node.send_request()                          # 发送服务请求
+
+    while rclpy.ok():                            # ROS2系统正常运行
+        rclpy.spin_once(node)                    # 循环执行一次节点
+
+        if node.future.done():                   # 数据是否处理完成
+            try:
+                response = node.future.result()  # 接收服务器端的反馈数据
+            except Exception as e:
+                node.get_logger().info(
+                    'Service call failed %r' % (e,))
+            else:
+                node.get_logger().info(          # 将收到的反馈信息打印输出
+                    'Result of add_two_ints: for %d + %d = %d' % 
+                    (node.request.a, node.request.b, response.sum))
+            break
+
+    node.destroy_node()                          # 销毁节点对象
+    rclpy.shutdown()                             # 关闭ROS2 Python接口
+```
+
+服务端代码解析
+```py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+@说明: ROS2服务示例-提供加法器的服务器处理功能
+"""
+
+import rclpy                                     # ROS2 Python接口库
+from rclpy.node   import Node                    # ROS2 节点类
+from learning_interface.srv import AddTwoInts    # 自定义的服务接口
+
+class adderServer(Node):
+    def __init__(self, name):
+        super().__init__(name)                                                           # ROS2节点父类初始化
+        self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.adder_callback)  # 创建服务器对象（接口类型、服务名、服务器回调函数）
+
+    def adder_callback(self, request, response):   # 创建回调函数，执行收到请求后对数据的处理
+        response.sum = request.a + request.b       # 完成加法求和计算，将结果放到反馈的数据中
+        self.get_logger().info('Incoming request\na: %d b: %d' % (request.a, request.b))   # 输出日志信息，提示已经完成加法求和计算
+        return response                          # 反馈应答信息
+
+def main(args=None):                             # ROS2节点主入口main函数
+    rclpy.init(args=args)                        # ROS2 Python接口初始化
+    node = adderServer("service_adder_server")   # 创建ROS2节点对象并进行初始化
+    rclpy.spin(node)                             # 循环等待ROS2退出
+    node.destroy_node()                          # 销毁节点对象
+    rclpy.shutdown()                             # 关闭ROS2 Python接口
+```
+
+## 通信接口
+
+软件开发中，接口的使用就更多了，比如我们在编写程序时，使用的函数和函数的输入输出也称之为接口，每一次调用函数的时候，就像是把主程序和调用函数通过这个接口连接到一起，系统才能正常工作。
+
+更为形象的是图形化编程中使用的程序模块，每一个模块都有固定的结构和形状，只有两个模块相互匹配，才能在一起工作，这就很好的讲代码形象化了。
+
+所以什么是接口，它是一种相互关系，只有彼此匹配，才能建立连接。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528001533911.png)
+
+## 动作
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528005012082.png)
+
+### 一对多通信
+和服务一样，动作通信中的客户端可以有多个，大家都可以发送运动命令，但是服务器端只能有一个，毕竟只有一个机器人，先执行完成一个动作，才能执行下一个动作。
+
+### 同步通信
+既然有反馈，那动作也是一种同步通信机制，之前我们也介绍过，动作过程中的数据通信接口，使用.action文件进行定义。
+
+### 由服务和话题合成
+大家再仔细看下上边的动图，是不是还会发现一个隐藏的秘密。
+
+动作的三个通信模块，竟然有两个是服务，一个是话题，当客户端发送运动目标时，使用的是服务的请求调用，服务器端也会反馈一个应带，表示收到命令。动作的反馈过程，其实就是一个话题的周期发布，服务器端是发布者，客户端是订阅者。
+
+没错，动作是一种应用层的通信机制，其底层就是基于话题和服务来实现的。
+
+```
+bool enable     # 定义动作的目标，表示动作开始的指令
+---
+bool finish     # 定义动作的结果，表示是否成功执行
+---
+int32 state     # 定义动作的反馈，表示当前执行到的位置
+```
+
+### 通信模型
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528010217043.png)
+
+## 参数
+
+### 全局字典
+
+在ROS系统中，参数是以全局字典的形态存在的，什么叫字典？就像真实的字典一样，由名称和数值组成，也叫做键和值，合成键值。或者我们也可以理解为，就像编程中的参数一样，有一个参数名 ，然后跟一个等号，后边就是参数值了，在使用的时候，访问这个参数名即可。
+
+### 可动态监控
+
+在ROS2中，参数的特性非常丰富，比如某一个节点共享了一个参数，其他节点都可以访问，如果某一个节点对参数进行了修改，其他节点也有办法立刻知道，从而获取最新的数值。这在参数的高级编程中，大家都可能会用到。
+
+## 分布式通信
+
+可以实现多计算平台上的任务分配
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528020302983.jpg)
+
+## DDS
+DDS的核心是通信，能够实现通信的模型和软件框架非常多，这里我们列出常用的四种模型。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528020740057.jpg)
+
+### 点对点模型
+许多客户端连接到一个服务端，每次通信时，通信双方必须建立一条连接。当通信节点增多时，连接数也会增多。而且每个客户端都需要知道服务器的具体地址和所提供的服务，一旦服务器地址发生变化，所有客户端都会受到影响。
+
+### Broker模型
+针对点对点模型进行了优化，由Broker集中处理所有人的请求，并进一步找到真正能响应该服务的角色。这样客户端就不用关心服务器的具体地址了。不过问题也很明显，Broker作为核心，它的处理速度会影响所有节点的效率，当系统规模增长到一定程度，Broker就会成为整个系统的性能瓶颈。更麻烦是，如果Broker发生异常，可能导致整个系统都无法正常运转。之前的ROS1系统，使用的就是类似这样的架构。
+
+### 广播模型
+所有节点都可以在通道上广播消息，并且节点都可以收到消息。这个模型解决了服务器地址的问题，而且通信双方也不用单独建立连接，但是广播通道上的消息太多了，所有节点都必须关心每条消息，其实很多是和自己没有关系的。
+
+### DDS模型
+这种模型与广播模型有些类似，所有节点都可以在DataBus上发布和订阅消息。但它的先进之处在于，通信中包含了很多并行的通路，每个节点可以只关心自己感兴趣的消息，忽略不感兴趣的消息，有点像是一个旋转火锅，各种好吃的都在这个DataBus传送，我们只需要拿自己想吃的就行，其他的和我们没有关系。
+
+DDS在ROS2中的应用：
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20220528020937717.jpg)
+
+## 常用工具
+Launch、TF、URDF、Gazebo、Rviz、Rqt
+
+## 相关学习
+
+- [[blog:yolo|YOLO 学习资料]]
+- [[blog:stm32|STM32 学习笔记]]
