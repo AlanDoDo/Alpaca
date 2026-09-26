@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { createFileCollection } from "./file-collection";
 import type { Article, ArticleCategory, ArticleSummary } from "./types";
 export type { Article, ArticleCategory, ArticleSummary } from "./types";
 const contentDirectory = path.join(process.cwd(), "content/blog");
@@ -26,23 +27,28 @@ function readArticle(fileName: string): Article {
   const readingTime = Math.max(1, Math.ceil(cjkCharacters / 400 + latinWords / 200));
   return { slug: fileName.replace(/\.mdx?$/, ""), title, description, date, category, tags: Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === "string") : [], readingTime, featured: data.featured === true, cover, content };
 }
+const getArticleFiles = createFileCollection(contentDirectory, readArticle);
+const searchIndexes = new WeakMap<Article[], { article: Article; text: string }[]>();
+function summarize({ slug, title, description, date, category, tags, readingTime, featured, cover }: Article): ArticleSummary {
+  return { slug, title, description, date, category, tags, readingTime, featured, cover };
+}
+const byFeaturedDate = (a: Article, b: Article) => Number(b.featured) - Number(a.featured) || b.date.localeCompare(a.date);
 export function getAllArticles(): ArticleSummary[] {
-  if (!fs.existsSync(contentDirectory)) return [];
-  return fs.readdirSync(contentDirectory).filter((name) => /\.mdx?$/.test(name)).map(readArticle).sort((a, b) => Number(b.featured) - Number(a.featured) || b.date.localeCompare(a.date)).map(({ slug, title, description, date, category, tags, readingTime, featured, cover }) => ({ slug, title, description, date, category, tags, readingTime, featured, cover }));
+  return getArticleFiles().slice().sort(byFeaturedDate).map(summarize);
 }
 export function getArticleBySlug(slug: string): Article | undefined {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return undefined;
-  const fileName = [`${slug}.mdx`, `${slug}.md`].find((name) => fs.existsSync(path.join(contentDirectory, name)));
-  return fileName ? readArticle(fileName) : undefined;
+  const articles = getArticleFiles();
+  return articles.find((article) => article.slug === slug);
 }
 export function searchArticles(query: string): ArticleSummary[] {
   const normalized = query.trim().toLocaleLowerCase();
   if (!normalized) return [];
-  if (!fs.existsSync(contentDirectory)) return [];
-  return fs.readdirSync(contentDirectory)
-    .filter((name) => /\.mdx?$/.test(name))
-    .map(readArticle)
-    .sort((a, b) => Number(b.featured) - Number(a.featured) || b.date.localeCompare(a.date))
-    .filter((article) => [article.title, article.description, article.category, ...article.tags, article.content].join(" ").toLocaleLowerCase().includes(normalized))
-    .map(({ slug, title, description, date, category, tags, readingTime, featured, cover }) => ({ slug, title, description, date, category, tags, readingTime, featured, cover }));
+  const articles = getArticleFiles();
+  let index = searchIndexes.get(articles);
+  if (!index) {
+    index = articles.slice().sort(byFeaturedDate).map((article) => ({ article, text: [article.title, article.description, article.category, ...article.tags, article.content].join(" ").toLocaleLowerCase() }));
+    searchIndexes.set(articles, index);
+  }
+  return index.filter(({ text }) => text.includes(normalized)).map(({ article }) => summarize(article));
 }

@@ -1,8 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About",
+  alternates: { canonical: "/about" },
   description: "认识 TechAlpaca：记录技术、阅读、项目实践和个人思考。",
 };
 
@@ -85,27 +88,55 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="grid gap-3 border-b border-[var(--line)] py-7 sm:gap-8 sm:py-10 md:grid-cols-[12rem_1fr] md:gap-12">
-        <h2 className="text-base font-semibold leading-6 tracking-tight text-[var(--ink)] sm:text-lg md:pt-1 md:text-xl">一点期待</h2>
-        <div>
-          <p className="leading-8 text-[var(--muted)]">希望把这里慢慢做成一个长期更新的个人空间。它既能服务当下的记录，也能在以后回看时，成为一个足够清晰的个人索引。</p>
-        </div>
+      <section aria-labelledby="about-explore-title" className="border-b border-[var(--line)] py-8 sm:py-12">
+        <h2 id="about-explore-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">继续探索</h2>
+        <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--muted)]">以机器人为工作主线，也关注智能的演进与市场的变化。这里记录我的学习、实践，以及尚在形成的判断。</p>
+        <nav aria-label="更多研究领域" className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2">
+          {[
+            { href: "/ai", label: "AI 研究", eyebrow: "ARTIFICIAL INTELLIGENCE", description: "从模型原理到工具实践，探索 AI 如何走进真实工作。" },
+            { href: "/finance", label: "金融笔记", eyebrow: "FINANCE", description: "梳理交易与投资的思考，在波动中建立自己的判断。" },
+          ].map((area) => (
+            <Link key={area.href} href={area.href} className="group rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)] sm:p-6">
+              <p className="text-[10px] font-semibold tracking-[0.16em] text-[var(--muted)] sm:text-xs">{area.eyebrow}</p>
+              <div className="mt-4 flex items-center justify-between gap-4">
+                <h3 className="text-xl font-semibold text-[var(--ink)]">{area.label}</h3>
+                <ArrowUpRight aria-hidden="true" className="size-5 shrink-0 text-[var(--muted)] transition-colors group-hover:text-[var(--accent)]" />
+              </div>
+              <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{area.description}</p>
+            </Link>
+          ))}
+        </nav>
       </section>
 
       <section className="pt-12">
         <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">BOOKSHELF</p>
         <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">图书推荐</h2>
-        <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">整理一些会反复回看的书，先从金融、科技、玄学这些主题开始。</p>
-        <div className="mt-8">
+        <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">先分享两本会反复翻阅的书，更多书单按主题收在下面。</p>
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {bookCategories[0].books.slice(0, 2).map(([title, author, note]) => (
+            <li key={title} className="rounded-2xl border border-[var(--line)] p-5 sm:p-6">
+              <p className="text-xs text-[var(--muted)]">金融 · 精选</p>
+              <h3 className="mt-3 text-lg font-semibold">{title}</h3>
+              <p className="mt-1 text-sm text-[var(--muted)]">{author}</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{note}</p>
+            </li>
+          ))}
+        </ul>
+        <details className="group/books mt-5">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-3 text-sm font-medium transition-colors hover:bg-[var(--surface-hover)] [&::-webkit-details-marker]:hidden">
+            <span><span className="group-open/books:hidden">展开全部书单</span><span className="hidden group-open/books:inline">收起更多书单</span><span className="ml-2 text-[var(--muted)]">其余 {bookCategories.reduce((count, category) => count + category.books.length, 0) - 2} 本</span></span>
+            <span aria-hidden="true" className="text-xl text-[var(--muted)] group-open/books:rotate-45">+</span>
+          </summary>
+          <div className="mt-4">
           {bookCategories.map((category, categoryIndex) => (
-            <details key={category.name} open={categoryIndex === 0} className="group border-t border-[var(--line)] py-5 last:border-b">
+            <details key={category.name} className="group border-t border-[var(--line)] py-5 last:border-b">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
-                <span><span className="text-lg font-medium">{category.name}</span><span className="ml-3 text-sm text-[var(--muted)]">{category.books.length} 本</span></span>
+                <span><span className="text-lg font-medium">{category.name}</span><span className="ml-3 text-sm text-[var(--muted)]">{category.books.length - (categoryIndex === 0 ? 2 : 0)} 本{categoryIndex === 0 ? " · 更多" : ""}</span></span>
                 <span aria-hidden="true" className="text-xl text-[var(--muted)] transition-transform group-open:rotate-45">+</span>
               </summary>
               <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{category.description}</p>
               <ul className="mt-5 divide-y divide-[var(--line)]">
-                {category.books.map(([title, author, note]) => (
+                {category.books.slice(categoryIndex === 0 ? 2 : 0).map(([title, author, note]) => (
                   <li key={title} className="py-4 first:pt-0 last:pb-0">
                     <h3 className="font-medium">{title}</h3>
                     <p className="mt-1 text-xs text-[var(--muted)]">{author}</p>
@@ -115,7 +146,8 @@ export default function AboutPage() {
               </ul>
             </details>
           ))}
-        </div>
+          </div>
+        </details>
       </section>
     </div>
   );

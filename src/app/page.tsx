@@ -32,7 +32,7 @@ export default function HomePage() {
               <p className="text-xs text-[var(--muted)] sm:text-sm">{featured.date} · {featured.readingTime} 分钟阅读</p>
             </div>
             <div className={`mt-5 grid overflow-hidden border border-[var(--line)] bg-[var(--surface)] ${featured.cover ? "md:grid-cols-[1.05fr_1fr]" : ""}`}>
-              {featured.cover && <Link href={`/article/${featured.slug}`} className="block overflow-hidden"><Image src={featured.cover} alt={featured.title} width={960} height={640} sizes="(min-width: 768px) 50vw, 100vw" priority unoptimized={featured.cover.includes("techalpaca.vercel.app")} className="aspect-[16/10] h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]" /></Link>}
+              {featured.cover && <Link href={`/article/${featured.slug}`} className="block overflow-hidden"><Image src={featured.cover} alt={featured.title} width={960} height={640} sizes="(min-width: 768px) 50vw, 100vw" loading="lazy" unoptimized={featured.cover.includes("techalpaca.vercel.app")} className="aspect-[16/10] h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]" /></Link>}
               <div className="flex min-w-0 flex-col justify-center p-5 sm:p-8 md:p-10">
                 <h2 className="break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl md:text-4xl"><Link className="hover:text-[var(--accent)]" href={`/article/${featured.slug}`}>{featured.title}</Link></h2>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)] sm:mt-4 sm:text-base">{featured.description}</p>

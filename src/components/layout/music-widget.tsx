@@ -55,6 +55,7 @@ export function MusicWidget() {
   const [draftId, setDraftId] = useState(DEFAULT_ID);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
+  const [playerActivated, setPlayerActivated] = useState(false);
   useEffect(() => {
     if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
     localStorage.setItem(STORAGE_KEY, DEFAULT_SNAPSHOT);
@@ -64,6 +65,7 @@ export function MusicWidget() {
 
   useEffect(() => {
     function openPlayer() {
+      setPlayerActivated(true);
       setHovered(false);
       setManualOpen(true);
     }
@@ -76,7 +78,7 @@ export function MusicWidget() {
   const open = hovered || manualOpen;
 
   function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse") setHovered(true);
+    if (event.pointerType === "mouse") { setPlayerActivated(true); setHovered(true); }
   }
 
   function handlePointerLeave(event: PointerEvent<HTMLDivElement>) {
@@ -84,6 +86,7 @@ export function MusicWidget() {
   }
 
   function toggleManually() {
+    setPlayerActivated(true);
     setHovered(false);
     setManualOpen((current) => !current);
   }
@@ -129,7 +132,7 @@ export function MusicWidget() {
           <button type="button" onClick={closeCard} aria-label="收起音乐卡片" className="rounded p-1 text-[var(--muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"><X size={17} /></button>
         </div>
         <div className="p-3">
-          <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; clipboard-write" className="block rounded-md border-0" />
+          {playerActivated ? <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; clipboard-write" className="block rounded-md border-0" /> : <div className="h-[110px]" />}
           <div className="flex items-center justify-between gap-3 px-1 pt-2 text-xs text-[var(--muted)]">
             <span>歌单 · 按列表顺序播放</span>
             <button type="button" onClick={() => { setDraftId(selection.id); setEditing((current) => !current); setError(""); }} className="shrink-0 hover:text-[var(--ink)]">{editing ? "取消更换" : "更换歌单"}</button>
