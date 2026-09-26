@@ -9,6 +9,7 @@
 | [数据模型](architecture/data-model.md) | PostgreSQL 表、身份映射与迁移规则 |
 | [安全基线](architecture/security.md) | Auth、RLS、输入验证和秘密管理 |
 | [开发流程](development/workflow.md) | 分支、编码约定、质量门槛 |
+| [项目迁移](development/migration.md) | 新电脑环境恢复、Git 安全目录、文章工作流与 Codex 接手步骤 |
 | [部署指南](operations/deployment.md) | Supabase 与 Vercel 配置步骤 |
 | [产品路线图](product/roadmap.md) | MVP 到开放社交协议的阶段边界 |
 | [ADR](adr/README.md) | 重要技术决定及其背景 |

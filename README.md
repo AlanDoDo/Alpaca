@@ -6,7 +6,7 @@ TechAlpaca 是一个围绕 AI、机器人、金融与个人思考的个人内容
 
 - 已有：Next.js App Router、响应式 editorial 首页、博客列表、Markdown/GFM 文章详情、95 篇迁移文章、搜索、RSS、sitemap 和全局 metadata。
 - 文档已定义：模块边界、数据模型、安全策略、阶段路线和部署步骤。
-- 尚未接入：Supabase、登录、论坛写入、评论互动和文章封面管理。论坛与账户页面明确显示规划状态。
+- 尚未接入：Supabase 用户体系、论坛写入和评论互动。管理员专用登录与 Markdown 文章工作台已实现；论坛与普通用户账户仍明确显示规划状态。
 
 ## 本地开发
 
@@ -23,6 +23,8 @@ npm run dev
 ## 文档索引
 
 - [开发文档总览](docs/README.md)
+- [迁移与 Codex 接手指南](docs/development/migration.md)
+- [当前 Codex 接手摘要](CODEX_HANDOFF.md)
 - [产品需求与范围](docs/product/requirements.md)
 - [文章迁移与分类](docs/product/content-migration.md)
 - [架构与模块职责](docs/architecture/modules.md)
@@ -51,7 +53,7 @@ featured: false
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env.local`。当前静态内容阶段只需要 `NEXT_PUBLIC_SITE_URL`；Supabase 值在接入身份和社区模块时配置。`SUPABASE_SERVICE_ROLE_KEY` 只允许服务端使用，不能传入客户端组件或提交到 Git。
+复制 `.env.example` 为 `.env.local`。网站展示需要 `NEXT_PUBLIC_SITE_URL`；使用在线文章编辑器还需配置管理员登录和 GitHub 发布变量，详见下方“在线文章编辑器”。Supabase 值在接入身份和社区模块时配置。`SUPABASE_SERVICE_ROLE_KEY` 只允许服务端使用，不能传入客户端组件或提交到 Git。
 
 ## 命令
 
