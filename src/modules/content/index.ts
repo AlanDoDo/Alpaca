@@ -5,6 +5,11 @@ import type { Article, ArticleCategory, ArticleSummary } from "./types";
 export type { Article, ArticleCategory, ArticleSummary } from "./types";
 const contentDirectory = path.join(process.cwd(), "content/blog");
 const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "编程", "工程技术", "设计", "杂谈"];
+function isValidDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
 function readArticle(fileName: string): Article {
   const source = fs.readFileSync(path.join(contentDirectory, fileName), "utf8");
   const { data, content } = matter(source);
@@ -13,7 +18,7 @@ function readArticle(fileName: string): Article {
   const date = typeof data.date === "string" ? data.date : "";
   const category = data.category as ArticleCategory;
   const cover = typeof data.cover === "string" && /^https:\/\//i.test(data.cover) ? data.cover : undefined;
-  if (!title || !description || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)) || !categories.includes(category)) {
+  if (!title || !description || !isValidDate(date) || !categories.includes(category)) {
     throw new Error(`Invalid article frontmatter in content/blog/${fileName}: check title, description, date (YYYY-MM-DD), and category.`);
   }
   const cjkCharacters = content.match(/[\u3400-\u9fff]/g)?.length ?? 0;

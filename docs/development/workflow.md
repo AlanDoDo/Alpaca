@@ -7,9 +7,10 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run build
+npm run content:audit
 ```
 
-提交前根据改动范围运行 lint、typecheck 和 build；构建依赖所需的环境变量应使用无敏感信息的示例值。
+提交前根据改动范围运行 lint、typecheck 和 build；文章内容调整后运行 `npm run content:audit`，检查 frontmatter 和本地图片引用。构建依赖所需的环境变量应使用无敏感信息的示例值。
 
 ## 实施顺序
 

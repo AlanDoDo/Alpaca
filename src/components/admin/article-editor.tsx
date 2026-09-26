@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArticleBody } from "@/components/blog/article-body";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
 import { ArrowDownToLine, ArrowLeft, ArrowUpRight, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, Sparkles, List, Link2, X } from "lucide-react";
@@ -12,7 +12,7 @@ const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "�
 type Draft = { slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 type Status = "saved" | "saving" | "changed";
 const localDate = () => { const date = new Date(); return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-"); };
-const blankDraft = (): Draft => ({ slug: `article-muhzgyj2`, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
+const blankDraft = (slug = "article-muhzgyj2"): Draft => ({ slug, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
 
 function draftKey(slug: string) { return `techalpaca:article-draft:${slug || "new"}`; }
 
@@ -29,6 +29,8 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [publishing, setPublishing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const draftReadyRef = useRef(false);
+  const draftRef = useRef(draft);
   const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
   const visibleArticles = showAllArticles ? filteredArticles : filteredArticles.slice(0, 6);
 
@@ -39,21 +41,57 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
         const latest = latestSlug ? window.localStorage.getItem(draftKey(latestSlug)) : null;
         if (latest) {
           const restored = JSON.parse(latest) as Draft;
-          if (restored.slug === latestSlug && typeof restored.content === "string") setDraft(restored);
+          if (restored.slug === latestSlug && typeof restored.content === "string") {
+            draftRef.current = restored;
+            setDraft(restored);
+          }
         }
       } catch { /* Ignore invalid browser draft data. */ }
+      draftReadyRef.current = true;
     }, 0);
     return () => window.clearTimeout(timeout);
   }, []);
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      try { window.localStorage.setItem(draftKey(draft.slug), JSON.stringify({ ...draft, localSavedAt: new Date().toISOString() })); window.localStorage.setItem("techalpaca:article-draft:latest", draft.slug); setStatus("saved"); }
-      catch { setStatus("changed"); setNotice("浏览器暂不允许保存草稿，请检查存储空间或隐私设置。"); setNoticeError(true); }
-    }, 450);
-    return () => window.clearTimeout(timeout);
-  }, [draft]);
 
-  function update<K extends keyof Draft>(key: K, value: Draft[K]) { setStatus("saving"); setDraft((current) => ({ ...current, [key]: value })); }
+  const saveDraft = useCallback((value: Draft) => {
+    try {
+      window.localStorage.setItem(draftKey(value.slug), JSON.stringify({ ...value, localSavedAt: new Date().toISOString() }));
+      window.localStorage.setItem("techalpaca:article-draft:latest", value.slug);
+      setStatus("saved");
+      return true;
+    } catch {
+      setStatus("changed");
+      setNotice("浏览器暂不允许保存草稿，请检查存储空间或隐私设置。");
+      setNoticeError(true);
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    draftRef.current = draft;
+    if (!draftReadyRef.current) return;
+    const timeout = window.setTimeout(() => saveDraft(draft), 450);
+    return () => window.clearTimeout(timeout);
+  }, [draft, saveDraft]);
+
+  useEffect(() => {
+    function onBeforeUnload() {
+      if (status === "saving") saveDraft(draftRef.current);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        saveDraft(draftRef.current);
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [saveDraft, status]);
+
+  function update<K extends keyof Draft>(key: K, value: Draft[K]) { setStatus("saving"); setDraft((current) => { const next = { ...current, [key]: value }; draftRef.current = next; return next; }); }
 
   function loadLocalDraft(base: Draft) {
     try {
@@ -72,14 +110,18 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
       const response = await fetch(`/api/admin/articles?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
       const data = await response.json() as Draft & { error?: string };
       if (!response.ok) throw new Error(data.error ?? "读取文章失败。");
-      setDraft(loadLocalDraft(data));
+      const nextDraft = loadLocalDraft(data);
+      draftRef.current = nextDraft;
+      setDraft(nextDraft);
       setMobileTab("edit");
     } catch (error) { setNotice(error instanceof Error ? error.message : "读取文章失败。"); setNoticeError(true); }
   }
 
   function createArticle() {
     setNotice("");
-    setDraft(loadLocalDraft(blankDraft()));
+    const nextDraft = loadLocalDraft(blankDraft(`article-${Date.now().toString(36)}`));
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
     setMobileTab("edit");
   }
 
@@ -135,7 +177,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     <div className="admin-workspace mx-auto w-full max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
       <header className="admin-topbar">
         <div className="min-w-0"><Link href="/" className="text-sm font-semibold tracking-tight">TechAlpaca <span className="font-normal text-[var(--muted)]">/ Studio</span></Link><h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">文章工作台</h1><p className="mt-1 text-sm text-[var(--muted)]">Markdown 写作、即时预览与 GitHub 发布</p></div>
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3"><span className="admin-save-indicator"><span className={`admin-save-dot ${status === "saving" ? "is-saving" : ""}`} />{status === "saving" ? "正在保存草稿" : status === "saved" ? "草稿已保存" : "尚未保存"}</span><button className="admin-quiet-button" disabled={loggingOut} onClick={logout} type="button"><LogOut className="size-4" /><span className="hidden sm:inline">{loggingOut ? "退出中" : "退出"}</span></button></div>
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3"><button aria-label="立即保存草稿" className="admin-save-indicator" onClick={() => saveDraft(draftRef.current)} title="草稿自动保存在此浏览器；按 Ctrl+S 或点击此处立即保存" type="button"><span className={`admin-save-dot ${status === "saving" ? "is-saving" : ""}`} />{status === "saving" ? "正在保存草稿" : status === "saved" ? "草稿已保存 · Ctrl+S" : "尚未保存，点击保存"}</button><button className="admin-quiet-button" disabled={loggingOut} onClick={logout} type="button"><LogOut className="size-4" /><span className="hidden sm:inline">{loggingOut ? "退出中" : "退出"}</span></button></div>
       </header>
 
       {notice && <div className={`admin-notice ${noticeError ? "is-error" : ""}`} role={noticeError ? "alert" : "status"}><span>{notice}</span><button aria-label="关闭提示" onClick={() => setNotice("")}><X className="size-4" /></button></div>}
@@ -160,7 +202,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
             <div className="admin-field-row"><label className="admin-field admin-field-wide"><span>文章标题</span><input maxLength={160} onChange={(event) => update("title", event.target.value)} placeholder="写一个清晰、有吸引力的标题" value={draft.title} /></label><label className="admin-field admin-slug-field"><span>文章路径</span><input autoCapitalize="none" onChange={(event) => update("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-"))} placeholder="article-slug" value={draft.slug} /><small>/article/{draft.slug || "…"}</small></label></div>
             <label className="admin-field mt-4"><span>文章摘要</span><textarea maxLength={320} onChange={(event) => update("description", event.target.value)} placeholder="用一两句话概括文章内容" rows={2} value={draft.description} /><small className="text-right">{draft.description.length}/320</small></label>
             <div className="admin-field-row mt-4"><label className="admin-field"><span>分类</span><select onChange={(event) => update("category", event.target.value as ArticleCategory)} value={draft.category}>{categories.map((category) => <option key={category}>{category}</option>)}</select></label><label className="admin-field"><span>日期</span><input onChange={(event) => update("date", event.target.value)} type="date" value={draft.date} /></label><label className="admin-field"><span>作者</span><input maxLength={80} onChange={(event) => update("author", event.target.value)} value={draft.author} /></label></div>
-            <div className="admin-field-row mt-4"><label className="admin-field"><span>标签 <em>逗号分隔</em></span><input onChange={(event) => update("tags", event.target.value.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 20))} placeholder="具身智能, 机器人" value={draft.tags.join(", ")} /></label><label className="admin-field"><span>封面图 <em>可选</em></span><input onChange={(event) => update("cover", event.target.value)} placeholder="https://… 留空表示不使用封面" type="url" value={draft.cover} /></label></div>
+            <div className="admin-field-row mt-4"><label className="admin-field"><span>标签 <em>逗号分隔</em></span><input onChange={(event) => update("tags", event.target.value.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 20))} placeholder="具身智能, 机器人" value={draft.tags.join(", ")} /></label><label className="admin-field"><span>封面图 <em>可选</em></span><input onChange={(event) => update("cover", event.target.value)} placeholder="https://… 留空表示不使用封面" type="url" value={draft.cover} />{draft.cover && <span className="admin-cover-hint">封面已加载到右侧预览；无法显示时请检查 HTTPS 图片地址。</span>}</label></div>
             <label className="admin-featured-toggle"><input checked={draft.featured} onChange={(event) => update("featured", event.target.checked)} type="checkbox" /><span>设为首页精选</span><small>精选文章会优先展示</small></label>
           </div>
 

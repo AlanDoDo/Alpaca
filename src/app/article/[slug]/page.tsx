@@ -5,6 +5,8 @@ import { getAllArticles, getArticleBySlug } from "@/modules/content";
 import { extractArticleHeadings } from "@/modules/content/headings";
 import { ArticleBody } from "@/components/blog/article-body";
 import { ArticleTableOfContents } from "@/components/blog/article-toc";
+import { ArticleEndNavigation } from "@/components/blog/article-end-navigation";
+import { ArticleReadingProgress } from "@/components/blog/article-reading-progress";
 
 export function generateStaticParams() { return getAllArticles().map(({ slug }) => ({ slug })); }
 
@@ -25,9 +27,23 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   if (!article) notFound();
 
   const headings = extractArticleHeadings(article.content);
+  const allArticles = getAllArticles();
+  const chronology = allArticles.slice().sort((a, b) => b.date.localeCompare(a.date) || b.slug.localeCompare(a.slug));
+  const articleIndex = chronology.findIndex((item) => item.slug === article.slug);
+  const previous = articleIndex >= 0 ? chronology[articleIndex + 1] : undefined;
+  const next = articleIndex > 0 ? chronology[articleIndex - 1] : undefined;
+  const related = allArticles
+    .filter((item) => item.slug !== article.slug)
+    .map((item) => ({ item, score: (item.category === article.category ? 2 : 0) + item.tags.filter((tag) => article.tags.includes(tag)).length * 3 }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.item.date.localeCompare(a.item.date))
+    .slice(0, 3)
+    .map(({ item }) => item);
   const showToc = article.content.length >= 1600 && headings.length >= 3;
 
   return (
+    <>
+    <ArticleReadingProgress />
     <div className={showToc
       ? "mx-auto grid w-full max-w-[1240px] grid-cols-1 items-stretch gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-14 lg:py-24"
       : "mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16 md:py-24"}>
@@ -38,9 +54,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <p className="mt-5 border-b border-[var(--line)] pb-5 text-xs text-[var(--muted)] sm:mt-6 sm:pb-6 sm:text-sm">TechAlpaca · {article.date} · {article.readingTime} 分钟阅读</p>
         {article.cover && <Image src={article.cover} alt={article.title} width={1200} height={675} sizes="(min-width: 768px) 768px, 100vw" priority unoptimized={article.cover.includes("techalpaca.vercel.app")} className="mt-6 aspect-[16/9] w-full rounded-sm object-cover sm:mt-8" />}
         <ArticleBody source={article.content} headings={showToc ? headings : []} />
+        <ArticleEndNavigation previous={previous} next={next} related={related} />
       </article>
       {showToc && <aside className="hidden min-w-0 lg:block"><ArticleTableOfContents headings={headings} /></aside>}
     </div>
+    </>
   );
 }
 
