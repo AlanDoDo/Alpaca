@@ -29,6 +29,12 @@
 
 ## 上线检查
 
+### 站点地址与空值
+
+`NEXT_PUBLIC_SITE_URL` 应填写完整 HTTPS 地址，例如 `https://your-project.vercel.app`。不要填写引号或 Markdown 链接。
+站点地址解析现在跳过空值、去除首尾空格，并为仅域名的值补上 HTTPS；无效值依次回退到 `VERCEL_PROJECT_PRODUCTION_URL`、`VERCEL_URL` 和本地地址。
+元信息、站点地图、robots 和 RSS 使用同一解析结果。环境变量改动后重新部署；生产环境仍建议明确设置最终域名，以保证分享和索引地址准确。
+
 - `npm run lint`、`npm run typecheck`、`npm run build` 成功。
 - 页面 metadata、canonical、robots、sitemap 和 RSS 已逐项核实。
 - 375px 和桌面宽度下导航、长标题和正文可用。

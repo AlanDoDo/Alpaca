@@ -1,6 +1,7 @@
 import { getAllArticles, getArticleBySlug } from "@/modules/content";
+import { getSiteUrl } from "@/lib/site-url";
 export async function GET() {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base = getSiteUrl();
   const items = getAllArticles().map((article) => {
     const full = getArticleBySlug(article.slug);
     return `<item><title>${escapeXml(article.title)}</title><link>${base}/article/${article.slug}</link><guid>${base}/article/${article.slug}</guid><pubDate>${new Date(article.date).toUTCString()}</pubDate><description>${escapeXml(article.description)}</description><content:encoded><![CDATA[${(full?.content ?? "").replaceAll("]]>", "]]]]><![CDATA[>")}]]></content:encoded></item>`;
