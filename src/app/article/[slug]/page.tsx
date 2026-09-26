@@ -1,0 +1,48 @@
+import Image from "next/image";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getAllArticles, getArticleBySlug } from "@/modules/content";
+import { extractArticleHeadings } from "@/modules/content/headings";
+import { ArticleBody } from "@/components/blog/article-body";
+import { ArticleTableOfContents } from "@/components/blog/article-toc";
+
+export function generateStaticParams() { return getAllArticles().map(({ slug }) => ({ slug })); }
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const article = getArticleBySlug(slug);
+  return article ? {
+    title: article.title,
+    description: article.description,
+    alternates: { canonical: `/article/${article.slug}` },
+    openGraph: { title: article.title, description: article.description, type: "article", publishedTime: article.date, ...(article.cover ? { images: [article.cover] } : {}) },
+  } : {};
+}
+
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const article = getArticleBySlug(slug);
+  if (!article) notFound();
+
+  const headings = extractArticleHeadings(article.content);
+  const showToc = article.content.length >= 1600 && headings.length >= 3;
+
+  return (
+    <div className={showToc
+      ? "mx-auto grid w-full max-w-[1240px] grid-cols-1 items-stretch gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-14 lg:py-24"
+      : "mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16 md:py-24"}>
+      <article className="mx-auto w-full max-w-3xl min-w-0">
+        <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">{article.category.toUpperCase()}</p>
+        <h1 className="mt-4 break-words text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">{article.title}</h1>
+        <p className="mt-4 text-base leading-7 text-[var(--muted)] sm:mt-6 sm:text-lg sm:leading-8">{article.description}</p>
+        <p className="mt-5 border-b border-[var(--line)] pb-5 text-xs text-[var(--muted)] sm:mt-6 sm:pb-6 sm:text-sm">TechAlpaca · {article.date} · {article.readingTime} 分钟阅读</p>
+        {article.cover && <Image src={article.cover} alt={article.title} width={1200} height={675} sizes="(min-width: 768px) 768px, 100vw" priority unoptimized={article.cover.includes("techalpaca.vercel.app")} className="mt-6 aspect-[16/9] w-full rounded-sm object-cover sm:mt-8" />}
+        <ArticleBody source={article.content} headings={showToc ? headings : []} />
+      </article>
+      {showToc && <aside className="hidden min-w-0 lg:block"><ArticleTableOfContents headings={headings} /></aside>}
+    </div>
+  );
+}
+
+
+

@@ -1,0 +1,565 @@
+---
+title: "Web前端HTML5基础"
+description: "网页由文字、图片、音频、视频、超链接组成"
+date: "2023-01-06"
+category: "编程"
+tags: ["HTML"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a16.jpg"
+source: "legacy-blog"
+---
+
+***
+## 初识-网页组成和本质
+* 网页由文字、图片、音频、视频、超链接组成
+* 通过浏览器转化(解析和渲染)成用户看到的网页
+
+## 了解-初识-浏览器
+* 五大浏览器
+浏览器:是网页显示、运行的平台，是前端开发必备利器
+常见的五大浏览器:IE浏览器、火狐浏览器(Firefox)、谷歌浏览器(Chrome)、Safari浏览器、欧朋浏览器(Opera)
+* 渲染引擎(浏览器内核):浏览器中专门对代码进行解析渲染的部分渲染引擎浏览器出品的公司不同，内在的渲染引擎也是不同的，渲染引擎不同,导致解析相同代码时的**速度、性能、效果**也不同的
+
+## 初始web标准
+Web标准中分成三个构成:
+
+| 构成 | 构成     | 构成                                           |
+| ---- | ---------- | ------------------------------------------------ |
+| 结构 | HTML       | 页面元素和内容                            |
+| 表现 | CSS        | 网页元素的外观和位置等页面样式 (如:颜色、大小等) |
+| 行为 | JavaScript | 网页模型的定义与页面交互             |
+
+## HTML感知
+* HTML (Hyper Text Markup Language)中文译为: `超文本标记语言`
+```html
+<strong>你猜，这个字是加粗的吗？</strong>
+```
+
+## HTML骨架
+* HTML页面固定结构
+网页类似于一篇文章:每一页文章内容是有固定的结构的，如:开头、正文、落款等......网页中也是存在固定的结构的，如:整体、头部、标题、主体
+网页中的固定结构是要通过特点的**HTML标签**进行描述的
+```html
+<html>
+  <head>
+    <title>网页的标题</title>
+  </head>
+  <body>
+    网页的主体内容
+  </body>
+</html>
+```
+
+## HTML注释
+* 注释的作用
+为代码添加的具有解释性、描述性的信息，主要用来帮助开发人员理解代码
+浏览器执行代码时会忽略所有的注释
+* 注释的快捷键:在VS Code中: ctrl + /
+```html
+    <!-- 这是网页的标题 -->
+    <!-- 这是注释，是对代码的解释说明 -->
+```
+
+## HTML标签组成和关系
+> <开始标签>包裹的内容</结束标签>
+
+* 常见标签由两部分组成，我们称之为:双标签。前部分叫开始标签，后部分叫结束标签。
+两部分之间包裹内容少数标签由一部分组成，我们称之为:单标签。自成一体，无法包裹内容。
+
+**HTML标签与标签之间的关系可分为:**
+```html
+<!-- 父子关系(嵌套关系) -->
+<head>
+  <title></title>
+</head>
+<!-- 兄弟关系(并列关系) -->
+<head></head>
+<body></body>
+```
+
+## 标题和段落
+* **标题标签**用来突出显示文章主题
+```html
+<html>
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <!-- 这是网页的标题 -->
+    <h1>1级标题<h1>
+    <h2>2级标题<h2>
+    <h3>3级标题<h3>
+    <h4>4级标题<h4>
+    <h5>5级标题<h5>
+    <h6>6级标题<h6>
+</body>
+</html>
+```
+* 语义:1~6级标题，重要程度依次递减
+* 特点:文字都有加粗,文字都有变大，并且从h1--> h6文字逐渐减小,独占一行
+
+* **段落标签**
+```html
+    <!-- 独占一行 -->
+    <p>段落段落段落段落段落段落段落段落</p>
+```
+
+## 换行和水平线标签
+```html
+<!-- 换行标签 -->
+<p>阿卡贝拉(意大利: Acappella )即无件奏合唱。<br>  其起源可追溯至中世纪的教会音乐。贝拉(意大利: Acappella )即无件奏合唱。br其起源可追溯至中世纪的教会音乐。</p>
+<!-- 水平线标签 -->
+ <h1>1级标题<h1>
+    <hr>
+    <p>阿卡贝拉(意大利: Acappella )即无件奏合唱。<br>  其起源可追溯至中世纪的教会音乐。贝拉(意大利: Acappella )即无件奏合唱。br其起源可追溯至中世纪的教会音乐。</p>
+```
+
+## 文本格式化标签
+* 需要让文字加粗(b/strong)、下划线(u/ins)、倾斜(i/em)、删除线(s/del)等效果
+
+## 图片基本使用
+```html
+<!-- 在网页中显示图片 -->
+<!-- img标签需要展示对应的效果，需要借助标签的属性进行设置! -->
+    <img src="https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a9.jpg"> 
+<!-- alt:替换文本，当图片不显示的时候显示的文字 -->
+    <img src="a9.jpg" alt="这是一张图">
+<!-- title文字显示，不仅可以用于图片标签，还可以用于其他标签 -->
+<!-- width和height（只设置一个会自动等比缩放） -->
+    <img src="https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a9.jpg" title="这是title文字,鼠标悬停的时候显示" width="500">
+```
+
+## 绝对路径
+绝对路径:指目录下的绝对位置，可直接到达目标位置，通常**从盘符开始**的路径，例：盘符开头，完整的网络地址，mac是`/`开头...
+
+## 相对路径
+* 相对路径:从**当前文件开始**出发找目标文件的过程
+
+```html
+<!-- 分类：同级目录/下级目录/上级目录 -->
+方法一:<img src="目标图片.gif">
+方法二:<img src="./目标图片.gif">
+
+<img src="images/目标图片.gif">
+
+<img src="../上一级/图片名.格式">
+```
+
+## 音频标签
+```html
+    <!-- 在页面中插入音频audio controls音频控件 -->
+    <!-- autoplay自动播放,部分浏览器不支持 -->
+    <!-- loop,循环播放 -->
+    <!-- 音频标签目前支持三种格式:MP3,Wav,Ogg -->
+    <audio src="D:\桌面\素材\1.mp3" controls autoplay loop></audio>
+```
+
+## 视频标签
+```html
+    <!-- 音频标签video controls显示播放控件 -->
+    <!-- autoplay自动播放,谷歌，edge浏览器中需配合muted实现静音播放 -->
+    <!-- loop,循环播放 -->
+    <!-- 视频标签目前支持三种格式 MP4, WebM, Ogg -->
+    <video src="D:\桌面\素材\2.mp4" controls autoplay muted loop width="1000"></video>
+```
+
+## 链接标签
+```html
+  <!-- a标签,超链接,锚链接:a href -->
+    <!-- href: 跳转地址 -->
+    <!-- target属性:默认为_self在当前窗口中跳转(覆盖原网页),_blank在新窗口中跳转(保留原网页) -->
+    <a href="https://www.alandodo.cn/" target="_blank">我的博客0.0</a>
+    <!-- 当开发网站初期，我们还不知道跳转地址的时候，href的值书写#(空链接） -->
+    <a href="#">空链接</a>
+```
+
+## 综合案例 招聘
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>腾讯科技高级web前端开发岗位</h1>
+    <hr>
+    <h2>职位描述</h2>
+    <p>负责重点项目的前端技术方案和架构的研发和维护工作;</p>
+    <h2>岗位要求</h2>
+    <p>5年以上前端开发经验,精通 <strong>html5/css3/javascript</strong> 等 web开发技术;</p>
+    <p>熟悉bootstrap,vue,angularjs,reactjs等框架,熟练学握一种以上;</p>
+    <p>代码风格严谨，能高保真还原设计稿，能兼容各种浏览器;</p>
+    <p>对web前端的性能优化以及web常见漏洞有一定的理解和相关实践;</p>
+    <p>具备良好的分析解决问题能力，能独立承担任务，有开发进度把控能力;</p>
+    <p>责任心强，思路路清晰，抗压能力好，具备良好的对外沟通和团队协作能力。</p>
+    <h2>工作地址</h2>
+    <p>XXX.XXX.XXX</p>
+    <img src="https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a14.jpg" width="500" alt="">
+</body>
+</html>
+```
+
+## 综合案例-跳转-index/其他页面
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>今日搜索热词</h1>
+    <hr>
+    <h2>1、阿卡贝拉</h2>
+    <p>阿卡贝拉(意大利:Acapela )即无奏合唱其起源可湖至中世纪的教会音乐，当时的教会音乐只以人声清唱，并不应用乐器。音频示例: <a href="https://y.qq.com/n/ryqq/playlist/7055626649">回卡贝拉《千与于寻》</a></p>
+    <h2>2、翻唱</h2>
+    <p>"“叫”是已经发表并由他人流叫的根自己的风重新演叫，包括新词，编，现在有不少明，都在部叫地人的歌，不断在中交自己给大家带来不一样的风。视频示例: <a href="https://y.qq.com/n/ryqq/songDetail/003Bpw4D02PeW9?songtype=0">有一起职伤(翻唱) - 《A Kind of Sorrow》</a></p>
+</body>
+</html>
+```
+
+## 列表-使用场景
+* 无序列表、有序列表、自定义列表标签
+```html
+    <!--无序列表 ul标签中只允许包含li,标签li标签可以包含任意内容 -->
+    <ul>
+        <li>榴莲</li>
+        <li>香蕉</li>
+        <li>苹果</li>
+    </ul>
+    <!-- 有序列表 ol标签中只允许包含li,标签li标签可以包含任意内容 -->
+    <ol>
+        <li>张三:100</li>
+        <li>李四:80</li>
+        <li>王五:60</li>
+    </ol>
+    <!-- 场景:在网页的底部导航中通常会使用自定义列表实现 -->
+    <!-- 标签组成:dl表示自定义列表的整体,用于包裹dt/dd标签|dt表示自定义列表的主题|dd表示自定义列表的针对主题的每一项内容 -->
+    <!-- dd前会默认显示缩进效果,dl标签中只允许包含dt/dd标签 -->
+    <dl>
+        <dt>帮助中心</dt>
+        <dd>账户管理</dd>
+        <dd>购物指南</dd>
+    </dl>
+```
+
+## 表格使用
+* 场景:在网页中以`行+列`的单元格的方式整齐展示和数据，如:学生成绩表
+```html
+    <!-- 基本标签:table,表格整体,可用于包裹多个tr|t,表格每行,可用于包裹td|td,表格单元格，可用于包裹内容 -->
+    <!-- 标签的嵌套关系: table > tr > td -->
+    <!-- 属性:border,数字,边框宽度|width,数字,表格宽度|height,数字,表格高度 -->
+    <!-- 实际开发时针对样式效果推荐用CSS设置 -->
+    <table border="1" width="600" height="500">
+        <tr>
+            <td>姓名</td>
+            <td>成绩</td>
+            <td>评语</td>
+        </tr>
+        <tr>
+            <td>小哥哥</td>
+            <td>100分</td>
+            <td>孩砸，真帅气</td>
+        </tr>
+        <tr>
+            <td>郭德纲</td>
+            <td>150分</td>
+            <td>牛牛牛</td>
+        </tr>
+    </table>
+```
+## 表格标题和表头单元格标签
+* 在表格中表示整体大标题和一列小标题
+```html
+    <!-- caption,表格大标题,表示表格整体大标题，默认在表格整体顶部居中位置显示 -->
+    <!-- th,表头单元格,表示一列小标题，通常用于表格第一行，默认内部文字加粗并居中显示 -->
+    <!-- caption标签书写在table标签内部,th标签书写在tr标签内部(用于替换td标签) -->
+    <table border="1">
+        <caption><strong>学生成绩单</strong></caption>
+        <tr>
+            <th>姓名</th>
+            <th>成绩</th>
+            <th>评语</th>
+        </tr>
+        <tr>
+            <td>张三</td>
+            <td>100分</td>
+            <td>真棒，第一名</td>
+        </tr>
+    </table>
+```
+
+## 表格-结构标签
+* 让表格的内容结构分组，突出表格的不同部分(头部、主体、底部)，使语义更加清晰
+```html
+    <!-- 标签名:thead,表格头部|tbody,表格主体|tfoot,表格底部 -->
+    <!-- 注意点:表格结构标签内部用于包裹tr标签,表格的结构标签可以省略 -->
+    <table border="1">
+        <caption><strong>学生成绩单</strong></caption>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>成绩</th>
+                <th>评语</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>张三</td>
+                <td>100分</td>
+                <td>真棒,第一名</td>
+            </tr>
+            <tr>
+                <td>李四</td>
+                <td>99分</td>
+                <td>真棒,第二名</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>总结</td>
+                <td>郎才女貌</td>
+                <td>真棒,相亲成功</td>
+            </tr>
+        </tfoot>
+    </table>
+```
+
+## 表格-合并单元格
+* 场景:将水平或垂直多个单元格合并成一个单元格
+```html
+<!-- 通过左上原则，确定保留谁删除谁：上下合并->只保留最上的，删除其他|左右合并->只保留最左的，删除其他 -->
+<!-- rowspan(跨行合并),合并单元格的个数,将多行的单元格垂直合井 -->
+<!-- colspan(跨列合并),合并单元格的个数,将多列的单元格水平合井 -->
+<!-- 只有同一个结构标签中的单元格才能合并，不能跨结构标签合并 (不能跨: thead、tbody、tfoot) -->
+    <table border="1">
+        <caption><strong>学生成绩单</strong></caption>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>成绩</th>
+                <th>评语</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>张三</td>
+                <td rowspan="2">100分</td>
+                <td>真棒,第一名</td>
+            </tr>
+            <tr>
+                <td>李四</td>
+                <td>真棒,第二名</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>总结</td>
+                <td colspan="2">郎才女貌</td>
+            </tr>
+        </tfoot>
+    </table>
+```
+
+## 表单-input基本使用
+* 场景:在网页中显示收集用户信息的表单效果，如:登录页、注册页
+
+```html
+<!-- text,文本框，用于输入单行文本|password,密码框，用于输入密码|
+radio,单选框，用于多选一|checkbox,多选框，用于多选多
+file,文件选择，用于之后上传文件|submit,提交按钮，用于提交
+reset,重置按钮，用于重置|button,普通按纽,默认无功能,之后配合js添加功能 -->
+
+<!-- 表单预表签 -->
+    <form action="">
+<!-- placeholder,占位符,提示用户输入内容的文本 -->
+<!-- 写什么就显示什么 -->
+        文本框: <input type="text" placeholder="请输入用户名">
+        <br>
+        <br>
+<!-- 书写的内容都会变成点点显示 -->
+        密码框: <input type="password" placeholder="请输入密码">
+        <br>
+        <br>
+<!-- 分组,有相同name属性值的单选框为一组,一组中同时只能有一个被选中 -->
+        <!-- checked,默认选中 -->
+        单选框:<input type="radio" name="gender" checked>男  <input type="radio" name="gender">女
+        <br>
+        <br>
+        多选框:<input type="checkbox">篮球 <input type="checkbox" name="" id="">足球
+        <br>
+        <br>
+        <!-- multiple,多文件选择 -->
+        上传文件:<input type="file" multiple>
+        <br>
+        <br>
+        <!-- 按钮 -->
+        <input type="submit" value="免费注册">
+        <input type="reset">
+        <!-- 属性  xx="xxx" -->
+        <input type="button" value="普通按钮">
+    </form>
+```
+
+## 按钮
+```html
+<!-- submit,提交按钮,点击之后提交数据给后端服务器
+    reset,重置按钮,点击之后恢复表单默认值普通按钮
+    button,默认无功能,之后配合is添加功能 -->
+        <button>我是按钮</button>
+        <button type="submit">提交按钮</button>
+        <button type="reset">重置按钮</button>
+        <button type="button">普通按钮，没有任何功能</button>
+```
+
+## 下拉菜单
+* 场景:在网页中提供多个选择项的下拉菜单表单控件
+
+```html
+<!-- select标签:下拉菜单的整体|option标签:下拉菜单的每一项 -->
+    <select>
+        <option>北京</option>
+        <option>上海</option>
+        <option>广州</option>
+        <!-- selected为默认选中 -->
+        <option selected>深圳</option>
+    </select>
+```
+
+## textarea文本域标签/label标签
+* textarea在网页中提供可输入多行文本的表单控件
+```html
+    <!-- cols:规定了文本域内可见宽度|rows:规定了文本域内可见行数 -->
+    <textarea name="" id="" cols="20" rows="10"></textarea>
+    <!-- 实际开发时针对于样式效集推荐用CSS设置 -->
+    <br>
+    <!-- 直接使用label标签把内容(如:文本)和表单标签一起包裹起来 -->
+    <!-- 需要把label标签的for属性删除即可 -->
+    性别：
+    <label><input type="radio" name="sex">男</label>
+    <label><input type="radio" name="sex">女</label>
+```
+
+## 语义化标签
+* **无语义标签**:实际开发网页时会大量频繁的使用到div和span这两个没语义的布局标签
+* **div标签**:一行只显示一个(独占一行)
+* **span标签**:一行可以显示多个
+* **有语义标签**：在HTML5新版本中，推出了一些有语义的布局标签供开发者使用
+```html
+  <!-- 无语义标签 -->
+    <div>这是div标签</div>
+    <span>这是span标签</span>
+    <!-- 有语义标签 -->
+    <!-- header网页头部|nav网页导航|footer网页底部|aside网页侧边栏|section网页区块|article网页文章 -->
+    <header>网页头部</header>
+    <nav>网页导航</nav>
+    <footer>网页底部</footer>
+    <aside>网页侧边栏</aside>
+    <section>网页区块</section>
+    <article>网页文章</article>
+```
+## 字符实体
+* 场景:在网页中展示特殊符号效果时，需要使用字符实体替代
+```html
+  <!-- 空格: &nbsp; -->
+  <!-- 网页不认识多个空格，只认识一个 -->
+  这是HTML文档,现在要学&nbsp;&nbsp;&nbsp;习字符实体
+```
+## 综合案例-学生信息表
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信息表格</title>
+</head>
+<body>
+    <table border="1" width="500" height="300">
+        <caption><h3>优秀学生信息表格</h3></caption>
+        <tr>
+            <th>年纪</th>
+            <th>姓名</th>
+            <th>学号</th>
+            <th>班级</th>
+        </tr>
+        <tr>
+            <td rowspan="2">高三</td>
+            <td>张三</td>
+            <td>110</td>
+            <td>三年二班</td>
+        </tr>
+        <tr>
+            <td>赵四</td>
+            <td>120</td>
+            <td>三年三班</td>
+        </tr>
+        <tr>
+            <td>评语</td>
+            <td colspan="3">你们都很优秀</td>
+        </tr>
+    </table>
+</body>
+</html>
+```
+
+## 综合案例-表单
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单</title>
+</head>
+<body>
+    <h1>青春不常在,抓紧谈恋爱</h1>
+    <hr>
+    <form action="">
+        昵称: <input type="text" placeholder="请输入昵称">
+        <br>
+        性别:
+        <label><input type="radio" name="sex" checked>男</label>
+        <label><input type="radio" name="sex">女</label>
+        <br><br>
+        所在城市:
+        <select>
+            <option>北京</option>
+            <option selected>上海</option>
+            <option>广州</option>
+            <option>重庆</option>
+        </select>
+        <br>
+        <br>
+        喜欢的类型:
+        <label><input type="checkbox"> 可爱</label>
+        <label><input type="checkbox"> 鲜肉</label>
+        <label><input type="checkbox"> 大叔</label>
+        <br>
+        <br>
+        个人介绍: <br>
+        <textarea name="" id="" cols="60" rows="10"></textarea>
+        <h2>我承诺</h2>
+        <ul>
+            <li>年满18岁、单身</li>
+            <li>抱着严肃的态度</li>
+            <li>真诚寻找另一半</li>
+        </ul>
+        <br>
+        <br>
+        <label><input type="checkbox">我同意所有条款</label>
+        <br>
+        <input type="submit" value="免费注册">
+        <button type="reset">重置</button>
+    </form>
+</body>
+</html>
+```

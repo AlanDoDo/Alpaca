@@ -1,0 +1,1517 @@
+---
+title: "Node.js入门指南：从零开始构建高性能的Web应用"
+description: "1. 概念"
+date: "2023-10-14"
+category: "编程"
+tags: ["Node.js"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x39.jpg"
+source: "legacy-blog"
+---
+
+## Buffer（缓冲器）
+
+1. 概念
+Buffer 是一个类似于数组的 `对象` ，用于表示固定长度的字节序列
+Buffer 本质是一段内存空间，专门用来处理 `二进制数据` 
+
+2. 特点
+
+        1. Buffer 大小固定且无法调整
+        2. Buffer 性能较好，可以直接对计算机内存进行操作
+        3. 每个元素的大小为 1 字节（byte）
+
+3. 使用
+
+Node.js 中创建 Buffer 的方式主要如下几种：
+
+`Buffer.alloc`
+
+```js
+//创建了一个长度为 10 字节的 Buffer，相当于申请了 10 字节的内存空间，每个字节的值为 0
+let buf_1 = Buffer.alloc(10); // 结果为 <Buffer 00 00 00 00 00 00 00 00 00 00>
+```
+
+`Buffer.allocUnsafe`
+
+```js
+//创建了一个长度为 10 字节的 Buffer，buffer 中可能存在旧的数据, 可能会影响执行结果，所以叫unsafe
+let buf_2 = Buffer.allocUnsafe(10);
+```
+
+`Buffer.from`
+
+```js
+//通过字符串创建 Buffer
+let buf_3 = Buffer.from('hello');
+//通过数组创建 Buffer
+let buf_4 = Buffer.from([105, 108, 111, 118, 101, 121, 111, 117]);
+```
+
+我们可以借助 `toString` 方法将 Buffer 转为字符串
+
+> toString 默认是按照 utf-8 编码方式进行转换的
+
+Buffer 可以直接通过 [] 的方式对数据进行处理
+
+注意:
+
+1. 如果修改的数值超过 `255` ，则超过 8 位数据会被舍弃
+2. 一个 utf-8 的字符 `一般` 占 3 个字节
+
+## fs 模块
+fs 全称为 `file system` ，称之为 `文件系统` ，是 Node.js 中的 `内置模块` ，可以对计算机中的磁盘进行操作
+
+### 文件写入
+
+| 方法                      | 说明   |
+| --------------------------- | -------- |
+| writeFile                   | 异步写入 |
+| writeFileSync               | 同步写入 |
+| appendFile / appendFileSync | 追加写入 |
+| createWriteStream           | 流式写入 |
+
+#### writeFile 异步写入
+
+语法： `fs.writeFile(file, data[, options], callback)`
+
+> 参数说明：
+> file 文件名
+> data 待写入的数据
+> options 选项设置 （可选）
+> callback 写入回调
+> 返回值： `undefined`
+
+代码示例：
+```js
+// require 是 Node.js 环境中的'全局'变量，用来导入模块
+const fs = require('fs');
+//将 『三人行，必有我师焉。』 写入到当前文件夹下的『座右铭.txt』文件中
+fs.writeFile('./座右铭.txt', '三人行，必有我师焉。', err => {
+//如果写入失败，则回调函数调用时，会传入错误对象，如写入成功，会传入 null
+if(err){
+console.log(err);
+return;
+}
+console.log('写入成功')；
+});
+```
+
+#### writeFileSync 同步写入
+
+语法: `fs.writeFileSync(file, data[, options])`
+参数与 fs.writeFile 大体一致，只是没有 callback 参数
+返回值： `undefined`
+
+代码示例：
+```js
+try{
+fs.writeFileSync('./座右铭.txt', '三人行，必有我师焉。');
+}catch(e){
+console.log(e);
+}
+```
+
+> Node.js 中的磁盘操作是由其他 `线程` 完成的，结果的处理有两种模式：
+> 同步处理 JavaScript 主线程 `会等待` 其他线程的执行结果，然后再继续执行主线程的代码，效率较低
+> 异步处理 JavaScript 主线程 `不会等待` 其他线程的执行结果，直接执行后续的主线程代码，效率较好
+
+#### appendFile / appendFileSync 追加写入
+
+appendFile 作用是在文件尾部追加内容，appendFile 语法与 writeFile 语法完全相同
+
+> 语法:
+> `fs.appendFile(file, data[, options], callback)`
+> `fs.appendFileSync(file, data[, options])`
+> 返回值： 二者都为 undefined
+
+实例代码：
+```js
+fs.appendFile('./座右铭.txt','择其善者而从之，其不善者而改之。', err => {
+if(err) throw err;
+console.log('追加成功')
+});
+fs.appendFileSync('./座右铭.txt','\r\n温故而知新, 可以为师矣');
+```
+
+#### createWriteStream 流式写入
+
+> 语法： `fs.createWriteStream(path[, options])`
+> 参数说明：
+> path 文件路径
+> options 选项配置（ 可选 ）
+> 返回值： `Object`
+
+代码示例：
+
+```js
+let ws = fs.createWriteStream('./观书有感.txt');
+ws.write('半亩方塘一鉴开\r\n');
+ws.write('天光云影共徘徊\r\n');
+ws.write('问渠那得清如许\r\n');
+ws.write('为有源头活水来\r\n');
+ws.end();
+```
+
+`程序打开一个文件是需要消耗资源的` ，流式写入可以减少打开关闭文件的次数。
+流式写入方式适用于 `大文件写入或者频繁写入` 的场景, writeFile 适合于 `写入频率较低的场景`
+
+#### 写入文件的场景
+`文件写入` 在计算机中是一个非常常见的操作，下面的场景都用到了文件写入
+
+1. 下载文件
+2. 安装软件
+3. 保存程序日志，如 Git
+4. 编辑器保存文件
+5. 视频录制
+
+> 当 `需要持久化保存数据` 的时候，应该想到 `文件写入`
+
+### 文件读取
+
+| 方法           | 说明   |
+| ---------------- | -------- |
+| readFile         | 异步读取 |
+| readFileSync     | 同步读取 |
+| createReadStream | 流式读取 |
+
+#### readFile 异步读取
+
+> 语法： `fs.readFile(path[, options], callback)`
+> 
+> 参数说明：
+> path 文件路径
+> options 选项配置
+> callback 回调函数
+> 返回值： `undefined`
+
+代码示例：
+```js
+//导入 fs 模块
+const fs = require('fs');
+fs.readFile('./座右铭.txt', (err, data) => {
+if(err) throw err;
+console.log(data);
+});
+fs.readFile('./座右铭.txt', 'utf-8',(err, data) => {
+if(err) throw err;
+console.log(data);
+});
+```
+
+#### readFileSync 同步读取
+
+> 语法： `fs.readFileSync(path[, options])`
+> 参数说明：
+> path 文件路径
+> options 选项配置
+> 返回值： `string | Buffer`
+
+代码示例：
+```js
+let data = fs.readFileSync('./座右铭.txt');
+let data2 = fs.readFileSync('./座右铭.txt', 'utf-8');
+```
+
+#### createReadStream 流式读取
+
+> 语法： `fs.createReadStream(path[, options])`
+> 参数说明：
+> path 文件路径
+> options 选项配置（ 可选 ）
+> 返回值： `Object`
+
+代码示例：
+```js
+//创建读取流对象
+let rs = fs.createReadStream('./观书有感.txt');
+//每次取出 64k 数据后执行一次 data 回调
+rs.on('data', data => {
+console.log(data);
+console.log(data.length);
+});
+//读取完毕后, 执行 end 回调
+rs.on('end', () => {
+console.log('读取完成')
+})
+```
+
+### 文件移动与重命名
+
+在 Node.js 中，我们可以使用 `rename` 或 `renameSync` 来移动或重命名 文件或文件夹
+
+> 语法：
+> `fs.rename(oldPath, newPath, callback)`
+> `fs.renameSync(oldPath, newPath)`
+> 参数说明：
+> oldPath 文件当前的路径
+> newPath 文件新的路径
+> callback 操作后的回调
+
+代码示例：
+```js
+fs.rename('./观书有感.txt', './论语/观书有感.txt', (err) =>{
+if(err) throw err;
+console.log('移动完成')
+});
+fs.renameSync('./座右铭.txt', './论语/我的座右铭.txt');
+```
+
+### 文件删除
+
+使用 `unlink` 或 `unlinkSync` 来删除文件
+
+> 语法：
+> `fs.unlink(path, callback)`
+> `fs.unlinkSync(path)`
+> 参数说明：
+> path 文件路径
+> callback 操作后的回调
+
+代码示例：
+
+```js
+const fs = require('fs');
+fs.unlink('./test.txt', err => {
+if(err) throw err;
+console.log('删除成功');
+});
+fs.unlinkSync('./test2.txt');
+```
+
+### 文件夹操作
+
+| 方法                | 说明     |
+| --------------------- | ---------- |
+| mkdir / mkdirSync     | 创建文件夹 |
+| readdir / readdirSync | 读取文件夹 |
+| rmdir / rmdirSync     | 删除文件夹 |
+
+#### mkdir 创建文件夹
+
+使用 `mkdir` 或 `mkdirSync` 来创建文件夹
+
+语法：
+`fs.mkdir(path[, options], callback)`
+`fs.mkdirSync(path[, options])`
+
+参数说明：
+path 文件夹路径
+options 选项配置（ 可选 ）
+callback 操作后的回调
+
+示例代码：
+
+```js
+//异步创建文件夹
+fs.mkdir('./page', err => {
+if(err) throw err;
+console.log('创建成功');
+});
+//递归异步创建
+fs.mkdir('./1/2/3', {recursive: true}, err => {
+if(err) throw err;
+console.log('递归创建成功');
+});
+//递归同步创建文件夹
+fs.mkdirSync('./x/y/z', {recursive: true});
+```
+
+#### readdir 读取文件夹
+
+可以使用 `readdir` 或 `readdirSync` 来读取文件夹
+
+> 语法：
+> `fs.readdir(path[, options], callback)`
+> `fs.readdirSync(path[, options])`
+> 参数说明：
+> path 文件夹路径
+> options 选项配置（ 可选 ）
+> callback 操作后的回调
+
+示例代码：
+
+```js
+//异步读取
+fs.readdir('./论语', (err, data) => {
+if(err) throw err;
+console.log(data);
+});
+//同步读取
+let data = fs.readdirSync('./论语');
+console.log(data);
+```
+
+#### rmdir 删除文件夹
+
+可以使用 `rmdir` 或 `rmdirSync` 来删除文件夹
+
+> 语法：
+> `fs.rmdir(path[, options], callback)`
+> `fs.rmdirSync(path[, options])`
+> 参数说明：
+> path 文件夹路径
+> options 选项配置（ 可选 ）
+> callback 操作后的回调
+
+示例代码：
+
+```js
+//异步删除文件夹
+fs.rmdir('./page', err => {
+if(err) throw err;
+console.log('删除成功');
+});
+//异步递归删除文件夹
+fs.rmdir('./1', {recursive: true}, err => {
+if(err) {
+console.log(err);
+}
+console.log('递归删除')
+});
+//同步递归删除文件夹
+fs.rmdirSync('./x', {recursive: true})
+```
+
+#### 查看资源状态
+
+可以使用 `stat` 或 `statSync` 来查看资源的详细信息
+
+> 语法：
+> `fs.stat(path[, options], callback)`
+> `fs.statSync(path[, options])`
+> 参数说明：
+> path 文件夹路径
+> options 选项配置（ 可选 ）
+> callback 操作后的回调
+
+示例代码：
+
+```js
+//异步获取状态
+fs.stat('./data.txt', (err, data) => {
+if(err) throw err;
+console.log(data);
+});
+//同步获取状态
+let data = fs.statSync('./data.txt');
+```
+
+
+#### 相对路径问题
+
+fs 模块对资源进行操作时，路径的写法有两种：
+
+`相对路径`
+./座右铭.txt 当前目录下的座右铭.txt
+座右铭.txt 等效于上面的写法
+../座右铭.txt 当前目录的上一级目录中的座右铭.txt
+
+`绝对路径`
+D:/Program Files windows 系统下的绝对路径
+/usr/bin Linux 系统下的绝对路径
+
+> 相对路径中所谓的 `当前目录` ，指的是 `命令行的工作目录` ，而并非是文件的所在目录
+> 所以当命令行的工作目录与文件所在目录不一致时，会出现一些 BUG
+
+#### __dirname
+
+`__dirname` 与 `require` 类似，都是 Node.js 环境中的'全局'变量
+`__dirname` 保存着 `当前文件所在目录的绝对路径` ，可以使用 __dirname 与文件名拼接成绝对路径
+
+代码示例：
+```js
+let data = fs.readFileSync(__dirname + '/data.txt');
+console.log(data);
+```
+
+> 使用 fs 模块的时候，尽量使用 __dirname 将路径转化为绝对路径，这样可以避免相对路径产生的Bug
+
+## path 模块
+
+path 模块提供了 `操作路径` 的功能，我们将介绍如下几个较为常用的几个 API：
+
+| API            | 说明                   |
+| -------------- | ------------------------ |
+| path.resolve   | 拼接规范的绝对路径 常用 |
+| path.sep       | 获取操作系统的路径分隔符 |
+| path.parse     | 解析路径并返回对象 |
+| path.basename  | 获取路径的基础名称 |
+| path.dirname   | 获取路径的目录名 |
+| path.extname   | 获得路径的扩展名 |
+
+代码示例：
+
+```js
+const path = require('path');
+//获取路径分隔符
+console.log(path.sep);
+//拼接绝对路径
+console.log(path.resolve(__dirname, 'test'));
+//解析路径
+let pathname = 'D:/program file/nodejs/node.exe';
+console.log(path.parse(pathname));
+//获取路径基础名称
+console.log(path.basename(pathname))
+//获取路径的目录名
+console.log(path.dirname(pathname));
+//获取路径的扩展名
+console.log(path.extname(pathname));
+```
+
+## HTTP 协议
+
+详细规定了 `浏览器` 和万维网 `服务器` 之间互相通信的规则,客户端：用来向服务器发送数据，可以被称之为请求报文,服务端：向客户端返回数据，可以被称之为响应报文
+
+> 报文：可以简单理解为就是一堆字符串
+
+请求报文的组成: 请求行、请求头、空行、请求体
+
+| 请求头                 | 解释                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Host                      | 主机名                                                                                                 |
+| Connection                | 连接的设置 keep-alive（保持连接）；close（关闭连接）                                    |
+| Cache-Control             | 缓存控制 max-age = 0 （没有缓存）                                                               |
+| Upgrade-Insecure-Requests | 将网页中的http请求转化为https请求（很少用）老网站升级                               |
+| User-Agent                | 用户代理，客户端字符串标识，服务器可以通过这个标识来识别这个请求来自哪个客户端 ，一般在PC端和手机端的区分 |
+| Accept                    | 设置浏览器接收的数据类型                                                                      |
+| Accept-Encoding           | 设置接收的压缩方式                                                                               |
+| Accept-Language           | 设置接收的语言 q=0.7 为喜好系数，满分为1                                                  |
+| Cookie                    | 有助于会话管理、用户个性化和跟踪                                                          |
+
+### 创建 HTTP 服务
+
+```js
+//1. 导入 http 模块
+const http = require('http');
+//2. 创建服务对象 create 创建 server 服务
+// request 意为请求. 是对请求报文的封装对象, 通过 request 对象可以获得请求报文的数据
+// response 意为响应. 是对响应报文的封装对象, 通过 response 对象可以设置响应报文
+const server = http.createServer((request, response) => {
+response.end('Hello HTTP server');
+});
+//3. 监听端口, 启动服务
+server.listen(9000, () => {
+console.log('服务已经启动, 端口 9000 监听中...');
+});
+```
+
+> http.createServer 里的回调函数的执行时机： 当接收到 HTTP 请求的时候，就会执行
+
+> 响应内容中文乱码的解决办法:
+> response.setHeader('content-type','text/html;charset=utf-8');
+
+HTTP 协议默认端口是 80 。HTTPS 协议的默认端口是 443, HTTP 服务开发常用端口有 3000，8080，8090，9000 等
+
+> 如果端口被其他程序占用，可以使用 `资源监视器` 找到占用端口的程序，然后使用 `任务管理器` 关闭对应的程序
+
+### 获取 HTTP 请求报文
+
+| 含义          | 语法                                                                 |
+| --------------- | ---------------------------------------------------------------------- |
+| 请求方法    | request.method                                                         |
+| 请求版本    | request.httpVersion                                                    |
+| 请求路径    | request.url                                                            |
+| URL 路径      | require('url').parse(request.url).pathname                             |
+| URL 查询字符串  | require('url').parse(request.url, true).query                          |
+| 请求头       | request.headers                                                        |
+| 请求体       | request.on('data', function(chunk){})
+request.on('end', function(){}); |
+
+### 设置HTTP相应报文
+
+| 作用           | 语法                                   |
+| ---------------- | ---------------------------------------- |
+| 设置响应状态码 | response.statusCode                      |
+| 设置响应状态描述 | response.statusMessage （ 用的非常少 ） |
+| 设置响应头信息 | response.setHeader('头名', '头值')   |
+| 设置响应体  | response.write('xx')
+response.end('xxx') |
+
+> write 和 end 的两种使用情况：
+> //1. write 和 end 的结合使用 响应体相对分散
+> response.write('xx');
+> response.write('xx');
+> response.write('xx');
+> response.end(); //每一个请求，在处理的时候必须要执行 end 方法的
+> //2. 单独使用 end 方法 响应体相对集中
+> response.end('xxx');
+
+搭建 HTTP 服务，响应一个 4 行 3 列的表格，并且要求表格有 `隔行换色效果` ，且 `点击` 单元格能 `高亮显示`
+
+
+```js
+//导入 http 模块
+const http = require('http');
+//创建服务对象
+const server = http.createServer((request, response) => {
+response.end(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<style>
+td{
+padding: 20px 40px;
+}
+table tr:nth-child(odd){
+background: #aef;
+}
+table tr:nth-child(even){
+background: #fcb;
+}
+table, td{
+        border-collapse: collapse;
+}
+</style>
+</head>
+<body>
+<table border="1">
+<tr><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td></tr>
+</table>
+<script>
+//获取所有的 td
+let tds = document.querySelectorAll('td');
+//遍历
+tds.forEach(item => {
+item.onclick = function(){
+this.style.background = '#222';
+}
+})
+</script>
+</body>
+</html>
+`); //设置响应体
+});
+//监听端口, 启动服务
+server.listen(9000, () => {
+console.log('服务已经启动....')
+});
+```
+
+### 静态资源服务
+
+静态资源是指 `内容长时间不发生改变的资源` ，例如图片，视频，CSS 文件，JS文件，HTML文件，字体文件等
+动态资源是指 `内容经常更新的资源`，例如百度首页，网易首页，京东搜索列表页面等
+
+HTTP 服务在哪个文件夹中寻找静态资源，那个文件夹就是 `静态资源目录` ，也称之为 `网站根目录`
+
+### GET和POST请求的区别
+
+GET 和 POST 是 HTTP 协议请求的两种方式。
+
+> GET 主要用来获取数据，POST 主要用来提交数据
+> GET 带参数请求是将参数缀到 URL 之后，在地址栏中输入 url 访问网站就是 GET 请求，POST 带参数请求是将参数放到请求体中
+> POST 请求相对 GET 安全一些，因为在浏览器中参数会暴露在地址栏
+> GET 请求大小有限制，一般为 2K，而 POST 请求则没有大小限制
+
+## Node.js 模块化
+
+将一个复杂的程序文件依据一定规则（规范）拆分成多个文件的过程称之为 `模块化`
+其中拆分出的 `每个文件就是一个模块` ，模块的内部数据是私有的，不过模块可以暴露内部数据以便其他模块使用
+
+模块化的一些好处：
+1. 防止命名冲突
+2. 高复用性
+3. 高维护性
+
+### 模块暴露数据
+
+#### 模块初体验
+
+1. 创建 me.js
+```js
+//声明函数
+function tiemo(){
+console.log('贴膜....');
+}
+//暴露数据
+module.exports = tiemo;
+```
+
+2. 创建 index.js
+```js
+//导入模块
+const tiemo = require('./me.js');
+//调用函数
+tiemo();
+```
+
+#### 暴露数据
+
+模块暴露数据的方式有两种：
+1. module.exports = value
+2. exports.name = value
+
+> 使用时有几点注意：
+> module.exports 可以暴露 `任意` 数据
+> 不能使用 `exports = value` 的形式暴露数据，模块内部 module 与 exports 的隐式关系
+> `exports = module.exports = {}` ，require 返回的是目标模块中 `module.exports` 的值
+
+### 导入（引入）模块
+
+在模块中使用 require 传入文件路径即可引入文件
+
+> const test = require('./me.js');
+
+require 使用的一些注意事项：
+
+1. 对于自己创建的模块，导入时路径建议写 `相对路径` ，且不能省略 `./` 和 `../`
+2. `js` 和 `json` 文件导入时可以不用写后缀，c/c++编写的 `node` 扩展文件也可以不写后缀，但是一般用不到
+3. 如果导入其他类型的文件，会以 `js` 文件进行处理
+4. 如果导入的路径是个文件夹，则会 `首先` 检测该文件夹下 `package.json` 文件中 `main` 属性对应的文件，如果存在则导入，反之如果文件不存在会报错。
+如果 main 属性不存在，或者 package.json 不存在，则会尝试导入文件夹下的 `index.js` 和 `index.json` ，如果还是没找到，就会报错
+5. 导入 node.js 内置模块时，直接 require 模块的名字即可，无需加 `./` 和 `../`
+
+### 导入模块的基本流程
+
+这里我们介绍一下 `require` 导入 `自定义模块` 的基本流程
+1. 将相对路径转为绝对路径，定位目标文件
+2. 缓存检测
+3. 读取目标文件代码
+4. 包裹为一个函数并执行（自执行函数）。通过 `arguments.callee.toString()` 查看自执行函数
+5. 缓存模块的值
+6. 返回 `module.exports` 的值
+
+## nvm
+
+### 介绍
+
+nvm 全称 `Node Version Manager` 顾名思义它是用来管理 node 版本的工具，方便切换不同版本的 Node.js
+
+### 使用
+
+nvm 的使用非常的简单，跟 npm 的使用方法类似
+
+#### 下载安装
+
+首先先下载 nvm，下载地址 https://github.com/coreybutler/nvm-windows/releases，选择 `nvm-setup.exe` 下载即可（网络异常的小朋友可以在资料文件夹中获取
+
+#### 常用命令
+
+| 命令                 | 说明                          |
+| ---------------------- | ------------------------------- |
+| nvm list available     | 显示所有可以下载的 Node.js 版本 |
+| nvm list               | 显示已安装的版本        |
+| nvm install 18.12.1    | 安装 18.12.1 版本的 Node.js |
+| nvm install latest     | 安装最新版的 Node.js      |
+| nvm uninstall 18.12.1  | 删除某个版本的 Node.js   |
+| nvm use 18.12.1        | 切换 18.12.1 的 Node.js      |
+
+## express
+
+### express 使用
+
+express 本身是一个 npm 包，所以可以通过 npm 安装
+
+```
+npm init
+npm i express
+```
+
+### express 初体验
+
+1. 创建 JS 文件，键入如下代码
+
+```js
+//1. 导入 express
+const express = require('express');
+//2. 创建应用对象
+const app = express();
+//3. 创建路由规则
+app.get('/home', (req, res) => {
+res.end('hello express server');
+});
+//4. 监听端口 启动服务
+app.listen(3000, () =>{
+console.log('服务已经启动, 端口监听为 3000...');
+});
+```
+
+2. 命令行下执行该脚本
+
+```
+node <文件名>
+# 或者
+nodemon <文件名>
+```
+
+3. 然后在浏览器就可以访问 `http://127.0.0.1:3000/home` 
+
+### express 路由
+
+官方定义： `路由确定了应用程序如何响应客户端对特定端点的请求`
+
+一个路由的组成有 `请求方法`，`路径` 和 `回调函数` 组成
+express 中提供了一系列方法，可以很方便的使用路由，使用格式如下：
+
+> app.<method>(path，callback)
+
+```js
+//导入 express
+const express = require('express');
+//创建应用对象
+const app = express();
+//创建 get 路由
+app.get('/home', (req, res) => {
+res.send('网站首页');
+});
+//首页路由
+app.get('/', (req,res) => {
+res.send('我才是真正的首页');
+});
+//创建 post 路由
+app.post('/login', (req, res) => {
+res.send('登录成功');
+});
+//匹配所有的请求方法
+app.all('/search', (req, res) => {
+res.send('1 秒钟为您找到相关结果约 100,000,000 个');
+});
+//自定义 404 路由
+app.all("*", (req, res) => {
+res.send('<h1>404 Not Found</h1>')
+});
+//监听端口 启动服务
+app.listen(3000, () =>{
+console.log('服务已经启动, 端口监听为 3000');
+});
+```
+
+###  获取请求参数
+
+express 框架封装了一些 API 来方便获取请求报文中的数据，并且兼容原生 HTTP 模块的获取方式
+
+```js
+//导入 express
+const express = require('express');
+//创建应用对象
+const app = express();
+//获取请求的路由规则
+app.get('/request', (req, res) => {
+//1. 获取报文的方式与原生 HTTP 获取方式是兼容的
+console.log(req.method);
+console.log(req.url);
+console.log(req.httpVersion);
+console.log(req.headers);
+//2. express 独有的获取报文的方式
+//获取查询字符串
+console.log(req.query); // 『相对重要』
+// 获取指定的请求头
+console.log(req.get('host'));
+res.send('请求报文的获取');
+});
+//启动服务
+app.listen(3000, () => {
+console.log('启动成功....')
+})
+```
+
+###  获取路由参数
+
+路由参数指的是 `URL 路径中的参数（数据）`
+
+```js
+app.get('/:id.html', (req, res) => {
+res.send('商品详情, 商品 id 为' + req.params.id);
+});
+```
+
+### express 响应设置
+
+express 框架封装了一些 API 来方便给客户端响应数据，并且兼容原生 HTTP 模块的获取方式
+
+```js
+//获取请求的路由规则
+app.get("/response", (req, res) => {
+//1. express 中设置响应的方式兼容 HTTP 模块的方式
+res.statusCode = 404;
+res.statusMessage = 'xxx';
+res.setHeader('abc','xyz');
+res.write('响应体');
+res.end('xxx');
+//2. express 的响应方法
+res.status(500); //设置响应状态码
+res.set('xxx','yyy');//设置响应头
+res.send('中文响应不乱码');//设置响应体
+//连贯操作
+res.status(404).set('xxx','yyy').send('你好朋友')
+//3. 其他响应
+res.redirect('http://atguigu.com')//重定向
+res.download('./package.json');//下载响应
+res.json();//响应 JSON
+res.sendFile(__dirname + '/home.html') //响应文件内容
+});
+```
+
+### express 中间件
+
+中间件（Middleware）本质是一个回调函数
+
+中间件函数 可以像路由回调一样访问 请求对象（request） ， 响应对象（response）
+
+`中间件的作用` 就是 `使用函数封装公共操作，简化代码`
+
+中间件的类型: `全局中间件` 和 `路由中间件`
+
+`每一个请求` 到达服务端之后 `都会执行全局中间件函数`
+
+声明中间件函数
+
+```js
+let recordMiddleware = function(request,response,next){
+//实现功能代码
+//.....
+//执行next函数(当如果希望执行完中间件函数之后，仍然继续执行路由中的回调函数，必须调用next)
+next();
+}
+```
+
+应用中间件
+
+```js
+app.use(recordMiddleware);
+```
+
+声明时可以直接将匿名函数传递给 `use`
+
+```js
+app.use(function (request, response, next) {
+console.log('定义第一个中间件');
+next();
+})
+```
+
+#### 多个全局中间件
+
+express 允许使用 app.use() 定义多个全局中间件
+
+```js
+app.use(function (request, response, next) {
+console.log('定义第一个中间件');
+next();
+})
+app.use(function (request, response, next) {
+console.log('定义第二个中间件');
+next();
+})
+```
+
+####  定义路由中间件
+
+如果 `只需要对某一些路由进行功能封装` ，则就需要路由中间件
+
+调用格式如下：
+
+```js
+app.get('/路径',`中间件函数`,(request,response)=>{
+});
+app.get('/路径',`中间件函数1`,`中间件函数2`,(request,response)=>{
+});
+```
+
+#### 静态资源中间件
+
+express 内置处理静态资源的中间件
+
+```js
+//引入express框架
+const express = require('express');
+//创建服务对象
+const app = express();
+//静态资源中间件的设置，将当前文件夹下的public目录作为网站的根目录
+app.use(express.static('./public')); //当然这个目录中都是一些静态资源
+//如果访问的内容经常变化，还是需要设置路由
+//但是，在这里有一个问题，如果public目录下有index.html文件，单独也有index.html的路由，
+//则谁书写在前，优先执行谁
+app.get('/index.html',(request,response)=>{
+respsonse.send('首页');
+});
+//监听端口
+app.listen(3000,()=>{
+console.log('3000 端口启动....');
+});
+```
+
+> 注意事项:
+> 1. index.html 文件为默认打开的资源
+> 2. 如果静态资源与路由规则同时匹配，谁先匹配谁就响应
+> 3. 路由响应动态资源，静态资源中间件响应静态资源
+
+####  获取请求体数据 body-parser
+
+express 可以使用 `body-parser` 包处理请求体
+
+第一步：安装
+
+```
+npm i body-parser
+```
+
+第二步：导入 body-parser 包
+
+```js
+const bodyParser = require('body-parser');
+```
+
+第三步：获取中间件函数
+
+```js
+//处理 querystring 格式的请求体
+let urlParser = bodyParser.urlencoded({extended:false});
+//处理 JSON 格式的请求体
+let jsonParser = bodyParser.json();
+```
+
+第四步：设置路由中间件，然后使用 request.body 来获取请求体数据
+
+```js
+app.post('/login', urlParser, (request,response)=>{
+//获取请求体数据
+//console.log(request.body);
+//用户名
+console.log(request.body.username);
+//密码
+console.log(request.body.userpass);
+response.send('获取请求体数据');
+});
+```
+
+获取到的请求体数据：
+```
+[Object: null prototype] { username: 'admin', userpass: '123456' }
+```
+
+### Router
+
+什么是 Router: express 中的 Router 是一个完整的中间件和路由系统，可以看做是一个小型的 app 对象
+
+Router 作用: 对路由进行模块化，更好的管理路由
+
+Router 使用: 创建独立的 JS 文件（homeRouter.js）
+
+```js
+//1. 导入 express
+const express = require('express');
+//2. 创建路由器对象
+const router = express.Router();
+//3. 在 router 对象身上添加路由
+router.get('/', (req, res) => {
+res.send('首页');
+})
+router.get('/cart', (req, res) => {
+res.send('购物车');
+});
+//4. 暴露
+module.exports = router;
+```
+
+主文件
+
+```js
+const express = require('express');
+const app = express();
+//5.引入子路由文件
+const homeRouter = require('./routes/homeRouter');
+//6.设置和使用中间件
+app.use(homeRouter);
+app.listen(3000,()=>{
+console.log('3000 端口启动....');
+})
+```
+
+### EJS 模板引擎
+
+什么是模板引擎: 模板引擎是分离 `用户界面和业务数据` 的一种技术
+
+EJS 是一个高效的 Javascript 的模板引擎
+官网: https://ejs.co/
+中文站：https://ejs.bootcss.com/
+
+下载安装EJS: npm i ejs --save
+
+```js
+//1.引入ejs
+const ejs = require('ejs');
+//2.定义数据
+let person = ['张三','李四','王二麻子'];
+//3.ejs解析模板返回结构
+//<%= %> 是ejs解析内容的标记，作用是输出当前表达式的执行结构
+let html = ejs.render(‘<%= person.join(",") %>’, {person:person});
+//4.输出结果
+console.log(html);
+```
+
+EJS 常用语法:
+
+执行JS代码 `<% code %>`
+输出转义的数据到模板上 `<%= code %>`
+输出非转义的数据到模板上 `<%- code %>`
+
+## MongoDB
+
+一、简介
+
+MongoDB 是一个基于分布式文件存储的数据库，官方地址 https://www.mongodb.com/
+
+数据库（DataBase）是按照数据结构来组织、存储和管理数据的 `应用程序`
+
+数据库的主要作用就是 `管理数据` ，对数据进行 `增（c）、删（d）、改（u）、查（r）`
+
+相比于纯文件管理数据，数据库管理数据有如下特点：
+1. 速度更快
+2. 扩展性更强
+3. 安全性更强
+
+二、核心概念
+
+Mongodb 中有三个重要概念需要掌握
+1. 数据库（database） 数据库是一个数据仓库，数据库服务下可以创建很多数据库，数据库中可以存放很多集合
+2. 集合（collection） 集合类似于 JS 中的数组，在集合中可以存放很多文档
+3. 文档（document） 文档是数据库中的最小单位，类似于 JS 中的对象
+
+一个 `JSON 文件` 好比是一个 `数据库` ，一个 Mongodb 服务下可以有 N 个数据库
+JSON 文件中的 `一级属性的数组值` 好比是 `集合`
+数组中的对象好比是 `文档`
+对象中的属性有时也称之为 `字段`
+
+> 一般情况下
+> 一个项目使用一个数据库
+> 一个集合会存储同一种类型的数据
+
+### 数据库命令
+
+1. 显示所有的数据库 `show dbs`
+
+2. 切换到指定的数据库，如果数据库不存在会自动创建数据库 `use 数据库名`
+3. 显示当前所在的数据库 `db`
+4. 删除当前数据库 `use 库名` `db.dropDatabase()`
+
+###  集合命令
+
+1. 创建集合 `db.createCollection('集合名称')`
+
+2. 显示当前数据库中的所有集合 `show collections`
+
+3. 删除某个集合 `db.集合名.drop()`
+
+4. 重命名集合 `db.集合名.renameCollection('newName')`
+
+### 文档命令
+
+1. 插入文档 `db.集合名.insert(文档对象);`
+
+2. 查询文档 `db.集合名.find(查询条件)` _id 是 mongodb 自动生成的唯一编号，用来唯一标识文档
+
+3. 更新文档 
+
+`db.集合名.update(查询条件,新的文档)`
+`db.集合名.update({name:'张三'},{$set:{age:19})`
+
+4. 删除文档 `db.集合名.remove(查询条件)`
+
+### Mongoose
+
+Mongoose 是一个对象文档模型库，官网 http://www.mongoosejs.net/
+
+```js
+//1. 安装 mongoose
+//2. 导入 mongoose
+const mongoose = require('mongoose');
+//3. 连接数据库
+mongoose.connect('mongodb://127.0.0.1:27017/bilibili');
+//4. 设置连接回调
+//连接成功
+mongoose.connection.on('open', () => {
+console.log('连接成功');
+//5. 创建文档结构对象
+let BookSchema = new mongoose.Schema({
+title: String,
+author: String,
+price: Number
+});
+//6. 创建文档模型对象
+let BookModel = mongoose.model('book', BookSchema);
+//7. 插入文档
+BookModel.create({
+title: '西游记',
+author: '吴承恩',
+price: 19.9
+}, (err, data) => {
+if (err) throw err;
+//输出 data 对象
+console.log(data);
+//8. 断开连接
+mongoose.disconnect();
+});
+});
+//连接出错
+mongoose.connection.on('error', () => {
+console.log('连接出错~~');
+})
+//连接关闭
+mongoose.connection.on('close', () => {
+console.log('连接关闭');
+})
+```
+
+| 类型      | 描述                                                     |
+| ----------- | ---------------------------------------------------------- |
+| String      | 字符串                                                  |
+| Number      | 数字                                                     |
+| Boolean     | 布尔值                                                  |
+| Array       | 数组，也可以使用 [] 来标识                      |
+| Date        | 日期                                                     |
+| Buffer      | Buffer 对象                                              |
+| Mixed       | 任意类型，需要使用 mongoose.Schema.Types.Mixed 指定 |
+| ObjectId    | 对象 ID，需要使用 mongoose.Schema.Types.ObjectId 指定 |
+| Decimal128  | 高精度数字，需要使用 mongoose.Schema.Types.Decimal128 指定 |
+
+数据库的基本操作包括四个，增加（create），删除（delete），修改（update），查（read）
+
+插入一条
+
+```js
+SongModel.create({
+title:'给我一首歌的时间',
+author: 'Jay'
+}, function(err, data){
+//错误
+console.log(err);
+//插入后的数据对象
+console.log(data);
+});
+```
+
+批量插入
+
+```js
+//1.引入mongoose
+const mongoose = require('mongoose');
+//2.链接mongodb数据库 connect 连接
+mongoose.connect('mongodb://127.0.0.1:27017/project');
+//3.设置连接的回调
+mongoose.connection.on('open',()=>{
+//4.声明文档结构
+const PhoneSchema = new mongoose.Schema({
+brand:String,
+color:String,
+price:Number,
+tags:Array
+})
+//6.创建模型对象
+const PhoneModel = mongoose.model('phone',PhoneSchema);
+PhoneModel.insertMany([
+{
+brand:'华为',
+color:'灰色',
+price:2399,
+tags:['电量大','屏幕大','信号好']
+},
+{
+brand:'小米',
+color:'白色',
+price:2099,
+tags:['电量大','屏幕大','信号好']
+}
+],(err,data)=>{
+if(err) throw err;
+console.log('写入成功');
+mongoose.connection.close();
+})
+})
+```
+
+删除一条数据
+
+```js
+SongModel.deleteOne({_id:'5dd65f32be6401035cb5b1ed'}, function(err){
+if(err) throw err;
+console.log('删除成功');
+mongoose.connection.close();
+});
+```
+
+批量删除
+
+```js
+SongModel.deleteMany({author:'Jay'}, function(err){
+if(err) throw err;
+console.log('删除成功');
+mongoose.connection.close();
+});
+```
+
+更新一条数据
+
+```js
+SongModel.updateOne({author: 'JJ Lin'}, {author: '林俊杰'}, function (err) {
+if(err) throw err;
+mongoose.connection.close();
+});
+```
+
+批量更新数据
+
+```js
+SongModel.updateMany({author: 'Leehom Wang'}, {author: '王力宏'}, function (err) {
+if(err) throw err;
+mongoose.connection.close();
+});
+```
+
+查询一条数据
+
+```js
+SongModel.findOne({author: '王力宏'}, function(err, data){
+if(err) throw err;
+console.log(data);
+mongoose.connection.close();
+});
+//根据 id 查询数据
+SongModel.findById('5dd662b5381fc316b44ce167',function(err, data){
+if(err) throw err;
+console.log(data);
+mongoose.connection.close();
+});
+```
+
+批量查询数据
+
+```js
+//不加条件查询
+SongModel.find(function(err, data){
+if(err) throw err;
+console.log(data);
+mongoose.connection.close();
+});
+//加条件查询
+SongModel.find({author: '王力宏'}, function(err, data){
+if(err) throw err;
+console.log(data);
+mongoose.connection.close();
+});
+```
+
+## 接口
+
+### 接口是什么
+
+接口是 `前后端通信的桥梁`
+简单理解：一个接口就是 `服务中的一个路由规则` ，根据请求响应结果
+接口的英文单词是 API (Application Program Interface)，所以有时也称之为 `API 接口`
+这里的接口指的是『数据接口』， `与编程语言（Java，Go 等）中的接口语法不同`
+
+###  接口的组成
+
+一个接口一般由如下几个部分组成: `请求方法` `接口地址（URL）` `请求参数` `响应结果`
+
+### RESTful API
+
+RESTful API 是一种特殊风格的接口，主要特点有如下几个：
+1. URL 中的路径表示 `资源` ，路径中不能有 `动词` ，例如 `create , delete , update` 等这些都不能有
+2. 操作资源要与 `HTTP 请求方法` 对应
+3. 操作结果要与 `HTTP 响应状态码` 对应
+
+| 操作       | 请求类型 | URL      | 返回               |
+| ------------ | -------- | -------- | -------------------- |
+| 新增歌曲 | POST     | /song    | 返回新生成的歌曲信息 |
+| 删除歌曲 | DELETE   | /song/10 | 返回一个空文档 |
+| 修改歌曲 | PUT      | /song/10 | 返回更新后的歌曲信息 |
+| 修改歌曲 | PATCH    | /song/10 | 返回更新后的歌曲信息 |
+| 获取所有歌曲 | GET      | /song    | 返回歌曲列表数组 |
+| 获取单个歌曲 | GET      | /song/10 | 返回单个歌曲信息 |
+
+### json-server
+
+json-server 本身是一个 JS 编写的工具包，可以快速搭建 RESTful API 服务
+
+官方地址: https://github.com/typicode/json-server
+
+操作步骤：
+1. 全局安装 `json-server`
+
+```
+npm i -g json-server
+```
+
+2. 创建 JSON 文件（db.json），编写基本结构
+
+```js
+{
+"song": [
+{ "id": 1, "name": "干杯", "singer": "五月天" },
+{ "id": 2, "name": "当", "singer": "动力火车" },
+{ "id": 3, "name": "不能说的秘密", "singer": "周杰伦" }
+]
+}
+```
+
+3. `以 JSON 文件所在文件夹作为工作目录` ，执行如下命令
+
+```
+json-server --watch db.json
+```
+
+默认监听端口为 `3000`
+
+## 会话控制
+
+### 介绍
+
+所谓会话控制就是 `对会话进行控制`
+HTTP 是一种无状态的协议，它没有办法区分多次的请求是否来自于同一个客户端， `无法区分用户`
+而产品中又大量存在的这样的需求，所以我们需要通过 `会话控制` 来解决该问题
+
+常见的会话控制技术有三种：`cookie` `session` `token`
+
+### cookie
+
+cookie 是 HTTP 服务器发送到用户浏览器并保存在本地的一小块数据
+
+`cookie 是保存在浏览器端的一小块数据`
+
+`cookie 是按照域名划分保存的`
+
+浏览器向服务器发送请求时，会自动将 `当前域名下` 可用的 cookie 设置在请求头中，然后传递给服务器,这个请求头的名字也叫 `cookie` ，所以将 `cookie 理解为一个 HTTP 的请求头也是可以的`
+
+```js
+const express =require('express');
+//1. 安装 cookie-parser npm i cookie-parser
+//2. 引入 cookieParser 包
+const cookieParser = require('cookie-parser');
+const app = express();
+//3. 设置 cookieParser 中间件
+app.use(cookieParser());
+//4-1 设置 cookie
+app.get('/set-cookie', (request, response) => {
+// 不带时效性
+response.cookie('username','wangwu');
+// 带时效性
+response.cookie('email','23123456@qq.com', {maxAge: 5*60*1000 });
+//响应
+response.send('Cookie的设置');
+});
+//4-2 读取 cookie
+app.get('/get-cookie', (request, response) => {
+//读取 cookie
+console.log(request.cookies);
+//响应体
+response.send('Cookie的读取');
+});
+//4-3 删除cookie
+app.get('/delete-cookie', (request, response) => {
+//删除
+response.clearCookie('username');
+//响应
+response.send('cookie 的清除');
+});
+//4. 启动服务
+app.listen(3000, () => {
+console.log('服务已经启动....');
+});
+```
+
+> 不同浏览器中的 cookie 是相互独立的，不共享
+
+### session
+
+session 是保存在 `服务器端的一块儿数据` ，保存当前访问用户的相关信息
+
+实现会话控制，可以识别用户的身份，快速获取当前用户的相关信息
+
+```js
+const express = require('express');
+//1. 安装包 npm i express-session connect-mongo
+//2. 引入 express-session connect-mongo
+const session = require("express-session");
+const MongoStore = require('connect-mongo');
+const app = express();
+//3. 设置 session 的中间件
+app.use(session({
+name: 'sid', //设置cookie的name，默认值是：connect.sid
+secret: 'atguigu', //参与加密的字符串（又称签名）
+saveUninitialized: false, //是否为每次请求都设置一个cookie用来存储session的id
+resave: true, //是否在每次请求时重新保存session
+store: MongoStore.create({
+mongoUrl: 'mongodb://127.0.0.1:27017/project' //数据库的连接配置
+}),
+cookie: {
+httpOnly: true, // 开启后前端无法通过 JS 操作
+maxAge: 1000 * 300 // 这一条 是控制 sessionID 的过期时间的！！！
+},
+}))
+//创建 session
+app.get('/login', (req, res) => {
+//设置session
+req.session.username = 'zhangsan';
+req.session.email = 'zhangsan@qq.com'
+res.send('登录成功');
+})
+//获取 session
+app.get('/home', (req, res) => {
+console.log('session的信息');
+console.log(req.session.username);
+if (req.session.username) {
+res.send(`你好 ${req.session.username}`);
+}else{
+res.send('登录 注册');
+}
+})
+//销毁 session
+app.get('/logout', (req, res) => {
+//销毁session
+// res.send('设置session');
+req.session.destroy(() => {
+res.send('成功退出');
+});
+});
+app.listen(3000, () => {
+console.log('服务已经启动, 端口 ' + 3000 + ' 监听中...');
+});
+```
+
+### session 和 cookie 的区别
+
+cookie 和 session 的区别主要有如下几点：
+
+1. 存在的位置
+
+        cookie：浏览器端
+        session：服务端
+
+2. 安全性
+
+        cookie 是以明文的方式存放在客户端的，安全性相对较低
+        session 存放于服务器中，所以安全性 相对 较好
+
+3. 网络传输量
+
+        cookie 设置内容过多会增大报文体积， 会影响传输效率
+        session 数据存储在服务器，只是通过 cookie 传递 id，所以不影响传输效率
+
+4. 存储限制
+
+        浏览器限制单个 cookie 保存的数据不能超过 4K ，且单个域名下的存储数量也有限制
+        session 数据存储在服务器中，所以没有这些限制
+
+### token
+
+`token` 是服务端生成并返回给 HTTP 客户端的一串加密字符串， `token` 中保存着 `用户信息`
+
+实现会话控制，可以识别用户的身份，主要用于移动端 APP
+
+token 的特点:
+
+1. 服务端压力更小, 数据存储在客户端
+2. 相对更安全, 数据加密, 可以避免 CSRF（跨站请求伪造）
+3. 扩展性更强, 服务间可以共享, 增加服务节点更简单
+
+JWT（JSON Web Token ）是目前最流行的跨域认证解决方案，可用于基于 `token` 的身份验证, JWT 使 token 的生成与校验更规范

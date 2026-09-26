@@ -1,0 +1,4641 @@
+---
+title: "JAVA从入门到进阶1"
+description: "- 基本数据类型"
+date: "2023-08-10"
+category: "编程"
+tags: ["JAVA"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x132.jpg"
+source: "legacy-blog"
+---
+
+# 数据类型
+
+## 类型
+
+### Java语言数据类型的分类
+
+- 基本数据类型
+- 引用数据类型
+
+### 基本数据类型的四类八种
+
+| 数据类型 | 关键字  | 内存占用 |                 取值范围                  |
+| :------: | :-----: | :------: | :---------------------------------------: |
+|   整数   |  byte   |    1     |    负的2的7次方 ~ 2的7次方-1(-128~127)    |
+|          |  short  |    2     | 负的2的15次方 ~ 2的15次方-1(-32768~32767) |
+|          |   int   |    4     |        负的2的31次方 ~ 2的31次方-1        |
+|          |  long   |    8     |        负的2的63次方 ~ 2的63次方-1        |
+|  浮点数  |  float  |    4     |        1.401298e-45 ~ 3.402823e+38        |
+|          | double  |    8     |      4.9000000e-324 ~ 1.797693e+308       |
+|   字符   |  char   |    2     |                  0-65535                  |
+|   布尔   | boolean |    1     |                true，false                |
+
+整数类型和小数类型的取值范围大小关系：
+
+* double > float > long > int > short > byte
+
+## 键盘录入
+
+```java
+// 导包，其实就是先找到Scanner这个类在哪
+import java.util.Scanner;
+public class ScannerDemo1{
+	public static void main(String[] args){
+		//2.创建对象，其实就是申明一下，我准备开始用Scanner这个类了。
+		Scanner sc = new Scanner(System.in);
+		//3.接收数据
+		//当程序运行之后，我们在键盘输入的数据就会被变量i给接收了
+		System.out.println("请输入一个数字");
+		int i = sc.nextInt();
+		System.out.println(i);
+	}
+}
+```
+
+## 隐式转换
+
+### 概念：
+
+​	也叫**自动类型提升**，就是把一个取值范围小的数据或者变量，赋值给另一个取值范围大的变量。此时不需要我们额外写代码单独实现，是**程序自动帮我们完成的**。
+
+### 两种提升规则：
+
+* 取值范围小的，和取值范围大的进行运算，小的会先提升为大的，再进行运算。
+* byte、short、char三种类型的数据在运算的时候，都会直接先提升为int，然后再进行运算。
+
+### 取值范围从小到大的关系
+
+* byte short int long float double
+
+## 强制转换
+
+### 概念：
+
+​	如果要把一个取值范围大的数据或者变量赋值给另一个取值范围小的变量。是不允许直接操作。
+
+### 书写格式：
+
+​	目标数据类型 变量名 = （目标数据类型）被强转的数据；
+
+## switch的扩展知识：
+
+- default的位置和省略情况
+
+  default可以放在任意位置，也可以省略
+
+- case穿透
+
+  不写break会引发case穿透现象
+
+- switch在JDK12的新特性
+
+```java
+int number = 10;
+switch (number) {
+    case 1 -> System.out.println("一");
+    case 2 -> System.out.println("二");
+    case 3 -> System.out.println("三");
+    default -> System.out.println("其他");
+}
+```
+
+- switch和if第三种格式各自的使用场景
+
+1. 当我们需要对一个范围进行判断的时候，用if的第三种格式
+
+2. 当我们把有限个数据列举出来，选择其中一个执行的时候，用switch语句
+
+比如：
+
+​	小明的考试成绩，如果用switch，那么需要写100个case，太麻烦了，所以用if简单。
+
+​	如果是星期，月份，客服电话中0~9的功能选择就可以用switch
+
+* 练习：需求：键盘录入星期数，输出工作日、休息日。
+(1-5) 工作日，(6-7)休息日。
+
+代码示例：
+```java
+//分析：
+//1.键盘录入星期数
+Scanner sc = new Scanner(System.in);
+System.out.println("请输入星期");
+int week = sc.nextInt();//3
+//2.利用switch进行匹配
+----------------------------------------------------
+利用case穿透简化代码
+switch (week){
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        System.out.println("工作日");
+        break;
+    case 6:
+    case 7:
+        System.out.println("休息日");
+        break;
+    default:
+        System.out.println("没有这个星期");
+        break;
+}
+
+----------------------------------------------------
+
+利用JDK12简化代码书写
+switch (week) {
+    case 1, 2, 3, 4, 5 -> System.out.println("工作日");
+    case 6, 7 -> System.out.println("休息日");
+    default -> System.out.println("没有这个星期");
+}
+```
+
+## 练习:珠穆朗玛峰
+
+```java
+//1.定义一个变量表示珠穆朗玛峰的高度
+int height = 8844430;
+//2.定义一个变量表示纸张的厚度
+double paper = 0.1;
+
+//定义一个计数器（变量），用来统计折叠的次数
+int count = 0;
+
+//3.循环折叠纸张
+//只有纸张的厚度 < 穆朗玛峰的高度 循环才继续，否则循环就停止
+//坑：只有判断为真，循环才会继续
+while(paper < height){
+    //折叠纸张
+    paper = paper * 2;
+    count++;
+}
+
+//4.打印一下纸张的厚度
+System.out.println(count);//27
+```
+
+## 练习：统计个数
+需求：生成10个1~100之间的随机数存入数组。
+
+1. 求出所有数据的和
+
+2. 求所有数据的平均数
+
+3. 统计有多少个数据比平均值小
+
+代码示例：
+```java
+//分析：
+//1.定义数组
+int[] arr = new int[10];
+//2.把随机数存入到数组当中
+Random r = new Random();
+
+for (int i = 0; i < arr.length; i++) {
+    //每循环一次，就会生成一个新的随机数
+    int number = r.nextInt(100) + 1;
+    //把生成的随机数添加的数组当中
+    //数组名[索引] = 数据;
+    arr[i] = number;
+}
+
+
+// 1）求出所有数据的和
+//定义求和变量
+int sum = 0;
+for (int i = 0; i < arr.length; i++) {
+    //循环得到每一个元素
+    //并把元素累加到sum当中
+    sum = sum + arr[i];
+}
+System.out.println("数组中所有数据的和为：" + sum);
+
+
+//2）求所有数据的平均数
+int avg = sum / arr.length;
+System.out.println("数组中平均数为：" + avg);
+
+
+
+//3）统计有多少个数据比平均值小
+int count = 0;
+for (int i = 0; i < arr.length; i++) {
+    if(arr[i] < avg){
+        count++;
+    }
+}
+
+//当循环结束之后，就表示我已经找到了所有的比平均数小的数据
+System.out.println("在数组中，一共有" + count + "个数据，比平均数小");
+
+
+
+//遍历数组，验证答案
+for (int i = 0; i < arr.length; i++) {
+    System.out.print(arr[i] + " ");
+}
+```
+
+# 方法
+
+## 方法
+
+* 方法（method）是程序中最小的执行单元
+
+* 注意：
+  * 方法必须先创建才可以使用，该过程成为方法定义
+  * 方法创建后并不是直接可以运行的，需要手动使用后，才执行，该过程成为方法调用
+
+### 方法重载
+
+* 方法重载概念
+
+  方法重载指同一个类中定义的多个方法之间的关系，满足下列条件的多个方法相互构成重载
+
+  * 多个方法在同一个类中
+  * 多个方法具有相同的方法名
+  * 多个方法的参数不相同，类型不同或者数量不同
+
+* 注意：
+
+  * 重载仅对应方法的定义，与方法的调用无关，调用方式参照标准格式
+  * 重载仅针对同一个类中方法的名称与参数进行识别，与返回值无关，换句话说不能通过返回值来判定两个方法是否相互构成重载
+
+```java
+public class MethodTest {
+    public static void main(String[] args) {
+        //调用方法
+        System.out.println(compare(10, 20));
+        System.out.println(compare((byte) 10, (byte) 20));
+        System.out.println(compare((short) 10, (short) 20));
+        System.out.println(compare(10L, 20L));
+    }
+
+    //int
+    public static boolean compare(int a, int b) {
+        System.out.println("int");
+        return a == b;
+    }
+
+    //byte
+    public static boolean compare(byte a, byte b) {
+        System.out.println("byte");
+        return a == b;
+    }
+
+    //short
+    public static boolean compare(short a, short b) {
+        System.out.println("short");
+        return a == b;
+    }
+
+    //long
+    public static boolean compare(long a, long b) {
+        System.out.println("long");
+        return a == b;
+    }
+
+}
+```
+## 综合练习
+
+### 练习一：飞机票
+
+需求:
+
+​	机票价格按照淡季旺季、头等舱和经济舱收费、输入机票原价、月份和头等舱或经济舱。
+
+​	按照如下规则计算机票价格：旺季（5-10月）头等舱9折，经济舱8.5折，淡季（11月到来年4月）头等舱7折，经济舱6.5折。
+
+代码示例：
+```java
+import java.util.Scanner;
+
+public class Test1 {
+    public static void main(String[] args) {
+        /* 机票价格按照淡季旺季、头等舱和经济舱收费、输入机票原价、月份和头等舱或经济舱。
+        按照如下规则计算机票价格：旺季（5-10月）头等舱9折，经济舱8.5折，淡季（11月到来年4月）头等舱7折，经济舱6.5折。*/
+
+        //分析：
+        //1.键盘录入机票原价、月份、头等舱或经济舱
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入机票的原价");
+        int ticket = sc.nextInt();
+        System.out.println("请输入当前的月份");
+        int month = sc.nextInt();
+        System.out.println("请输入当前购买的舱位 0 头等舱 1 经济舱");
+        int seat = sc.nextInt();
+        //2.先判断月份是旺季还是淡季
+        //ctrl + alt + M 自动抽取方法
+        if (month >= 5 && month <= 10) {
+            //旺季 //3.继续判断当前机票是经济舱还是头等舱
+            //ticket = getPrice(ticket, seat, 0.9, 0.85);
+            ticket = getTicket(ticket, seat, 0.9, 0.85);
+        } else if ((month >= 1 && month <= 4) || (month >= 11 && month <= 12)) {
+            //淡季
+            //ticket = getPrice(ticket, seat, 0.7, 0.65);
+            ticket = getTicket(ticket, seat, 0.7, 0.65);
+        } else {
+            //表示键盘录入的月份是一个非法数据
+            System.out.println("键盘录入的月份不合法");
+        }
+
+        System.out.println(ticket);
+    }
+
+    public static int getTicket(int ticket, int seat, double v, double v2) {
+        if (seat == 0) {
+            //头等舱
+            ticket = (int) (ticket * v);
+        } else if (seat == 1) {
+            //经济舱
+            ticket = (int) (ticket * v2);
+        } else {
+            System.out.println("没有这个舱位");
+        }
+        return ticket;
+    }
+
+    //1.我要干嘛？根据舱位和折扣来计算最终的票价
+    //2.我干这件事，需要什么才能完成？原价 舱位 头等舱的折扣 经济舱的折扣
+    //3.方法的调用处是否需要继续使用这个结果  需要
+    /*  public static int getPrice(int ticket, int seat, double v0, double v1) {
+        if (seat == 0) {
+            //头等舱
+            ticket = (int) (ticket * v0);
+        } else if (seat == 1) {
+            //经济舱
+            ticket = (int) (ticket * v1);
+        } else {
+            System.out.println("没有这个舱位");
+        }
+        return ticket;
+    }*/
+}
+```
+
+### 练习二：打印素数
+
+​	判断101~200之间有多少个素数，并输出所有素数。
+
+备注：素数就是质数
+
+代码示例：
+```java
+
+public class Test2 {
+    public static void main(String[] args) {
+        //判断 101 ~ 200 之间有多少个素数，并打印所有素数
+
+        //思路一： 2 ~ 99
+        //定义变量i ，赋值100
+        //判断i是否为质数
+
+        //定义一个变量用来统计有多少个质数
+        int count = 0;
+        //外循环：遍历101~200这个范围，依次得到这个范围之内的每一个数字
+        for (int i = 101; i <= 200; i++) {
+            //i 依次表示循环中的每一个数字
+            //继续判断i是否为一个质数
+            boolean flag = true;
+            //内循环:判断当前数字是否为一个质数。
+            for (int j = 2; j < i; j++) {
+                //j 表示2~99之间的每一个数字
+                if(i % j == 0){
+                    flag = false;
+                    //跳出单层循环，内循环
+                    break;
+                }
+            }
+            if(flag){
+                System.out.println("当前数字"+i+"是质数");
+                count++;
+            }
+        }
+
+        System.out.println("一共有" + count + "个质数");
+
+        /* int i = 7;
+        boolean flag = true;
+        for (int j = 2; j < i; j++) {
+            //j 表示2~99之间的每一个数字
+            if(i % j == 0){
+                flag = false;
+                break;
+            }
+        }
+        if(flag){
+            System.out.println("当前数字是质数");
+        }else{
+            System.out.println("当前数字不是一个质数");
+        }*/
+    }
+}
+
+```
+
+### 练习三：验证码
+
+需求：
+
+​	定义方法实现随机产生一个5位的验证码
+
+验证码格式：
+
+​	长度为5
+
+​	前四位是大写字母或者小写字母
+
+​	最后一位是数字
+
+代码示例：
+
+```java
+import java.util.Random;
+
+public class Test3 {
+    public static void main(String[] args) {
+        /*   需求：
+            定义方法实现随机产生一个5位的验证码
+            验证码格式：
+            长度为5
+            前四位是大写字母或者小写字母
+            最后一位是数字
+     */
+
+        //方法：
+        //在以后如果我们要在一堆没有什么规律的数据中随机抽取
+        //可以先把这些数据放到数组当中
+        //再随机抽取一个索引
+
+        //分析：
+        //1.大写字母和小写字母都放到数组当中
+        char[] chs = new char[52];
+        for (int i = 0; i < chs.length; i++) {
+            //ASCII码表
+            if(i <= 25){
+                //添加小写字母
+                chs[i] = (char)(97 + i);
+            }else{//27
+                //添加大写字母
+                // A --- 65
+                chs[i] = (char)(65 + i - 26);
+            }
+        }
+
+        //定义一个字符串类型的变量，用来记录最终的结果
+        String result = "";
+
+        //2.随机抽取4次
+        //随机抽取数组中的索引
+        Random r = new Random();
+        for (int i = 0; i < 4; i++) {
+            int randomIndex = r.nextInt(chs.length);
+            //利用随机索引，获取对应的元素
+            //System.out.println(chs[randomIndex]);
+            result = result + chs[randomIndex];
+        }
+        //System.out.println(result);
+        //3.随机抽取一个数字0~9
+        int number = r.nextInt(10);
+        //生成最终的结果
+        result = result + number;
+
+        //打印最终结果
+        System.out.println(result);
+
+    }
+}
+
+```
+
+### 练习四：复制数组
+
+需求：
+
+​	把一个数组中的元素复制到另一个新数组中去。
+
+代码示例：
+
+```java
+public class Test4 {
+    public static void main(String[] args) {
+        /* 需求：
+        把一个数组中的元素复制到另一个新数组中去。*/
+
+        //分析：
+        //1.定义一个老数组并存储一些元素
+        int[] arr = {1,2,3,4,5};
+        //2.定义一个新数组的长度跟老数组一致
+        int[] newArr = new int[arr.length];
+        //3.遍历老数组，得到老数组中的每一个元素，依次存入到新数组当中
+        for (int i = 0; i < arr.length; i++) {
+            //i 表示老数组中的索引。新数组中的每一个索引
+            //arr[i]  表示老数组中的元素
+            newArr[i] = arr[i];
+        }
+
+        //4.新数组中已经存满元素了
+        for (int i = 0; i < newArr.length; i++) {
+            System.out.println(newArr[i]);
+        }
+
+    }
+}
+
+```
+
+### 练习五：评委打分
+
+需求 :  
+
+​	在唱歌比赛中，有6名评委给选手打分，分数范围是[0 - 100]之间的整数。选手的最后得分为：去掉最高分、最低分后的4个评委的平均分，请完成上述过程并计算出选手的得分。
+
+代码示例：
+
+```java
+package com.itheima.test;
+
+import java.util.Scanner;
+
+public class Test5 {
+    public static void main(String[] args) {
+        //在唱歌比赛中，有6名评委给选手打分，分数范围是[0 - 100]之间的整数。
+        // 选手的最后得分为：去掉最高分、最低分后的4个评委的平均分，请完成上述过程并计算出选手的得分。
+
+
+        //分析：
+        //1.定义一个数组，用来存储6名评委的打分（0~100）
+        int[] scoreArr = getScores();
+        for (int i = 0; i < scoreArr.length; i++) {
+            System.out.println(scoreArr[i]);
+        }
+        //2.求出数组中的最大值
+        int max = getMax(scoreArr);
+        //3.求出数组中的最小值
+        int min = getMin(scoreArr);
+        //4.求出数组中6个分数的总和
+        int sum = getSum(scoreArr);
+        //5.（总和 - 最大值 - 最小值 ）/4
+        int avg =  (sum - max - min)/(scoreArr.length - 2);
+        //6.打印结果
+        System.out.println("选手的最终得分为：" + avg);
+    }
+
+
+    public static int getSum(int[] scoreArr){
+        int sum = 0;
+        for (int i = 0; i < scoreArr.length; i++) {
+            sum = sum + scoreArr[i];
+        }
+        return  sum;
+
+    }
+
+    //求数组的最大值
+    public static int getMax(int[] scoreArr){
+        int max = scoreArr[0];
+        for (int i = 1; i < scoreArr.length; i++) {
+            if(scoreArr[i] > max){
+                max = scoreArr[i];
+            }
+        }
+        return max;
+    }
+
+    //求数组的最小值
+    public static int getMin(int[] scoreArr){
+        int min = scoreArr[0];
+        for (int i = 1; i < scoreArr.length; i++) {
+            if(scoreArr[i] < min){
+                min = scoreArr[i];
+            }
+        }
+        return min;
+    }
+
+    //1.我要干嘛？定义一个数组，用来存储6名评委的打分（0~100）
+    //2.我需要什么？都不需要
+    //3.干完了这件事情，是否需要返回？必须返回
+    public static int[] getScores(){
+        //定义数组
+        int[] scores = new int[6];
+        //使用键盘录入的形式，输入分数：0~100
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < scores.length; ) {
+            System.out.println("请输入评委的打分");
+            int score = sc.nextInt();//100
+            if(score >=0 && score<= 100){
+                scores[i] = score;
+                i++;
+            }else{
+                System.out.println("成绩超出了范围,继续录入，当前的i为：" + i);
+            }
+        }
+        return  scores;
+    }
+}
+```
+
+### 练习六：数字加密
+
+需求：
+
+​	某系统的数字密码（大于0），比如1983，采用加密方式进行传输。
+
+规则如下：
+
+​	先得到每位数，然后每位数都加上5 , 再对10求余，最后将所有数字反转，得到一串新数。
+
+举例：
+
+```java
+		1	9	8	3
++5		6   14  13  8
+%10		6   4   3   8
+反转	   8   3   4   6
+加密后的结果就是：8346
+```
+
+代码示例：
+
+```java
+package com.itheima.test;
+
+public class Test6 {
+    public static void main(String[] args) {
+        /*
+        某系统的数字密码（大于0）。比如1983，采用加密方式进行传输，
+        规则如下：
+            每位数加上5
+            再对10求余，
+            最后将所有数字反转，
+            得到一串新数。
+*/
+
+
+        //分析：
+        //1.把整数里面的每一位放到数组当中
+        int[] arr = {1, 9, 8, 3};
+        //2.加密
+        //每位数加上5
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = arr[i] + 5;
+        }
+        //再对10求余，
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = arr[i] % 10;
+        }
+        //将所有数字反转
+        for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        //8 3 4 6 --> 8346
+        //3.把数组里面的每一个数字进行拼接，变成加密之后的结果
+        int number = 0;
+        for (int i = 0; i < arr.length; i++) {
+            number = number * 10 + arr[i];
+        }
+        System.out.println(number);
+    }
+}
+```
+
+### 练习六扩展：
+
+```java
+public class Test7 {
+    public static void main(String[] args) {
+        //需求：
+        //把整数上的每一位都添加到数组当中
+        //反向推导
+
+
+
+        //1.计算出数组的长度
+        int number = 12345;
+        //定义一个变量临时记录number的值，就是为了第三步的时候再次使用
+        int temp = number;
+        //定义一个变量进行统计
+        int count = 0;
+        while(number != 0){
+            //每一次循环就去掉右边的一个数字
+            number = number / 10;
+            //去掉一位计数器就自增一次。
+            count++;
+        }
+        //2.定义数组
+        //动态初始化
+        int[] arr = new int[count];
+        //3.把整数上的每一位都添加到数组当中
+        int index = arr.length -1;
+        while(temp != 0){//12345
+            //获取temp里面的每一位数组
+            int ge = temp % 10;
+            //再去掉右边的那位数字
+            temp = temp / 10;
+            //把当前获取到的个位添加到数组当中
+            arr[index] = ge;
+            index--;
+        }
+        //验证结果  1  2  3  4 5
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + " ");
+        }
+    }
+}
+```
+
+### 练习七：数字解密
+
+把上一题加密之后的数据进行解密
+
+代码示例：
+
+```java
+public class Test8 {
+    public static void main(String[] args) {
+        /*某系统的数字密码（大于0）。比如1983，采用加密方式进行传输，
+        规则如下：
+            每位数加上5
+            再对10求余，
+            最后将所有数字反转，
+            得到一串新数。
+            按照以上规则进行解密：
+            比如1983加密之后变成8346，解密之后变成1983
+        */
+
+
+        //1.定义数组记录解密之后的结果
+        int[] arr = {8, 3, 4, 6};
+        //2.反转
+        for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        //3.由于加密是通过对10取余的方式进行获取的
+        //所以在解密的时候就需要判断，0~4之间+10  5~9数字不变
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] >= 0 && arr[i] <= 4) {
+                arr[i] = arr[i] + 10;
+            }
+        }
+        //4.每一位减5
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = arr[i] - 5;
+        }
+        //5.获取数组里面的每一位数字拼接成最终的结果
+        int number = 0;
+        for (int i = 0; i < arr.length; i++) {
+            number = number * 10 + arr[i];
+        }
+        System.out.println(number);
+
+
+
+
+    }
+}
+
+```
+
+
+### 练习八：抽奖
+
+需求：
+
+​	一个大V直播抽奖，奖品是现金红包，分别有{2, 588 , 888, 1000, 10000}五个奖金。请使用代码模拟抽奖，打印出每个奖项，奖项的出现顺序要随机且不重复。打印效果如下：（随机顺序，不一定是下面的顺序）
+
+```java
+888元的奖金被抽出
+588元的奖金被抽出
+10000元的奖金被抽出
+1000元的奖金被抽出
+2元的奖金被抽出
+```
+
+#### 解法一:
+
+```java
+package com.itheima.test;
+
+import java.util.Random;
+
+public class Test9 {
+    public static void main(String[] args) {
+        /* 需求：
+        一个大V直播抽奖，奖品是现金红包，分别有{2, 588 , 888, 1000, 10000}五个奖金。
+        请使用代码模拟抽奖，打印出每个奖项，奖项的出现顺序要随机且不重复。
+        打印效果如下：（随机顺序，不一定是下面的顺序）
+            888元的奖金被抽出
+            588元的奖金被抽出
+            10000元的奖金被抽出
+            1000元的奖金被抽出
+            2元的奖金被抽出
+        */
+
+
+        //分析：
+        //1.定义数组表示奖池
+        int[] arr = {2, 588, 888, 1000, 10000};
+        //2.定义新数组用于存储抽奖的结果
+        int[] newArr = new int[arr.length];
+        //3.抽奖
+        Random r = new Random();
+        //因为有5个奖项，所以这里要循环5次
+        for (int i = 0; i < 5; ) {
+            //获取随机索引
+            int randomIndex = r.nextInt(arr.length);
+            //获取奖项
+            int prize = arr[randomIndex];
+            //判断当前的奖项是否存在，如果存在则重新抽取，如果不存在，就表示是有效奖项
+            boolean flag = contains(newArr, prize);
+            if(!flag){
+                //把当前抽取到的奖项添加到newArr当中
+                newArr[i] = prize;
+                //添加完毕之后，移动索引
+                i++;
+            }
+        }
+        //4.遍历newArr
+        for (int i = 0; i < newArr.length; i++) {
+            System.out.println(newArr[i]);
+        }
+
+
+    }
+
+    //判断prize在数组当中是否存在
+    //存在：true
+    //不存在：false
+    public static boolean contains(int[] arr,int prize){
+        for (int i = 0; i < arr.length; i++) {
+            if(arr[i] == prize){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+}
+
+```
+
+#### 解法二：
+
+```java
+import java.util.Random;
+
+public class Test10 {
+    public static void main(String[] args) {
+       /* 需求：
+        一个大V直播抽奖，奖品是现金红包，分别有{2, 588 , 888, 1000, 10000}五个奖金。
+        请使用代码模拟抽奖，打印出每个奖项，奖项的出现顺序要随机且不重复。
+        打印效果如下：（随机顺序，不一定是下面的顺序）
+            888元的奖金被抽出
+            588元的奖金被抽出
+            10000元的奖金被抽出
+            1000元的奖金被抽出
+            2元的奖金被抽出
+        */
+
+        //1.把奖池里面的所有奖项打乱顺序
+        int[] arr = {2, 588, 888, 1000, 10000};
+        Random r = new Random();
+        for (int i = 0; i < arr.length; i++) {
+            //获取随机索引
+            int randomIndex = r.nextInt(arr.length);
+            //拿着i跟随机索引randomIndex上的值进行交换
+            int temp = arr[i];
+            arr[i] = arr[randomIndex];
+            arr[randomIndex] = temp;
+        }
+        //2.遍历奖池,从0索引开始获取每一个奖项
+        for (int i = 0; i < arr.length; i++) {
+            System.out.println(arr[i]);
+        }
+
+
+    }
+}
+```
+
+
+
+### 练习九：双色球
+
+代码示例:
+
+```java
+import java.util.Random;
+import java.util.Scanner;
+
+public class Test11 {
+    public static void main(String[] args) {
+        //1.生成中奖号码
+        int[] arr = createNumber(); // 123456  7
+
+        System.out.println("=======================");
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + " ");
+        }
+
+        System.out.println("=======================");
+
+
+
+        //2.用户输入彩票号码（红球 + 蓝球）//654321
+        int[] userInputArr = userInputNumber();
+
+        //3.判断用户的中奖情况
+        //红球 蓝球
+        int redCount = 0;
+        int blueCount = 0;
+
+        //判断红球
+        for (int i = 0; i < userInputArr.length - 1; i++) {
+            int redNumber = userInputArr[i];
+            for (int j = 0; j < arr.length - 1; j++) {
+                if(redNumber == arr[j]){
+                    redCount++;
+                    //如果找到了，那么后面的数字就没有必要继续比较了
+                    //跳出内循环，继续判断下一个红球号码是否中奖
+                    break;
+                }
+            }
+        }
+
+        //判断蓝球
+        int blueNumber = userInputArr[userInputArr.length-1];
+        if(blueNumber == arr[arr.length - 1]){
+            blueCount++;
+        }
+
+        //根据红球的个数以及蓝球的个数来判断中奖情况
+        if(redCount == 6 && blueCount == 1){
+            System.out.println("恭喜你，中奖1000万");
+        }else if(redCount == 6 && blueCount == 0){
+            System.out.println("恭喜你，中奖500万");
+        }else if(redCount == 5 && blueCount == 1){
+            System.out.println("恭喜你，中奖3000");
+        }else if((redCount == 5 && blueCount == 0) ||  (redCount == 4 && blueCount == 1)){
+            System.out.println("恭喜你，中奖200");
+        }else if((redCount == 4 && blueCount == 0) ||  (redCount == 3 && blueCount == 1)){
+            System.out.println("恭喜你，中奖10");
+        }else if((redCount == 2 && blueCount == 1) ||  (redCount == 1 && blueCount == 1)|| (redCount == 0 && blueCount == 1)){
+            System.out.println("恭喜你，中奖5");
+        }else{
+            System.out.println("谢谢参与，谢谢惠顾");
+        }
+
+    }
+
+    public static int[] userInputNumber() {
+        //1.创建数组用于添加用户购买的彩票号码
+        //6个红球 1个蓝球 数组长度：7
+        int[] arr = new int[7];
+
+        //2.利用键盘录入让用输入
+        Scanner sc = new Scanner(System.in);
+        //让用户输入红球号码
+        for (int i = 0; i < 6; ) {
+            System.out.println("请输入第" + (i + 1) + "个红球号码");
+            int redNumber = sc.nextInt();
+            //redNumber  在1~33  唯一不重复
+            if (redNumber >= 1 && redNumber <= 33) {
+                boolean flag = contains(arr, redNumber);
+                if (!flag) {
+                    //不存在
+                    //有效的，可以添加到数组当中
+                    arr[i] = redNumber;
+                    i++;
+                } else {
+                    //存在
+                    System.out.println("当前红球号码已经存在，请重新输入");
+                }
+            } else {
+                System.out.println("当前红球号码超出范围");
+            }
+        }
+
+        //让用户输入篮球号码
+        System.out.println("请输入篮球号码");
+        //1~16
+        while (true) {
+            int blueNumber = sc.nextInt();
+            if (blueNumber >= 1 && blueNumber <= 16) {
+                arr[arr.length - 1] = blueNumber;
+                break;
+            } else {
+                System.out.println("当前篮球号码超出范围");
+            }
+        }
+        return arr;
+
+    }
+
+
+    public static int[] createNumber() {
+        //1.创建数组用于添加中奖号码
+        //6个红球 1个蓝球 数组长度：7
+        int[] arr = new int[7];
+
+        //2.随机生成号码并添加到数组当中
+        //红球：不能重复的  1 2 3 4 5 6
+        //蓝球：可以跟红球号码重复 5
+
+        //生成红球号码并添加到数组当中
+        Random r = new Random();
+        for (int i = 0; i < 6; ) {
+            //获取红球号码
+            int redNumber = r.nextInt(33) + 1;
+            boolean flag = contains(arr, redNumber);
+            if (!flag) {
+                //把红球号码添加到数组当中
+                arr[i] = redNumber;
+                i++;
+            }
+        }
+
+        //生成蓝球号码并添加到数组当中
+        int blueNumber = r.nextInt(16) + 1;
+        arr[arr.length - 1] = blueNumber;
+        return arr;
+    }
+
+    //用于判断数组在数组中是否存在
+    public static boolean contains(int[] arr, int number) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == number) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+```
+
+## 标准类制作
+
+① 类名需要见名知意
+
+② 成员变量使用private修饰
+
+③ 提供至少两个构造方法 
+
+* 无参构造方法
+* 带全部参数的构造方法
+
+④ get和set方法 
+
+​	提供每一个成员变量对应的setXxx()/getXxx()
+
+⑤ 如果还有其他行为，也需要写上
+
+# API
+
+### API概述
+
+- 什么是API
+
+  ​	API (Application Programming Interface) ：应用程序编程接口
+
+- java中的API
+
+  ​	指的就是 JDK 中提供的各种功能的 Java类，这些类将底层的实现封装了起来，我们不需要关心这些类是如何实现的，只需要学习这些类如何使用即可，我们可以通过帮助文档来学习这些API如何使用。
+
+### String类
+
+​	String 类代表字符串，Java 程序中的所有字符串文字（例如“abc”）都被实现为此类的实例。也就是说，Java 程序中所有的双引号字符串，都是 String 类的对象。String 类在 java.lang 包下，所以使用的时候不需要导包！
+
+- 字符串不可变，它们的值在创建后不能被更改
+- 虽然 String 的值是不可变的，但是它们可以被共享
+- 字符串效果上相当于字符数组( char[] )，但是底层原理是字节数组( byte[] )
+
+### String类的构造方法
+
+- 常用的构造方法
+
+  | 方法名                      | 说明                                      |
+  | --------------------------- | ----------------------------------------- |
+  | public   String()           | 创建一个空白字符串对象，不含有任何内容    |
+  | public   String(char[] chs) | 根据字符数组的内容，来创建字符串对象      |
+  | public   String(byte[] bys) | 根据字节数组的内容，来创建字符串对象      |
+  | String s =   “abc”;         | 直接赋值的方式创建字符串对象，内容就是abc |
+
+
+### 创建字符串对象两种方式的区别
+
+- 通过构造方法创建
+
+  ​	通过 new 创建的字符串对象，每一次 new 都会申请一个内存空间，虽然内容相同，但是地址值不同
+
+- 直接赋值方式创建
+
+  ​	以“”方式给出的字符串，只要字符序列相同(顺序和大小写)，无论在程序代码中出现几次，JVM 都只会建立一个 String 对象，并在字符串池中维护
+
+### 字符串的比较
+
+#### ==号的作用
+
+- 比较基本数据类型：比较的是具体的值
+- 比较引用数据类型：比较的是对象地址值
+
+#### equals方法的作用
+
+- 方法介绍
+
+  ```java
+  public boolean equals(String s)     比较两个字符串内容是否相同、区分大小写
+  ```
+
+- 示例代码
+
+  ```java
+  public class StringDemo02 {
+      public static void main(String[] args) {
+          //构造方法的方式得到对象
+          char[] chs = {'a', 'b', 'c'};
+          String s1 = new String(chs);
+          String s2 = new String(chs);
+  
+          //直接赋值的方式得到对象
+          String s3 = "abc";
+          String s4 = "abc";
+  
+          //比较字符串对象地址是否相同
+          System.out.println(s1 == s2);
+          System.out.println(s1 == s3);
+          System.out.println(s3 == s4);
+          System.out.println("--------");
+  
+          //比较字符串内容是否相同
+          System.out.println(s1.equals(s2));
+          System.out.println(s1.equals(s3));
+          System.out.println(s3.equals(s4));
+      }
+  }
+  ```
+
+### 字符串反转案例
+
+#### 案例需求
+
+​	定义一个方法，实现字符串反转。键盘录入一个字符串，调用该方法后，在控制台输出结果
+
+​	例如，键盘录入 abc，输出结果 cba
+
+#### 代码实现
+
+```java
+public class Test6反转字符串 {
+    public static void main(String[] args) {
+        /*定义一个方法，实现字符串反转。键盘录入一个字符串，调用该方法后，在控制台输出结果
+        例如，键盘录入 abc，输出结果 cba*/
+
+
+
+        //1.定义一个字符串
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入一个字符串");
+        String str = sc.next();
+        //2.定义一个方法，反转字符串
+        //abc  --->  cba
+        //可以把字符串倒着遍历，再拼接
+        String result = reverse(str);
+        System.out.println(result);
+
+
+    }
+
+    //注释：方法的作用就是反转字符串
+    //把传递进来的字符串进行反转
+    public static String reverse(String str){//abc
+        //核心思想：倒着遍历并进行拼接就可以了
+        //fori :正着遍历  forr：倒着遍历
+        String s = "";
+        for (int i = str.length() - 1; i >= 0; i--) {
+            //i 依次表示字符串里面的每一个索引（倒着的）
+            //我们就可以拿到里面的每一个字符并拼接
+            s = s + str.charAt(i);
+        }
+
+        //把倒着拼接之后的结果返回即可
+        return s;
+
+    }
+}
+
+```
+
+### 金额转换
+
+#### 案例需求
+
+​	把2135变成：零佰零拾零万贰仟壹佰叁拾伍元 
+
+​	把789变成：零佰零拾零万零仟柒佰捌拾玖元
+
+#### 代码实现
+
+```java
+package com.itheima.stringdemo;
+
+import java.util.Scanner;
+
+public class StringDemo9 {
+    public static void main(String[] args) {
+        //1.键盘录入一个金额
+        Scanner sc = new Scanner(System.in);
+        int money;
+        while (true) {
+            System.out.println("请录入一个金额");
+            money = sc.nextInt();
+            if (money >= 0 && money <= 9999999) {
+                break;
+            } else {
+                System.out.println("金额无效");
+            }
+        }
+
+        //定义一个变量用来表示钱的大写
+        String moneyStr = "";
+
+        //2.得到money里面的每一位数字,再转成中文
+        while (true) {//2135
+            //从右往左获取数据，因为右侧是数据的个位
+            int ge = money % 10;
+            String capitalNumber = getCapitalNumber(ge);
+            //把转换之后的大写拼接到moneyStr当中
+            moneyStr = capitalNumber + moneyStr;
+            //第一次循环 ： "伍" + "" = "伍"
+            //第二次循环 ： "叁" + "伍" = "叁伍"
+            //去掉刚刚获取的数据
+            money = money / 10;
+
+            //如果数字上的每一位全部获取到了，那么money记录的就是0，此时循环结束
+            if (money == 0) {
+                break;
+            }
+        }
+
+        //3.在前面补0，补齐7位
+        int count = 7 - moneyStr.length();
+        for (int i = 0; i < count; i++) {
+            moneyStr = "零" + moneyStr;
+        }
+        System.out.println(moneyStr);//零零零贰壹叁伍
+
+        //4.插入单位
+        //定义一个数组表示单位
+        String[] arr = {"佰","拾","万","仟","佰","拾","元"};
+        //               零    零   零   贰   壹   叁   伍
+
+        //遍历moneyStr，依次得到 零    零   零   贰   壹   叁   伍
+        //然后把arr的单位插入进去
+
+        String result = "";
+        for (int i = 0; i < moneyStr.length(); i++) {
+            char c = moneyStr.charAt(i);
+            //把大写数字和单位拼接到result当中
+            result = result + c + arr[i];
+        }
+
+        //5.打印最终结果
+        System.out.println(result);
+
+    }
+
+
+    //定义一个方法把数字变成大写的中文
+    //1 -- 壹
+    public static String getCapitalNumber(int number) {
+        //定义数组，让数字跟大写的中文产生一个对应关系
+        String[] arr = {"零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"};
+        //返回结果
+        return arr[number];
+    }
+
+}
+
+```
+
+### 手机号屏蔽
+
+需求：以字符串的形式从键盘接受一个手机号，将中间四位号码屏蔽
+
+最终效果为：`131****9468`
+
+代码实现：
+
+```java
+public class Test8手机号屏蔽 {
+    public static void main(String[] args) {
+        /*以字符串的形式从键盘接受一个手机号，将中间四位号码屏蔽
+        最终效果为：131****9468*/
+
+        //1.键盘录入一个手机号码
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入手机号码");
+        String phoneNumber = sc.next();//13112349408
+
+        //2.截取手机号码中的前三位
+        String star = phoneNumber.substring(0, 3);
+
+        //3.截取手机号码中的最后四位
+        //此时我用substring方法，是用1个参数的，还是两个参数的？1个参数的会更好
+        //因为现在我要截取到最后，所以建议使用1个参数的。
+        String end = phoneNumber.substring(7);
+
+        //4.拼接
+        String result = star + "****" + end;
+
+        System.out.println(result);
+
+    }
+}
+
+```
+
+### 敏感词替换 
+
+需求1：键盘录入一个 字符串，如果字符串中包含（TMD），则使用***替换 
+
+```java
+public class Test9敏感词替换 {
+    public static void main(String[] args) {
+        //1.定义一个变量表示骂人的话
+        String talk = "后裔你玩什么啊，TMD";
+
+
+        //2.把这句话中的敏感词进行替换
+        String result = talk.replace("TMD", "***");
+
+        //3.打印
+        System.out.println(talk);
+        System.out.println(result);
+    }
+}
+
+```
+
+需求2：如果要替换的敏感词比较多怎么办？
+
+```java
+public class Test10多个敏感词替换 {
+    public static void main(String[] args) {
+        //实际开发中，敏感词会有很多很多
+
+        //1.先键盘录入要说的话
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入要说的话");
+        String talk = sc.next();//后裔你玩什么啊，TMD,GDX,ctmd,ZZ
+
+        //2.定义一个数组用来存多个敏感词
+        String[] arr = {"TMD","GDX","ctmd","ZZ","lj","FW","nt"};
+
+        //3.把说的话中所有的敏感词都替换为***
+
+        for (int i = 0; i < arr.length; i++) {
+            //i 索引
+            //arr[i] 元素 --- 敏感词
+            talk = talk.replace(arr[i],"***");
+        }
+
+        //4.打印结果
+        System.out.println(talk);//后裔你玩什么啊，***,***,***,***
+
+    }
+}
+
+```
+
+### 身份证信息查看
+
+​	身份证的每一位都是有固定的含义：
+
+* 1、2位：省份 
+* 3、4位：城市 
+* 5、6位：区县 
+* 7-14位：出生年、月、日 
+* 15、16位：所在地派出所 
+* 17位：性别（奇数男性，偶数女性）
+* 18位：个人信息码（随机产生） 
+
+要求打印内容方式如下：
+
+​	人物信息为：
+
+​	出生年月日：XXXX年X月X日
+
+​	性别为：男/女
+
+```java
+package com.itheima.stringdemo;
+
+public class StringDemo11 {
+    public static void main(String[] args) {
+        //1.定义一个字符串记录身份证号码
+        String id = "321281202001011234";
+
+        //2.获取出生年月日
+        String year = id.substring(6, 10);
+        String month = id.substring(10, 12);
+        String day = id.substring(12, 14);
+
+
+        System.out.println("人物信息为：");
+        System.out.println("出生年月日:" + year + "年" + month + "月" + day + "日");
+
+        //3.获取性别
+        char gender = id.charAt(16);//'3'  ---> 3
+        //利用ASCII码表进行转换
+        //'0' --->  48
+        //'1' --->  49
+        //'2' --->  50
+        //'3' --->  51
+        //'4' --->  52
+        //'5' --->  53
+        //'6' --->  54
+        //'7' --->  55
+        //'8' --->  56
+        //'9' --->  57
+
+       int num = gender - 48;
+        if(num % 2 == 0){
+            System.out.println("性别为:女");
+        }else{
+            System.out.println("性别为:男");
+        }
+    }
+}
+```
+
+# StringBuilder
+
+StringBuilder 可以看成是一个容器，创建之后里面的内容是可变的。
+
+当我们在拼接字符串和反转字符串的时候会使用到
+
+### 基本使用
+
+```java
+public class StringBuilderDemo3 {
+    public static void main(String[] args) {
+        //1.创建对象
+        StringBuilder sb = new StringBuilder("abc");
+
+        //2.添加元素
+        /*sb.append(1);
+        sb.append(2.3);
+        sb.append(true);*/
+
+        //反转
+        sb.reverse();
+
+        //获取长度
+        int len = sb.length();
+        System.out.println(len);
+
+
+        //打印
+        //普及：
+        //因为StringBuilder是Java已经写好的类
+        //java在底层对他做了一些特殊处理。
+        //打印对象不是地址值而是属性值。
+        System.out.println(sb);
+    }
+}
+```
+
+### 链式编程
+
+```java
+public class StringBuilderDemo4 {
+    public static void main(String[] args) {
+        //1.创建对象
+        StringBuilder sb = new StringBuilder();
+
+        //2.添加字符串
+        sb.append("aaa").append("bbb").append("ccc").append("ddd");
+
+        System.out.println(sb);//aaabbbcccddd
+
+        //3.再把StringBuilder变回字符串
+        String str = sb.toString();
+        System.out.println(str);//aaabbbcccddd
+
+    }
+}
+```
+
+### 练习1：对称字符串 
+
+需求：
+
+​	键盘接受一个字符串，程序判断出该字符串是否是对称字符串，并在控制台打印是或不是
+
+  	对称字符串：123321、111
+
+  	非对称字符串：123123
+
+代码示例：
+
+```java
+public class StringBuilderDemo6 {
+    //使用StringBuilder的场景：
+    //1.字符串的拼接
+    //2.字符串的反转
+
+    public static void main(String[] args) {
+        //1.键盘录入一个字符串
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入一个字符串");
+        String str = sc.next();
+
+        //2.反转键盘录入的字符串
+        String result = new StringBuilder().append(str).reverse().toString();
+
+        //3.比较
+        if(str.equals(result)){
+            System.out.println("当前字符串是对称字符串");
+        }else{
+            System.out.println("当前字符串不是对称字符串");
+        }
+
+    }
+}
+
+```
+
+### 练习2：拼接字符串 
+
+需求：定义一个方法，把 int 数组中的数据按照指定的格式拼接成一个字符串返回。
+
+​          调用该方法，并在控制台输出结果。
+
+​          例如：数组为int[] arr = {1,2,3}; 
+
+​          执行方法后的输出结果为：[1, 2, 3]
+
+代码示例:
+
+```java
+package com.itheima.stringbuilderdemo;
+
+public class StringBuilderDemo7 {
+    public static void main(String[] args) {
+        //1.定义数组
+        int[] arr = {1,2,3};
+
+        //2.调用方法把数组变成字符串
+        String str = arrToString(arr);
+
+        System.out.println(str);
+
+    }
+
+
+    public static String arrToString(int[] arr){
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (int i = 0; i < arr.length; i++) {
+            if(i == arr.length - 1){
+                sb.append(arr[i]);
+            }else{
+                sb.append(arr[i]).append(", ");
+            }
+        }
+        sb.append("]");
+
+        return sb.toString();
+    }
+}
+
+```
+
+# StringJoiner
+
+* StringJoiner跟StringBuilder一样，也可以看成是一个容器，创建之后里面的内容是可变的。
+* 作用：提高字符串的操作效率，而且代码编写特别简洁，但是目前市场上很少有人用。 
+* JDK8出现的
+
+基本使用：
+
+```java
+//1.创建一个对象，并指定中间的间隔符号
+StringJoiner sj = new StringJoiner("---");
+//2.添加元素
+sj.add("aaa").add("bbb").add("ccc");
+//3.打印结果
+System.out.println(sj);//aaa---bbb---ccc
+```
+
+```java
+//1.创建对象
+StringJoiner sj = new StringJoiner(", ","[","]");
+//2.添加元素
+sj.add("aaa").add("bbb").add("ccc");
+int len = sj.length();
+System.out.println(len);//15
+//3.打印
+System.out.println(sj);//[aaa, bbb, ccc]
+String str = sj.toString();
+System.out.println(str);//[aaa, bbb, ccc]
+```
+
+## 关于字符串的小扩展：
+
+1. 字符串存储的内存原理
+
+   String s = “abc”；直接赋值
+
+   特点：
+
+   ​	此时字符串abc是存在字符串常量池中的。
+
+   ​	先检查字符串常量池中有没有字符串abc，如果有，不会创建新的，而是直接复用。如果没有abc，才会创建一个新的。
+
+   所以，直接赋值的方式，代码简单，而且节约内存。
+
+2. new出来的字符串
+
+   看到new关键字，一定是在堆里面开辟了一个小空间。
+
+   String s1 = new String（“abc”）；
+
+   String s2 = “abc”；
+
+   s1记录的是new出来的，在堆里面的地址值。
+
+   s2是直接赋值的，所以记录的是字符串常量池中的地址值。
+
+3. ==号比较的到底是什么？
+
+   如果比较的是基本数据类型：比的是具体的数值是否相等。
+
+   如果比较的是引用数据类型：比的是地址值是否相等。
+
+   结论：==只能用于比较基本数据类型。不能比较引用数据类型。
+
+
+# ArrayList
+
+### 集合和数组的优势对比：
+
+1. 长度可变
+2. 添加数据的时候不需要考虑索引，默认将数据添加到末尾
+
+### ArrayList类概述
+
+- 什么是集合
+
+  ​	提供一种存储空间可变的存储模型，存储的数据容量可以发生改变
+
+- ArrayList集合的特点
+
+  ​	长度可以变化，只能存储引用数据类型。
+
+- 泛型的使用
+
+  ​	用于约束集合中存储元素的数据类型
+
+### ArrayList类常用方法
+
+#### 构造方法
+
+| 方法名             | 说明                 |
+| ------------------ | -------------------- |
+| public ArrayList() | 创建一个空的集合对象 |
+
+#### 成员方法
+
+| 方法名                                | 说明                                   |
+| ------------------------------------- | -------------------------------------- |
+| public boolean add(要添加的元素)      | 将指定的元素追加到此集合的末尾         |
+| public boolean remove(要删除的元素)   | 删除指定元素,返回值表示是否删除成功    |
+| public E  remove(int   index)         | 删除指定索引处的元素，返回被删除的元素 |
+| public E   set(int index,E   element) | 修改指定索引处的元素，返回被修改的元素 |
+| public E   get(int   index)           | 返回指定索引处的元素                   |
+| public int   size()                   | 返回集合中的元素的个数                 |
+
+#### 示例代码
+
+```java
+public class ArrayListDemo02 {
+    public static void main(String[] args) {
+        //创建集合
+        ArrayList<String> array = new ArrayList<String>();
+
+        //添加元素
+        array.add("hello");
+        array.add("world");
+        array.add("java");
+
+        //public boolean remove(Object o)：删除指定的元素，返回删除是否成功
+        //        System.out.println(array.remove("world"));
+        //        System.out.println(array.remove("javaee"));
+
+        //public E remove(int index)：删除指定索引处的元素，返回被删除的元素
+        //        System.out.println(array.remove(1));
+
+        //IndexOutOfBoundsException
+        //        System.out.println(array.remove(3));
+
+        //public E set(int index,E element)：修改指定索引处的元素，返回被修改的元素
+        //        System.out.println(array.set(1,"javaee"));
+
+        //IndexOutOfBoundsException
+        //        System.out.println(array.set(3,"javaee"));
+
+        //public E get(int index)：返回指定索引处的元素
+        //        System.out.println(array.get(0));
+        //        System.out.println(array.get(1));
+        //        System.out.println(array.get(2));
+        //System.out.println(array.get(3)); //？？？？？？ 自己测试
+
+        //public int size()：返回集合中的元素的个数
+        System.out.println(array.size());
+
+        //输出集合
+        System.out.println("array:" + array);
+    }
+}
+```
+
+### ArrayList存储字符串并遍历
+
+#### 案例需求
+
+​	创建一个存储字符串的集合，存储3个字符串元素，使用程序实现在控制台遍历该集合
+
+#### 代码实现
+
+```java
+public class ArrayListDemo3 {
+    public static void main(String[] args) {
+        //1.创建集合对象
+        ArrayList<String> list = new ArrayList<>();
+
+        //2.添加元素
+        list.add("aaa");
+        list.add("bbb");
+        list.add("ccc");
+        list.add("ddd");
+
+        //3.遍历
+        //快捷键: list.fori 正向遍历
+        //list.forr 倒着遍历
+        System.out.print("[");
+        for (int i = 0; i < list.size(); i++) {
+            //i 依次表示集合里面的每一个索引
+
+            if(i == list.size() - 1){
+                //最大索引
+                System.out.print(list.get(i));
+            }else{
+                //非最大索引
+                System.out.print(list.get(i) + ", ");
+            }
+        }
+        System.out.print("]");
+    }
+}
+
+```
+
+### ArrayList存储学生对象并遍历
+
+#### 案例需求
+
+​	创建一个存储学生对象的集合，存储3个学生对象，使用程序实现在控制台遍历该集合
+
+#### 代码实现
+
+```java
+public class ArrayListDemo4 {
+    public static void main(String[] args) {
+        //1.创建集合对象，用来存储数据
+        ArrayList<Student> list = new ArrayList<>();
+
+        //2.创建学生对象
+        Student s1 = new Student("zhangsan",16);
+        Student s2 = new Student("lisi",15);
+        Student s3 = new Student("wangwu",18);
+
+        //3.把学生对象添加到集合中
+        list.add(s1);
+        list.add(s2);
+        list.add(s3);
+
+        //4.遍历
+        for (int i = 0; i < list.size(); i++) {
+            //i 依次表示集合中的每一个索引
+            Student stu = list.get(i);
+            System.out.println(stu.getName() + ", " + stu.getAge());
+        }
+
+
+
+    }
+}
+
+```
+
+### 查找用户的索引
+
+需求： 
+
+1，main方法中定义一个集合，存入三个用户对象。 
+
+   用户属性为：id，username，password    
+
+2，要求：定义一个方法，根据id查找对应的学生信息。
+
+   如果存在，返回索引
+
+   如果不存在，返回-1
+
+代码示例：
+
+```java
+public class ArrayListDemo6 {
+    public static void main(String[] args) {
+        /*需求：
+        1，main方法中定义一个集合，存入三个用户对象。
+        用户属性为：id，username，password
+        2，要求：定义一个方法，根据id查找对应的学生信息。
+        如果存在，返回索引
+        如果不存在，返回-1*/
+
+
+        //1.创建集合对象
+        ArrayList<User> list = new ArrayList<>();
+
+        //2.创建用户对象
+        User u1 = new User("heima001", "zhangsan", "123456");
+        User u2 = new User("heima002", "lisi", "1234");
+        User u3 = new User("heima003", "wangwu", "1234qwer");
+
+        //3.把用户对象添加到集合当中
+        list.add(u1);
+        list.add(u2);
+        list.add(u3);
+
+        //4.调用方法，通过id获取对应的索引
+        int index = getIndex(list, "heima001");
+
+        System.out.println(index);
+
+    }
+
+
+    //1.我要干嘛？  根据id查找对应的学生信息
+    //2.我干这件事情需要什么才能完成？   集合 id
+    //3.方法的调用处是否需要继续使用方法的结果？
+    //要用必须返回，不要用可以返回也可以不返回
+    //明确说明需要有返回值 int
+    public static int getIndex(ArrayList<User> list, String id) {
+        //遍历集合得到每一个元素
+        for (int i = 0; i < list.size(); i++) {
+            User u = list.get(i);
+            String uid = u.getId();
+            if(uid.equals(id)){
+                return i;
+            }
+        }
+        //因为只有当集合里面所有的元素都比较完了，才能断定id是不存在的。
+        return -1;
+    }
+}
+
+```
+
+### 判断用户的是否存在
+
+```java
+public class ArrayListDemo5 {
+    public static void main(String[] args) {
+       /* 需求：
+        1，main方法中定义一个集合，存入三个用户对象。
+        用户属性为：id，username，password
+        2，要求：定义一个方法，根据id查找对应的学生信息。
+        如果存在，返回true
+        如果不存在，返回false*/
+
+        //1.定义集合
+        ArrayList<User> list = new ArrayList<>();
+
+        //2.创建对象
+        User u1 = new User("heima001","zhangsan","123456");
+        User u2 = new User("heima002","lisi","12345678");
+        User u3 = new User("heima003","wangwu","1234qwer");
+
+        //3.把用户对象添加到集合当中
+        list.add(u1);
+        list.add(u2);
+        list.add(u3);
+
+        //4.调用方法，查询id是否存在
+        boolean result = contains(list, "heima001");
+        System.out.println(result);
+
+    }
+
+    //定义在测试类中的方法需要加static
+    //1.我要干嘛？ 我要根据id查询学生是否存在
+    //2.我干这件事情，需要什么才能完成？ 集合 id
+    //3.方法的调用处是否需要使用方法的结果？
+    //如果要用，必须返回，如果不用，可以返回也可以不返回
+    //但是本题明确说明需要返回
+    public static boolean contains(ArrayList<User> list, String id){
+        //循环遍历集合，得到集合里面的每一个元素
+        //再进行判断
+
+        for (int i = 0; i < list.size(); i++) {
+            //i 索引  list.get(i); 元素
+            User u = list.get(i);
+            //判断id是否存在，我是拿着谁跟谁比较
+            //需要把用户对象里面的id拿出来再进行比较。
+            String uid = u.getId();
+            if(id.equals(uid)){
+                return true;//return 关键字：作用就是结束方法。
+            }
+        }
+        //只有当集合里面所有的元素全部比较完毕才能认为是不存在的。
+        return false;
+    }
+
+}
+
+```
+# 学生管理系统
+
+```java
+package App;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class StudentSystem {
+    public static void main(String[] args) {
+        ArrayList<Student> list = new ArrayList<>();
+        loop:
+        while (true) {
+            System.out.println("-----------------欢迎来到学生管理系统-------------------");
+            System.out.println("1:添加学生");
+            System.out.println("2:删除学生");
+            System.out.println("3:修改学生");
+            System.out.println("4:查询学生");
+            System.out.println("5:退出");
+            System.out.println("请输入您的选择：");
+            Scanner sc = new Scanner(System.in);
+            String choose = sc.next();
+            switch (choose) {
+                case "1" -> addStudent(list);
+                case "2" -> deleteStudent(list);
+                case "3" -> updateStudent(list);
+                case "4" -> queryStudent(list);
+                case "5" -> {
+                    System.out.println("退出");
+                    // break loop;
+                    System.exit(0); // 停止虚拟机运行
+                }
+                default -> System.out.println("没有这个选项");
+            }
+        }
+    }
+
+    //添加学生
+    public static void addStudent(ArrayList<Student> list) {
+        //利用空参构造先创建学生对象
+        Student s = new Student();
+
+        Scanner sc = new Scanner(System.in);
+        String id = null;
+        while (true) {
+            System.out.println("请输入学生的id");
+            id = sc.next();
+            boolean flag = contains(list, id);
+            if(flag){
+                //表示id已经存在，需要重新录入
+                System.out.println("id已经存在，请重新录入");
+            }else{
+                //表示id不存在，表示可以使用
+                s.setId(id);
+                break;
+            }
+        }
+
+        System.out.println("请输入学生的姓名");
+        String name = sc.next();
+        s.setName(name);
+
+        System.out.println("请输入学生的年龄");
+        int age = sc.nextInt();
+        s.setAge(age);
+
+        System.out.println("请输入学生的家庭住址");
+        String address = sc.next();
+        s.setAddress(address);
+
+
+        //把学生对象添加到集合当中
+        list.add(s);
+
+        //提示一下用户
+        System.out.println("学生信息添加成功");
+    }
+
+    //删除学生
+    public static void deleteStudent(ArrayList<Student> list) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入要删除的id");
+        String id = sc.next();
+        //查询id在集合中的索引
+        int index = getIndex(list, id);
+        //对index进行判断
+        //如果-1，就表示不存在，结束方法，回到初始菜单
+        if(index >= 0){
+            //如果大于等于0的，表示存在，直接删除
+            list.remove(index);
+            System.out.println("id为：" + id + "的学生删除成功");
+        }else{
+            System.out.println("id不存在，删除失败");
+        }
+    }
+
+    //修改学生
+    public static void updateStudent(ArrayList<Student> list) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("请输入要修改学生的id");
+        String id = sc.next();
+
+        int index = getIndex(list, id);
+
+        if(index == -1){
+            System.out.println("要修改的id" + id + "不存在，请重新输入");
+            return;
+        }
+
+        //当代码执行到这里，表示什么？表示当前id是存在的。
+        //获取要修改的学生对象
+        Student stu = list.get(index);
+
+        //输入其他的信息并修改
+        System.out.println("请输入要修改的学生姓名");
+        String newName = sc.next();
+        stu.setName(newName);
+
+        System.out.println("请输入要修改的学生年龄");
+        int newAge = sc.nextInt();
+        stu.setAge(newAge);
+
+        System.out.println("请输入要修改的学生家庭住址");
+        String newAddress = sc.next();
+        stu.setAddress(newAddress);
+
+        System.out.println("学生信息修改成功");
+
+    }
+
+    //查询学生
+    public static void queryStudent(ArrayList<Student> list) {
+        if (list.size() == 0) {
+            System.out.println("当前无学生信息，请添加后再查询");
+            //结束方法
+            return;
+        }
+
+        //打印表头信息
+        System.out.println("id\t\t姓名\t年龄\t家庭住址");
+        //当代码执行到这里，表示集合中是有数据的
+        for (int i = 0; i < list.size(); i++) {
+            Student stu = list.get(i);
+            System.out.println(stu.getId() + "\t" + stu.getName() + "\t" + stu.getAge() + "\t" + stu.getAddress());
+        }
+    }
+
+
+    //判断id在集合中是否存在
+    public static boolean contains(ArrayList<Student> list, String id) {
+        //循环遍历集合得到里面的每一个学生对象
+        /*for (int i = 0; i < list.size(); i++) {
+            //拿到学生对象后，获取id并进行判断
+            Student stu = list.get(i);
+            String sid = stu.getId();
+            if(sid.equals(id)){
+                //存在，true
+                return true;
+            }
+        }
+        // 不存在false
+        return false;*/
+        return getIndex(list,id) >= 0;
+    }
+
+    //通过id获取索引的方法
+    public static int getIndex(ArrayList<Student> list, String id){
+        //遍历集合
+        for (int i = 0; i < list.size(); i++) {
+            //得到每一个学生对象
+            Student stu = list.get(i);
+            //得到每一个学生对象的id
+            String sid = stu.getId();
+            //拿着集合中的学生id跟要查询的id进行比较
+            if(sid.equals(id)){
+                //如果一样，那么就返回索引
+                return i;
+            }
+        }
+        //当循环结束之后还没有找到，就表示不存在，返回-1.
+        return -1;
+    }
+}
+```
+
+* 面向对象进阶
+
+# static关键字   
+
+## 概述
+
+以前我们定义过如下类：
+
+```java
+public class Student {
+    // 成员变量
+    public String name;
+    public char sex; // '男'  '女'
+    public int age;
+
+    // 无参数构造方法
+    public Student() {
+
+    }
+    
+    // 有参数构造方法
+    public Student(String  a) {
+
+    }
+}
+```
+
+我们已经知道面向对象中，存在类和对象的概念，我们在类中定义了一些成员变量，例如name,age,sex ,结果发现这些成员变量，每个对象都存在（因为每个对象都可以访问）。
+
+而像name ,age , sex确实是每个学生对象都应该有的属性，应该属于每个对象。
+
+所以Java中成员（**变量和方法**）等是存在所属性的，Java是通过static关键字来区分的。**static关键字在Java开发非常的重要，对于理解面向对象非常关键。**
+
+关于 `static` 关键字的使用，它可以用来修饰的成员变量和成员方法，被static修饰的成员是**属于类**的是放在静态区中，没有static修饰的成员变量和方法则是**属于对象**的。我们上面案例中的成员变量都是没有static修饰的，所以属于每个对象。
+
+## 定义格式和使用 
+
+static是静态的意思。 static可以修饰成员变量或者修饰方法。
+
+### 静态变量及其访问
+
+有static修饰成员变量，说明这个成员变量是属于类的，这个成员变量称为**类变量**或者**静态成员变量**。 直接用  类名访问即可。因为类只有一个，所以静态成员变量在内存区域中也只存在一份。所有的对象都可以共享这个变量。
+
+**定义格式**
+
+```java
+修饰符 static 数据类型 变量名 = 初始值；    
+```
+
+**举例**
+
+```java
+public class Student {
+    public static String schoolName = "播客"； // 属于类，只有一份。
+    // .....
+}
+```
+
+**静态成员变量的访问:**
+
+**格式：类名.静态变量**
+
+```java
+public static void  main(String[] args){
+    System.out.println(Student.schoolName); // 播客
+    Student.schoolName = "程序员";
+    System.out.println(Student.schoolName); // 程序员
+}
+```
+
+### 实例变量及其访问
+
+无static修饰的成员变量属于每个对象的，  这个成员变量叫**实例变量**，之前我们写成员变量就是实例成员变量。
+
+**需要注意的是**：实例成员变量属于每个对象，必须创建类的对象才可以访问。   
+
+**格式：对象.实例成员变量**
+
+### 静态方法及其访问
+
+有static修饰成员方法，说明这个成员方法是属于类的，这个成员方法称为**类方法或者**静态方法**。 直接用  类名访问即可。因为类只有一个，所以静态方法在内存区域中也只存在一份。所有的对象都可以共享这个方法。
+
+与静态成员变量一样，静态方法也是直接通过**类名.方法名称**即可访问。
+
+**举例**
+
+```java
+public class Student{
+    public static String schoolName = "传智播客"； // 属于类，只有一份。
+    // .....
+    public static void study(){
+    	System.out.println("我们都在黑马程序员学习");   
+    }
+}
+```
+
+**静态成员变量的访问:**
+
+**格式：类名.静态方法**
+
+```java
+public static void  main(String[] args){
+    Student.study();
+}
+```
+
+### 实例方法及其访问
+
+无static修饰的成员方法属于每个对象的，这个成员方法也叫做**实例方法**。
+
+**需要注意的是**：实例方法是属于每个对象，必须创建类的对象才可以访问。  
+
+**格式：对象.实例方法**
+
+**示例**：
+
+```java
+public class Student {
+    // 实例变量
+    private String name ;
+    // 2.方法：行为
+    // 无 static修饰，实例方法。属于每个对象，必须创建对象调用
+    public void run(){
+        System.out.println("学生可以跑步");
+    }
+	// 无 static修饰，实例方法
+    public  void sleep(){
+        System.out.println("学生睡觉");
+    }
+    public static void study(){
+        
+    }
+}
+```
+
+```java
+public static void main(String[] args){
+    // 创建对象 
+    Student stu = new Student ;
+    stu.name = "徐干";
+    // Student.sleep();// 报错，必须用对象访问。
+    stu.sleep();
+    stu.run();
+}
+```
+
+## 小结
+
+1.当 `static` 修饰成员变量或者成员方法时，该变量称为**静态变量**，该方法称为**静态方法**。该类的每个对象都**共享**同一个类的静态变量和静态方法。任何对象都可以更改该静态变量的值或者访问静态方法。但是不推荐这种方式去访问。因为静态变量或者静态方法直接通过类名访问即可，完全没有必要用对象去访问。
+
+2.无static修饰的成员变量或者成员方法，称为**实例变量，实例方法**，实例变量和实例方法必须创建类的对象，然后通过对象来访问。
+
+3.static修饰的成员属于类，会存储在静态区，是随着类的加载而加载的，且只加载一次，所以只有一份，节省内存。存储于一块固定的内存区域（静态区），所以，可以直接被类名调用。它优先于对象存在，所以，可以被所有对象共享。
+
+4.无static修饰的成员，是属于对象，对象有多少个，他们就会出现多少份。所以必须由对象调用。
+
+
+# 继承 
+
+## 概述
+
+### 引入
+
+假如我们要定义如下类:
+学生类,老师类和工人类，分析如下。
+
+1. 学生类
+   属性:姓名,年龄
+   行为:吃饭,睡觉
+
+2. 老师类
+   属性:姓名,年龄，薪水
+   行为:吃饭,睡觉，教书
+
+3. 班主任
+   属性:姓名,年龄，薪水
+   行为:吃饭,睡觉，管理
+
+如果我们定义了这三个类去开发一个系统，那么这三个类中就存在大量重复的信息（属性:姓名，年龄。行为：吃饭，睡觉）。这样就导致了相同代码大量重复，代码显得很臃肿和冗余，那么如何解决呢？
+
+假如多个类中存在相同属性和行为时，我们可以将这些内容抽取到单独一个类中，那么多个类无需再定义这些属性和行为，只要**继承**那一个类即可。
+
+其中，多个类可以称为**子类**，单独被继承的那一个类称为**父类**、**超类（superclass）**或者**基类**。
+
+### 继承的含义
+
+继承描述的是事物之间的所属关系，这种关系是：`is-a` 的关系。例如，兔子属于食草动物，食草动物属于动物。可见，父类更通用，子类更具体。我们通过继承，可以使多种事物之间形成一种关系体系。
+
+**继承**：就是子类继承父类的**属性**和**行为**，使得子类对象可以直接具有与父类相同的属性、相同的行为。子类可以直接访问父类中的**非私有**的属性和行为。
+
+### 继承的好处
+
+1. 提高**代码的复用性**（减少代码冗余，相同代码重复利用）。
+2. 使类与类之间产生了关系。
+
+## 继承的格式
+
+通过 `extends` 关键字，可以声明一个子类继承另外一个父类，定义格式如下：
+
+```java
+class 父类 {
+	...
+}
+
+class 子类 extends 父类 {
+	...
+}
+```
+
+**需要注意：Java是单继承的，一个类只能继承一个直接父类，跟现实世界很像，但是Java中的子类是更加强大的。**
+
+## 继承案例
+
+### 案例
+
+请使用继承定义以下类:
+
+1. 学生类
+   属性:姓名,年龄
+   行为:吃饭,睡觉
+2. 老师类
+   属性:姓名,年龄，薪水
+   行为:吃饭,睡觉，教书
+3. 班主任
+   属性:姓名,年龄，薪水
+   行为:吃饭,睡觉，管理
+
+
+### 案例代码实现
+
+**1.父类Human类**
+
+  ```java
+ public class Human {
+    // 合理隐藏
+    private String name ;
+    private int age ;
+	
+    // 合理暴露
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+ }
+  ```
+
+**2.子类Teacher类**
+
+  ```java
+public class Teacher extends Human {
+    // 工资
+    private double salary ;
+    
+    // 特有方法
+    public void teach(){
+        System.out.println("老师在认真教技术！")；
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+}
+  ```
+
+**3.子类Student类**
+
+  ```java
+public class Student extends Human{
+ 
+}
+  ```
+
+**4.子类BanZhuren类**
+
+```java 
+public class Teacher extends Human {
+    // 工资
+    private double salary ;
+    
+       // 特有方法
+    public void admin(){
+        System.out.println("班主任强调纪律问题！")；
+    }
+    
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+}
+```
+
+
+**5.测试类**
+
+  ```java
+  public class Test {
+      public static void main(String[] args) {
+          Teacher dlei = new Teacher();
+          dlei.setName("播仔");
+          dlei.setAge("31");
+          dlei.setSalary(1000.99);
+          System.out.println(dlei.getName());
+          System.out.println(dlei.getAge());
+          System.out.println(dlei.getSalary());
+          dlei.teach();
+          
+          BanZhuRen linTao = new BanZhuRen();
+          linTao.setName("灵涛");
+          linTao.setAge("28");
+          linTao.setSalary(1000.99);
+          System.out.println(linTao.getName());
+          System.out.println(linTao.getAge());
+          System.out.println(linTao.getSalary());
+          linTao.admin();
+
+          Student xugan = new Student();
+          xugan.setName("播仔");
+          xugan.setAge("31");
+          //xugan.setSalary(1000.99); // xugan没有薪水属性，报错！
+          System.out.println(xugan.getName());
+          System.out.println(xugan.getAge());
+
+
+
+      }
+  }
+  ```
+
+### 小结
+
+1. 继承实际上是子类相同的属性和行为可以定义在父类中，子类特有的属性和行为由自己定义，这样就实现了相同属性和行为的重复利用，从而提高了代码复用。
+
+2. 子类继承父类，就可以直接得到父类的成员变量和方法。是否可以继承所有成分呢？请看下节！
+
+## 子类不能继承的内容
+
+### 引入
+
+并不是父类的所有内容都可以给子类继承的：
+
+**子类不能继承父类的构造方法。**
+
+**值得注意的是子类可以继承父类的私有成员（成员变量，方法），只是子类无法直接访问而已，可以通过getter/setter方法访问父类的private成员变量。**
+
+### 演示代码
+```java
+public class Demo03 {
+    public static void main(String[] args) {
+        Zi z = new Zi();
+        System.out.println(z.num1);
+//		System.out.println(z.num2); // 私有的子类无法使用
+        // 通过getter/setter方法访问父类的private成员变量
+        System.out.println(z.getNum2());
+
+        z.show1();
+        // z.show2(); // 私有的子类无法使用
+    }
+}
+
+class Fu {
+    public int num1 = 10;
+    private int num2 = 20;
+
+    public void show1() {
+        System.out.println("show1");
+    }
+
+    private void show2() {
+        System.out.println("show2");
+    }
+
+    public int getNum2() {
+        return num2;
+    }
+
+    public void setNum2(int num2) {
+        this.num2 = num2;
+    }
+}
+
+class Zi extends Fu {
+}
+```
+
+## 继承后的特点—成员变量
+
+当类之间产生了继承关系后，其中各类中的成员变量，又产生了哪些影响呢？
+
+### 成员变量不重名
+
+如果子类父类中出现**不重名**的成员变量，这时的访问是**没有影响的**。代码如下：
+
+```java
+class Fu {
+	// Fu中的成员变量
+	int num = 5;
+}
+class Zi extends Fu {
+	// Zi中的成员变量
+	int num2 = 6;
+  
+	// Zi中的成员方法
+	public void show() {
+		// 访问父类中的num
+		System.out.println("Fu num="+num); // 继承而来，所以直接访问。
+		// 访问子类中的num2
+		System.out.println("Zi num2="+num2);
+	}
+}
+class Demo04 {
+	public static void main(String[] args) {
+        // 创建子类对象
+		Zi z = new Zi(); 
+      	// 调用子类中的show方法
+		z.show();  
+	}
+}
+
+演示结果：
+Fu num = 5
+Zi num2 = 6
+```
+
+### 成员变量重名
+
+如果子类父类中出现**重名**的成员变量，这时的访问是**有影响的**。代码如下：
+
+```java
+class Fu1 {
+	// Fu中的成员变量。
+	int num = 5;
+}
+class Zi1 extends Fu1 {
+	// Zi中的成员变量
+	int num = 6;
+  
+	public void show() {
+		// 访问父类中的num
+		System.out.println("Fu num=" + num);
+		// 访问子类中的num
+		System.out.println("Zi num=" + num);
+	}
+}
+class Demo04 {
+	public static void main(String[] args) {
+      	// 创建子类对象
+		Zi1 z = new Zi1(); 
+      	// 调用子类中的show方法
+		z1.show(); 
+	}
+}
+演示结果：
+Fu num = 6
+Zi num = 6
+```
+
+子父类中出现了同名的成员变量时，子类会优先访问自己对象中的成员变量。如果此时想访问父类成员变量如何解决呢？我们可以使用super关键字。
+
+### super访问父类成员变量
+
+子父类中出现了同名的成员变量时，在子类中需要访问父类中非私有成员变量时，需要使用`super` 关键字，修饰父类成员变量，类似于之前学过的 `this` 。
+
+需要注意的是：**super代表的是父类对象的引用，this代表的是当前对象的引用。**
+
+**使用格式：**
+
+```java
+super.父类成员变量名
+```
+
+子类方法需要修改，代码如下：
+
+```java
+class Fu {
+	// Fu中的成员变量。
+	int num = 5;
+}
+
+class Zi extends Fu {
+	// Zi中的成员变量
+	int num = 6;
+  
+	public void show() {
+        int num = 1;
+      
+        // 访问方法中的num
+        System.out.println("method num=" + num);
+        // 访问子类中的num
+        System.out.println("Zi num=" + this.num);
+        // 访问父类中的num
+        System.out.println("Fu num=" + super.num);
+	}
+}
+
+class Demo04 {
+	public static void main(String[] args) {
+      	// 创建子类对象
+		Zi1 z = new Zi1(); 
+      	// 调用子类中的show方法
+		z1.show(); 
+	}
+}
+
+演示结果：
+method num=1
+Zi num=6
+Fu num=5
+```
+
+> 小贴士：Fu 类中的成员变量是非私有的，子类中可以直接访问。若Fu 类中的成员变量私有了，子类是不能直接访问的。通常编码时，我们遵循封装的原则，使用private修饰成员变量，那么如何访问父类的私有成员变量呢？对！可以在父类中提供公共的getXxx方法和setXxx方法。
+
+## 继承后的特点—成员方法
+
+当类之间产生了关系，其中各类中的成员方法，又产生了哪些影响呢？
+
+### 成员方法不重名
+
+如果子类父类中出现**不重名**的成员方法，这时的调用是**没有影响的**。对象调用方法时，会先在子类中查找有没有对应的方法，若子类中存在就会执行子类中的方法，若子类中不存在就会执行父类中相应的方法。代码如下：
+
+```java
+class Fu {
+	public void show() {
+		System.out.println("Fu类中的show方法执行");
+	}
+}
+class Zi extends Fu {
+	public void show2() {
+		System.out.println("Zi类中的show2方法执行");
+	}
+}
+public  class Demo05 {
+	public static void main(String[] args) {
+		Zi z = new Zi();
+     	//子类中没有show方法，但是可以找到父类方法去执行
+		z.show(); 
+		z.show2();
+	}
+}
+```
+
+### 成员方法重名
+
+如果子类父类中出现**重名**的成员方法，则创建子类对象调用该方法的时候，子类对象会优先调用自己的方法。
+
+代码如下：
+
+```java
+class Fu {
+	public void show() {
+		System.out.println("Fu show");
+	}
+}
+class Zi extends Fu {
+	//子类重写了父类的show方法
+	public void show() {
+		System.out.println("Zi show");
+	}
+}
+public class ExtendsDemo05{
+	public static void main(String[] args) {
+		Zi z = new Zi();
+     	// 子类中有show方法，只执行重写后的show方法
+		z.show();  // Zi show
+	}
+}
+```
+
+## 方法重写
+
+### 概念
+
+**方法重写** ：子类中出现与父类一模一样的方法时（返回值类型，方法名和参数列表都相同），会出现覆盖效果，也称为重写或者复写。**声明不变，重新实现**。
+
+### 使用场景与案例
+
+发生在子父类之间的关系。
+
+子类继承了父类的方法，但是子类觉得父类的这方法不足以满足自己的需求，子类重新写了一个与父类同名的方法，以便覆盖父类的该方法。
+
+例如：我们定义了一个动物类代码如下：
+
+```java
+public class Animal  {
+    public void run(){
+        System.out.println("动物跑的很快！");
+    }
+    public void cry(){
+        System.out.println("动物都可以叫~~~");
+    }
+}
+```
+
+然后定义一个猫类，猫可能认为父类cry()方法不能满足自己的需求
+
+代码如下：
+
+```java
+public class Cat extends Animal {
+    public void cry(){
+        System.out.println("我们一起学猫叫，喵喵喵！喵的非常好听！");
+    }
+}
+
+public class Test {
+	public static void main(String[] args) {
+      	// 创建子类对象
+      	Cat ddm = new Cat()；
+        // 调用父类继承而来的方法
+        ddm.run();
+      	// 调用子类重写的方法
+      	ddm.cry();
+	}
+}
+```
+
+### @Override重写注解
+
+* @Override:注解，重写注解校验！
+
+* 这个注解标记的方法，就说明这个方法必须是重写父类的方法，否则编译阶段报错。
+
+* 建议重写都加上这个注解，一方面可以提高代码的可读性，一方面可以防止重写出错！
+
+  加上后的子类代码形式如下：
+
+  ``` java
+  public class Cat extends Animal {
+       // 声明不变，重新实现
+      // 方法名称与父类全部一样，只是方法体中的功能重写写了！
+      @Override
+      public void cry(){
+          System.out.println("我们一起学猫叫，喵喵喵！喵的非常好听！");
+      }
+  }
+  ```
+
+
+### 注意事项
+
+1. 方法重写是发生在子父类之间的关系。
+2. 子类方法覆盖父类方法，必须要保证权限大于等于父类权限。
+3. 子类方法覆盖父类方法，返回值类型、函数名和参数列表都要一模一样。
+
+## 继承后的特点—构造方法
+
+### 引入
+
+当类之间产生了关系，其中各类中的构造方法，又产生了哪些影响呢？
+首先我们要回忆两个事情，构造方法的定义格式和作用。
+
+1. 构造方法的名字是与类名一致的。所以子类是无法继承父类构造方法的。
+2. 构造方法的作用是初始化对象成员变量数据的。所以子类的初始化过程中，必须先执行父类的初始化动作。子类的构造方法中默认有一个`super()` ，表示调用父类的构造方法，父类成员变量初始化后，才可以给子类使用。（**先有爸爸，才能有儿子**）
+
+**继承后子类构方法器特点:子类所有构造方法的第一行都会默认先调用父类的无参构造方法**
+
+### 案例演示
+
+按如下需求定义类:
+
+1. 人类
+   成员变量: 姓名,年龄
+   成员方法: 吃饭
+2. 学生类
+   成员变量: 姓名,年龄,成绩
+   成员方法: 吃饭
+
+代码如下：
+
+```java
+class Person {
+    private String name;
+    private int age;
+
+    public Person() {
+        System.out.println("父类无参");
+    }
+
+    // getter/setter省略
+}
+
+class Student extends Person {
+    private double score;
+
+    public Student() {
+        //super(); // 调用父类无参,默认就存在，可以不写，必须再第一行
+        System.out.println("子类无参");
+    }
+    
+     public Student(double score) {
+        //super();  // 调用父类无参,默认就存在，可以不写，必须再第一行
+        this.score = score;    
+        System.out.println("子类有参");
+     }
+
+}
+
+public class Demo07 {
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        System.out.println("----------");
+        Student s2 = new Student(99.9);
+    }
+}
+
+输出结果：
+父类无参
+子类无参
+----------
+父类无参
+子类有参
+
+```
+
+### 小结
+
+* 子类构造方法执行的时候，都会在第一行默认先调用父类无参数构造方法一次。
+* 子类构造方法的第一行都隐含了一个**super()**去调用父类无参数构造方法，**super()**可以省略不写。
+
+## super(...)和this(...)
+
+### 引入
+
+请看上节中的如下案例：
+
+```java 
+class Person {
+    private String name;
+    private int age;
+
+    public Person() {
+        System.out.println("父类无参");
+    }
+
+    // getter/setter省略
+}
+
+class Student extends Person {
+    private double score;
+
+    public Student() {
+        //super(); // 调用父类无参构造方法,默认就存在，可以不写，必须再第一行
+        System.out.println("子类无参");
+    }
+    
+     public Student(double score) {
+        //super();  // 调用父类无参构造方法,默认就存在，可以不写，必须再第一行
+        this.score = score;    
+        System.out.println("子类有参");
+     }
+      // getter/setter省略
+}
+
+public class Demo07 {
+    public static void main(String[] args) {
+        // 调用子类有参数构造方法
+        Student s2 = new Student(99.9);
+        System.out.println(s2.getScore()); // 99.9
+        System.out.println(s2.getName()); // 输出 null
+        System.out.println(s2.getAge()); // 输出 0
+    }
+}
+```
+
+我们发现，子类有参数构造方法只是初始化了自己对象中的成员变量score，而父类中的成员变量name和age依然是没有数据的，怎么解决这个问题呢，我们可以借助与super(...)去调用父类构造方法，以便初始化继承自父类对象的name和age.
+
+### super和this的用法格式
+
+super和this完整的用法如下，其中this，super访问成员我们已经接触过了。
+
+```java
+this.成员变量    	--    本类的
+super.成员变量    	--    父类的
+
+this.成员方法名()  	--    本类的    
+super.成员方法名()   --    父类的
+```
+
+接下来我们使用调用构造方法格式：
+
+```java
+super(...) -- 调用父类的构造方法，根据参数匹配确认
+this(...) -- 调用本类的其他构造方法，根据参数匹配确认
+```
+
+### super(....)用法演示
+
+代码如下：
+
+```java
+class Person {
+    private String name ="凤姐";
+    private int age = 20;
+
+    public Person() {
+        System.out.println("父类无参");
+    }
+    
+    public Person(String name , int age){
+        this.name = name ;
+        this.age = age ;
+    }
+
+    // getter/setter省略
+}
+
+class Student extends Person {
+    private double score = 100;
+
+    public Student() {
+        //super(); // 调用父类无参构造方法,默认就存在，可以不写，必须再第一行
+        System.out.println("子类无参");
+    }
+    
+     public Student(String name ， int age，double score) {
+        super(name ,age);// 调用父类有参构造方法Person(String name , int age)初始化name和age
+        this.score = score;    
+        System.out.println("子类有参");
+     }
+      // getter/setter省略
+}
+
+public class Demo07 {
+    public static void main(String[] args) {
+        // 调用子类有参数构造方法
+        Student s2 = new Student("张三"，20，99);
+        System.out.println(s2.getScore()); // 99
+        System.out.println(s2.getName()); // 输出 张三
+        System.out.println(s2.getAge()); // 输出 20
+    }
+}
+```
+
+**注意：**
+
+**子类的每个构造方法中均有默认的super()，调用父类的空参构造。手动调用父类构造会覆盖默认的super()。**
+
+**super() 和 this() 都必须是在构造方法的第一行，所以不能同时出现。**
+
+super(..)是根据参数去确定调用父类哪个构造方法的。
+
+### super(...)案例图解
+
+**父类空间优先于子类对象产生**
+
+在每次创建子类对象时，先初始化父类空间，再创建其子类对象本身。目的在于子类对象中包含了其对应的父类空间，便可以包含其父类的成员，如果父类成员非private修饰，则子类可以随意使用父类成员。代码体现在子类的构造七调用时，一定先调用父类的构造方法。理解图解如下：
+
+### this(...)用法演示
+
+this(...)
+ *    默认是去找本类中的其他构造方法，根据参数来确定具体调用哪一个构造方法。
+ *    为了借用其他构造方法的功能。
+
+```java
+package com.itheima._08this和super调用构造方法;
+/**
+ * this(...):
+ *    默认是去找本类中的其他构造方法，根据参数来确定具体调用哪一个构造方法。
+ *    为了借用其他构造方法的功能。
+ *
+ */
+public class ThisDemo01 {
+    public static void main(String[] args) {
+        Student xuGan = new Student();
+        System.out.println(xuGan.getName()); // 输出:徐干
+        System.out.println(xuGan.getAge());// 输出:21
+        System.out.println(xuGan.getSex());// 输出： 男
+    }
+}
+
+class Student{
+    private String name ;
+    private int age ;
+    private char sex ;
+
+    public Student() {
+  // 很弱，我的兄弟很牛逼啊，我可以调用其他构造方法：Student(String name, int age, char sex)
+        this("徐干",21,'男');
+    }
+
+    public Student(String name, int age, char sex) {
+        this.name = name ;
+        this.age = age   ;
+        this.sex = sex   ;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public char getSex() {
+        return sex;
+    }
+
+    public void setSex(char sex) {
+        this.sex = sex;
+    }
+}
+```
+
+### 小结
+
+* **子类的每个构造方法中均有默认的super()，调用父类的空参构造。手动调用父类构造会覆盖默认的super()。**
+
+* **super() 和 this() 都必须是在构造方法的第一行，所以不能同时出现。**
+
+* **super(..)和this(...)是根据参数去确定调用父类哪个构造方法的。**
+* super(..)可以调用父类构造方法初始化继承自父类的成员变量的数据。
+* this(..)可以调用本类中的其他构造方法。
+
+## 继承的特点
+
+1. Java只支持单继承，不支持多继承。
+
+```java
+// 一个类只能有一个父类，不可以有多个父类。
+class A {}
+class B {}
+class C1 extends A {} // ok
+// class C2 extends A, B {} // error
+  ```
+
+2. 一个类可以有多个子类。
+
+```java
+// A可以有多个子类
+class A {}
+class C1 extends A {}
+class C2 extends  A {}
+  ```
+
+3. 可以多层继承。
+
+```java
+class A {}
+class C1 extends A {}
+class D extends C1 {}
+```
+
+> 顶层父类是Object类。所有的类默认继承Object，作为父类。
+
+## 4. 知识小结：
+
+会写一个继承结构下的标准Javabean即可
+
+需求：
+
+​	猫：属性，姓名，年龄，颜色
+
+​	狗：属性，姓名，年龄，颜色，吼叫
+
+ 分享书写技巧：
+
+​        1.在大脑中要区分谁是父，谁是子
+
+​        2.把共性写到父类中，独有的东西写在子类中
+
+​        3.开始编写标准Javabean（从上往下写）
+
+​        4.在测试类中，创建对象并赋值调用
+
+
+
+代码示例：
+
+```java
+package com.itheima.test4;
+
+public class Animal {
+    //姓名，年龄，颜色
+    private String name;
+    private int age;
+    private String color;
+
+
+    public Animal() {
+    }
+
+    public Animal(String name, int age, String color) {
+        this.name = name;
+        this.age = age;
+        this.color = color;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+
+public class Cat extends Animal{
+    //因为猫类中没有独有的属性。
+    //所以此时不需要写私有的成员变量
+
+    //空参
+    public Cat() {
+    }
+
+    //需要带子类和父类中所有的属性
+    public Cat(String name, int age, String color) {
+        super(name,age,color);
+    }
+}
+
+
+public class Dog extends Animal{
+    //Dog ：吼叫
+    private String wang;
+
+    //构造
+    public Dog() {
+    }
+
+    //带参构造：带子类加父类所有的属性
+    public Dog(String name, int age, String color,String wang) {
+        //共性的属性交给父类赋值
+        super(name,age,color);
+        //独有的属性自己赋值
+        this.wang = wang;
+    }
+
+    public String getWang() {
+        return wang;
+    }
+
+    public void setWang(String wang) {
+        this.wang = wang;
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        //Animal ： 姓名，年龄，颜色
+        //Cat :
+        //Dog ：吼叫
+
+        //创建狗的对象
+        Dog d = new Dog("旺财",2,"黑色","嗷呜~~");
+        System.out.println(d.getName()+", " + d.getAge() + ", " + d.getColor() + ", " + d.getWang());
+
+        //创建猫的对象
+        Cat c = new Cat("中华田园猫",3,"黄色");
+        System.out.println(c.getName() + ", " + c.getAge() + ", " + c.getColor());
+    }
+}
+
+
+```
+
+
+# 多态
+
+## 多态的形式
+
+**多态是继封装、继承之后，面向对象的第三大特性。**
+
+**多态是出现在继承或者实现关系中的**
+
+**多态体现的格式**：
+
+```java
+父类类型 变量名 = new 子类/实现类构造器;
+变量名.方法名();
+```
+
+**多态的前提**：有继承关系，子类对象是可以赋值给父类类型的变量。例如Animal是一个动物类型，而Cat是一个猫类型。Cat继承了Animal，Cat对象也是Animal类型，自然可以赋值给父类类型的变量。
+
+## 多态的使用场景
+
+如果没有多态，在下图中register方法只能传递学生对象，其他的Teacher和administrator对象是无法传递给register方法方法的，在这种情况下，只能定义三个不同的register方法分别接收学生，老师和管理员。
+
+
+有了多态之后，方法的形参就可以定义为共同的父类Person。
+
+**要注意的是：**
+
+* 当一个方法的形参是一个类，我们可以传递这个类所有的子类对象。
+* 当一个方法的形参是一个接口，我们可以传递这个接口所有的实现类对象（后面会学）。
+* 而且多态还可以根据传递的不同对象来调用不同类中的方法。
+
+
+代码示例：
+
+```java
+父类：
+public class Person {
+    private String name;
+    private int age;
+
+    空参构造
+    带全部参数的构造
+    get和set方法
+
+    public void show(){
+        System.out.println(name + ", " + age);
+    }
+}
+
+子类1：
+public class Administrator extends Person {
+    @Override
+    public void show() {
+        System.out.println("管理员的信息为：" + getName() + ", " + getAge());
+    }
+}
+
+子类2：
+public class Student extends Person{
+
+    @Override
+    public void show() {
+        System.out.println("学生的信息为：" + getName() + ", " + getAge());
+    }
+}
+
+子类3：
+public class Teacher extends Person{
+
+    @Override
+    public void show() {
+        System.out.println("老师的信息为：" + getName() + ", " + getAge());
+    }
+}
+
+测试类：
+public class Test {
+    public static void main(String[] args) {
+        //创建三个对象，并调用register方法
+
+        Student s = new Student();
+        s.setName("张三");
+        s.setAge(18);
+
+
+        Teacher t = new Teacher();
+        t.setName("王建国");
+        t.setAge(30);
+
+        Administrator admin = new Administrator();
+        admin.setName("管理员");
+        admin.setAge(35);
+
+
+
+        register(s);
+        register(t);
+        register(admin);
+
+
+    }
+
+
+
+    //这个方法既能接收老师，又能接收学生，还能接收管理员
+    //只能把参数写成这三个类型的父类
+    public static void register(Person p){
+        p.show();
+    }
+}
+```
+
+## 多态的定义和前提
+
+**多态**： 是指同一行为，具有多个不同表现形式。
+
+从上面案例可以看出，Cat和Dog都是动物，都是吃这一行为，但是出现的效果（表现形式）是不一样的。
+
+ **前提【重点】**
+
+1. 有继承或者实现关系
+
+2. 方法的重写【意义体现：不重写，无意义】
+
+3. 父类引用指向子类对象【格式体现】
+
+   > 父类类型：指子类对象继承的父类类型，或者实现的父接口类型。
+
+## 多态的运行特点
+
+调用成员变量时：编译看左边，运行看左边
+
+调用成员方法时：编译看左边，运行看右边
+
+代码示例：
+
+```java
+Fu f = new Zi()；
+//编译看左边的父类中有没有name这个属性，没有就报错
+//在实际运行的时候，把父类name属性的值打印出来
+System.out.println(f.name);
+//编译看左边的父类中有没有show这个方法，没有就报错
+//在实际运行的时候，运行的是子类中的show方法
+f.show();
+```
+
+## 多态的弊端
+
+我们已经知道多态编译阶段是看左边父类类型的，如果子类有些独有的功能，此时**多态的写法就无法访问子类独有功能了**。
+
+```java 
+class Animal{
+    public  void eat()｛
+        System.out.println("动物吃东西！")
+    ｝
+}
+class Cat extends Animal {  
+    public void eat() {  
+        System.out.println("吃鱼");  
+    }  
+   
+    public void catchMouse() {  
+        System.out.println("抓老鼠");  
+    }  
+}  
+
+class Dog extends Animal {  
+    public void eat() {  
+        System.out.println("吃骨头");  
+    }  
+}
+
+class Test{
+    public static void main(String[] args){
+        Animal a = new Cat();
+        a.eat();
+        a.catchMouse();//编译报错，编译看左边，Animal没有这个方法
+    }
+}
+```
+
+## 引用类型转换
+
+### 为什么要转型
+
+**多态的写法就无法访问子类独有功能了。**
+
+当使用多态方式调用方法时，首先检查父类中是否有该方法，如果没有，则编译错误。也就是说，**不能调用**子类拥有，而父类没有的方法。编译都错误，更别说运行了。这也是多态给我们带来的一点"小麻烦"。所以，想要调用子类特有的方法，必须做向下转型。
+
+回顾基本数据类型转换
+
+- 自动转换: 范围小的赋值给范围大的.自动完成:double d = 5; 
+- 强制转换: 范围大的赋值给范围小的,强制转换:int i = (int)3.14 
+
+​     多态的转型分为向上转型（自动转换）与向下转型（强制转换）两种。
+
+### 向上转型（自动转换）
+
+- **向上转型**：多态本身是子类类型向父类类型向上转换（自动转换）的过程，这个过程是默认的。
+  当父类引用指向一个子类对象时，便是向上转型。
+  使用格式：
+
+```java
+父类类型  变量名 = new 子类类型();
+如：Animal a = new Cat();
+```
+
+**原因是：父类类型相对与子类来说是大范围的类型，Animal是动物类，是父类类型。Cat是猫类，是子类类型。Animal类型的范围当然很大，包含一切动物。**所以子类范围小可以直接自动转型给父类类型的变量。
+
+### 向下转型（强制转换）
+
+- **向下转型**：父类类型向子类类型向下转换的过程，这个过程是强制的。
+  一个已经向上转型的子类对象，将父类引用转为子类引用，可以使用强制类型转换的格式，便是向下转型。
+
+使用格式：
+
+```java
+子类类型 变量名 = (子类类型) 父类变量名;
+如:Aniaml a = new Cat();
+   Cat c =(Cat) a;  
+```
+
+### 案例演示
+
+当使用多态方式调用方法时，首先检查父类中是否有该方法，如果没有，则编译错误。也就是说，**不能调用**子类拥有，而父类没有的方法。编译都错误，更别说运行了。这也是多态给我们带来的一点"小麻烦"。所以，想要调用子类特有的方法，必须做向下转型。
+
+转型演示，代码如下：
+
+定义类：
+
+```java
+abstract class Animal {  
+    abstract void eat();  
+}  
+
+class Cat extends Animal {  
+    public void eat() {  
+        System.out.println("吃鱼");  
+    }  
+    public void catchMouse() {  
+        System.out.println("抓老鼠");  
+    }  
+}  
+
+class Dog extends Animal {  
+    public void eat() {  
+        System.out.println("吃骨头");  
+    }  
+    public void watchHouse() {  
+        System.out.println("看家");  
+    }  
+}
+```
+
+定义测试类：
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        // 向上转型  
+        Animal a = new Cat();  
+        a.eat(); 				// 调用的是 Cat 的 eat
+
+        // 向下转型  
+        Cat c = (Cat)a;       
+        c.catchMouse(); 		// 调用的是 Cat 的 catchMouse
+    }  
+}
+```
+
+### 转型的异常
+
+转型的过程中，一不小心就会遇到这样的问题，请看如下代码：
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        // 向上转型  
+        Animal a = new Cat();  
+        a.eat();               // 调用的是 Cat 的 eat
+
+        // 向下转型  
+        Dog d = (Dog)a;       
+        d.watchHouse();        // 调用的是 Dog 的 watchHouse 【运行报错】
+    }  
+}
+```
+
+这段代码可以通过编译，但是运行时，却报出了 `ClassCastException` ，类型转换异常！这是因为，明明创建了Cat类型对象，运行时，当然不能转换成Dog对象的。
+
+### instanceof关键字
+
+为了避免ClassCastException的发生，Java提供了 `instanceof` 关键字，给引用变量做类型的校验，格式如下：
+
+```java
+变量名 instanceof 数据类型 
+如果变量属于该数据类型或者其子类类型，返回true。
+如果变量不属于该数据类型或者其子类类型，返回false。
+```
+
+所以，转换前，我们最好先做一个判断，代码如下：
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        // 向上转型  
+        Animal a = new Cat();  
+        a.eat();               // 调用的是 Cat 的 eat
+
+        // 向下转型  
+        if (a instanceof Cat){
+            Cat c = (Cat)a;       
+            c.catchMouse();        // 调用的是 Cat 的 catchMouse
+        } else if (a instanceof Dog){
+            Dog d = (Dog)a;       
+            d.watchHouse();       // 调用的是 Dog 的 watchHouse
+        }
+    }  
+}
+```
+
+### instanceof新特性
+
+JDK14的时候提出了新特性，把判断和强转合并成了一行
+
+```java
+//新特性
+//先判断a是否为Dog类型，如果是，则强转成Dog类型，转换之后变量名为d
+//如果不是，则不强转，结果直接是false
+if(a instanceof Dog d){
+    d.lookHome();
+}else if(a instanceof Cat c){
+    c.catchMouse();
+}else{
+    System.out.println("没有这个类型，无法转换");
+}
+```
+
+# 包
+
+## 包
+
+​	包在操作系统中其实就是一个文件夹。**包是用来分门别类的管理技术，不同的技术类放在不同的包下**，方便管理和维护。
+
+**包名的命名规范**：
+
+```java
+路径名.路径名.xxx.xxx
+// 例如：com.itheima.oa
+```
+
+- 包名一般是公司域名的倒写。例如：黑马是www.itheima.com,包名就可以定义成com.itheima.技术名称。
+- 包名必须用”.“连接。
+- 包名的每个路径名必须是一个合法的标识符，而且不能是Java的关键字。
+
+## 导包
+
+什么时候需要导包？
+
+​	情况一：在使用Java中提供的非核心包中的类时
+
+​	情况二：使用自己写的其他包中的类时
+
+什么时候不需要导包？
+
+​	情况一：在使用Java核心包（java.lang）中的类时
+
+​	情况二：在使用自己写的同一个包中的类时
+
+## 使用不同包下的相同类怎么办？
+
+假设demo1和demo2中都有一个Student该如何使用？
+
+代码示例：
+
+```java
+//使用全类名的形式即可。
+//全类名：包名 + 类名
+//拷贝全类名的快捷键：选中类名crtl + shift + alt + c 或者用鼠标点copy，再点击copy Reference
+com.itheima.homework.demo1.Student s1 = new com.itheima.homework.demo1.Student();
+com.itheima.homework.demo2.Student s2 = new com.itheima.homework.demo2.Student();
+```
+
+# 权限修饰符
+
+## 权限修饰符
+
+​	在Java中提供了四种访问权限，使用不同的访问权限修饰符修饰时，被修饰的内容会有不同的访问权限，我们之前已经学习过了public 和 private，接下来我们研究一下protected和默认修饰符的作用。
+
+- public：公共的，所有地方都可以访问。
+
+- protected：本类 ，本包，其他包中的子类都可以访问。
+
+- 默认（没有修饰符）：本类 ，本包可以访问。
+
+  注意：默认是空着不写，不是default
+
+- private：私有的，当前类可以访问。
+  `public > protected > 默认 > private`
+
+## 不同权限的访问能力
+
+|                  | public | protected | 默认 | private |
+| ---------------- | ------ | --------- | ---- | ------- |
+| 同一类中         | √      | √         | √    | √       |
+| 同一包中的类     | √      | √         | √    |         |
+| 不同包的子类     | √      | √         |      |         |
+| 不同包中的无关类 | √      |           |      |         |
+
+可见，public具有最大权限。private则是最小权限。
+
+编写代码时，如果没有特殊的考虑，建议这样使用权限：
+
+- 成员变量使用`private` ，隐藏细节。
+- 构造方法使用` public` ，方便创建对象。
+- 成员方法使用`public` ，方便调用方法。
+
+> 小贴士：不加权限修饰符，就是默认权限
+
+# final关键字
+
+## 概述
+
+​	学习了继承后，我们知道，子类可以在父类的基础上改写父类内容，比如，方法重写。
+
+如果有一个方法我不想别人去改写里面内容，该怎么办呢？
+
+Java提供了`final` 关键字，表示修饰的内容不可变。
+
+- **final**：  不可改变，最终的含义。可以用于修饰类、方法和变量。
+  - 类：被修饰的类，不能被继承。
+  - 方法：被修饰的方法，不能被重写。
+  - 变量：被修饰的变量，有且仅能被赋值一次。
+
+## 使用方式
+
+### 修饰类
+
+final修饰的类，不能被继承。
+
+格式如下：
+
+```java
+final class 类名 {
+}
+```
+
+代码:
+
+```java
+final class Fu {
+}
+// class Zi extends Fu {} // 报错,不能继承final的类
+```
+
+查询API发现像 `public final class String` 、`public final class Math` 、`public final class Scanner` 等，很多我们学习过的类，都是被final修饰的，目的就是供我们使用，而不让我们所以改变其内容。
+
+### 修饰方法
+
+final修饰的方法，不能被重写。
+格式如下：
+
+```java
+修饰符 final 返回值类型 方法名(参数列表){
+    //方法体
+}
+```
+
+代码: 
+
+```java
+class Fu2 {
+	final public void show1() {
+		System.out.println("Fu2 show1");
+	}
+	public void show2() {
+		System.out.println("Fu2 show2");
+	}
+}
+
+class Zi2 extends Fu2 {
+//	@Override
+//	public void show1() {
+//		System.out.println("Zi2 show1");
+//	}
+	@Override
+	public void show2() {
+		System.out.println("Zi2 show2");
+	}
+}
+```
+
+### 修饰变量-局部变量
+
+1. **局部变量——基本类型**
+   基本类型的局部变量，被final修饰后，只能赋值一次，不能再更改。代码如下：
+
+```java
+public class FinalDemo1 {
+    public static void main(String[] args) {
+        // 声明变量，使用final修饰
+        final int a;
+        // 第一次赋值 
+        a = 10;
+        // 第二次赋值
+        a = 20; // 报错,不可重新赋值
+
+        // 声明变量，直接赋值，使用final修饰
+        final int b = 10;
+        // 第二次赋值
+        b = 20; // 报错,不可重新赋值
+    }
+}
+```
+
+思考，下面两种写法，哪种可以通过编译？
+
+写法1：
+
+```java
+final int c = 0;
+for (int i = 0; i < 10; i++) {
+    c = i;
+    System.out.println(c);
+}
+```
+
+写法2：
+
+```java
+for (int i = 0; i < 10; i++) {
+    final int c = i;
+    System.out.println(c);
+}
+```
+
+根据 `final` 的定义，写法1报错！写法2，为什么通过编译呢？因为每次循环，都是一次新的变量c。这也是大家需要注意的地方。
+
+### 修饰变量-成员变量
+
+成员变量涉及到初始化的问题，初始化方式有显示初始化和构造方法初始化，只能选择其中一个：
+
+- 显示初始化(在定义成员变量的时候立马赋值)（常用）；
+
+```java
+public class Student {
+    final int num = 10;
+}
+```
+
+- 构造方法初始化(在构造方法中赋值一次)（不常用，了解即可）。
+
+  **注意：每个构造方法中都要赋值一次！**
+
+```java
+public class Student {
+    final int num = 10;
+    final int num2;
+
+    public Student() {
+        this.num2 = 20;
+//     this.num2 = 20;
+    }
+    
+     public Student(String name) {
+        this.num2 = 20;
+//     this.num2 = 20;
+    }
+}
+```
+
+> 被final修饰的常量名称，一般都有书写规范，所有字母都**大写**。
+
+
+# 抽象类
+
+## 概述
+
+### 抽象类引入
+
+​	父类中的方法，被它的子类们重写，子类各自的实现都不尽相同。那么父类的方法声明和方法主体，只有声明还有意义，而方法主体则没有存在的意义了(因为子类对象会调用自己重写的方法)。换句话说，父类可能知道子类应该有哪个功能，但是功能具体怎么实现父类是不清楚的（由子类自己决定），父类只需要提供一个没有方法体的定义即可，具体实现交给子类自己去实现。**我们把没有方法体的方法称为抽象方法。Java语法规定，包含抽象方法的类就是抽象类**。
+
+- **抽象方法** ： 没有方法体的方法。
+- **抽象类**：包含抽象方法的类。
+
+## abstract使用格式
+
+**abstract是抽象的意思，用于修饰方法方法和类，修饰的方法是抽象方法，修饰的类是抽象类。**
+
+### 抽象方法
+
+使用`abstract` 关键字修饰方法，该方法就成了抽象方法，抽象方法只包含一个方法名，而没有方法体。
+
+定义格式：
+
+```java
+修饰符 abstract 返回值类型 方法名 (参数列表)；
+```
+
+代码举例：
+
+```java
+public abstract void run()；
+```
+
+### 抽象类
+
+如果一个类包含抽象方法，那么该类必须是抽象类。**注意：抽象类不一定有抽象方法，但是有抽象方法的类必须定义成抽象类。**
+
+定义格式：
+
+```java
+abstract class 类名字 { 
+  
+}
+```
+
+代码举例：
+
+```java
+public abstract class Animal {
+    public abstract void run()；
+}
+```
+
+### 抽象类的使用
+
+**要求**：继承抽象类的子类**必须重写父类所有的抽象方法**。否则，该子类也必须声明为抽象类。
+
+代码举例：
+
+```java
+// 父类,抽象类
+abstract class Employee {
+	private String id;
+	private String name;
+	private double salary;
+	
+	public Employee() {
+	}
+	
+	public Employee(String id, String name, double salary) {
+		this.id = id;
+		this.name = name;
+		this.salary = salary;
+	}
+	
+	// 抽象方法
+	// 抽象方法必须要放在抽象类中
+	abstract public void work();
+}
+
+// 定义一个子类继承抽象类
+class Manager extends Employee {
+	public Manager() {
+	}
+	public Manager(String id, String name, double salary) {
+		super(id, name, salary);
+	}
+	// 2.重写父类的抽象方法
+	@Override
+	public void work() {
+		System.out.println("管理其他人");
+	}
+}
+
+// 定义一个子类继承抽象类
+class Cook extends Employee {
+	public Cook() {
+	}
+	public Cook(String id, String name, double salary) {
+		super(id, name, salary);
+	}
+	@Override
+	public void work() {
+		System.out.println("厨师炒菜多加点盐...");
+	}
+}
+
+// 测试类
+public class Demo10 {
+	public static void main(String[] args) {
+		// 创建抽象类,抽象类不能创建对象
+		// 假设抽象类让我们创建对象,里面的抽象方法没有方法体,无法执行.所以不让我们创建对象
+//		Employee e = new Employee();
+//		e.work();
+		
+		// 3.创建子类
+		Manager m = new Manager();
+		m.work();
+		
+		Cook c = new Cook("ap002", "库克", 1);
+		c.work();
+	}
+}
+```
+
+此时的方法重写，是子类对父类抽象方法的完成实现，我们将这种方法重写的操作，也叫做**实现方法**。
+
+## 抽象类的特征
+
+抽象类的特征总结起来可以说是 **有得有失**
+
+**有得：抽象类得到了拥有抽象方法的能力。**
+
+**有失：抽象类失去了创建对象的能力。**
+
+其他成员（构造方法，实例方法，静态方法等）抽象类都是具备的。
+
+## 抽象类的细节
+
+不需要背，只要当idea报错之后，知道如何修改即可。
+
+关于抽象类的使用，以下为语法上要注意的细节，虽然条目较多，但若理解了抽象的本质，无需死记硬背。
+
+1. 抽象类**不能创建对象**，如果创建，编译无法通过而报错。只能创建其非抽象子类的对象。
+
+   > 理解：假设创建了抽象类的对象，调用抽象的方法，而抽象方法没有具体的方法体，没有意义。
+
+2. 抽象类中，可以有构造方法，是供子类创建对象时，初始化父类成员使用的。
+
+   > 理解：子类的构造方法中，有默认的super()，需要访问父类构造方法。
+
+3. 抽象类中，不一定包含抽象方法，但是有抽象方法的类必定是抽象类。
+
+   > 理解：未包含抽象方法的抽象类，目的就是不想让调用者创建该类对象，通常用于某些特殊的类结构设计。
+
+4. 抽象类的子类，必须重写抽象父类中**所有的**抽象方法，否则子类也必须定义成抽象类，编译无法通过而报错。 
+
+   > 理解：假设不重写所有抽象方法，则类中可能包含抽象方法。那么创建对象后，调用抽象的方法，没有意义。
+
+5. 抽象类存在的意义是为了被子类继承。
+
+   > 理解：抽象类中已经实现的是模板中确定的成员，抽象类不确定如何实现的定义成抽象方法，交给具体的子类去实现。
+
+## 抽象类存在的意义
+
+​	抽象类存在的意义是为了被子类继承，否则抽象类将毫无意义。抽象类可以强制让子类，一定要按照规定的格式进行重写。
+
+# 接口
+
+## 概述
+
+我们已经学完了抽象类，抽象类中可以用抽象方法，也可以有普通方法，构造方法，成员变量等。那么什么是接口呢？**接口是更加彻底的抽象，JDK7之前，包括JDK7，接口中全部是抽象方法。接口同样是不能创建对象的**。
+
+## 定义格式
+
+```java
+//接口的定义格式：
+interface 接口名称{
+    // 抽象方法
+}
+
+// 接口的声明：interface
+// 接口名称：首字母大写，满足“驼峰模式”
+```
+
+## 接口成分的特点
+
+  在JDK7，包括JDK7之前，接口中的**只有**包含：抽象方法和常量
+
+### 抽象方法
+
+​       注意：接口中的抽象方法默认会自动加上public abstract修饰程序员无需自己手写！！
+​       按照规范：以后接口中的抽象方法建议不要写上public abstract。因为没有必要啊，默认会加上。
+
+### 常量
+
+ 在接口中定义的成员变量默认会加上： public static final修饰。也就是说在接口中定义的成员变量实际上是一个常量。这里是使用public static final修饰后，变量值就不可被修改，并且是静态化的变量可以直接用接口名访问，所以也叫常量。常量必须要给初始值。常量命名规范建议字母全部大写，多个单词用下划线连接。
+
+### 案例演示
+
+```java
+public interface InterF {
+    // 抽象方法！
+    //    public abstract void run();
+    void run();
+
+    //    public abstract String getName();
+    String getName();
+
+    //    public abstract int add(int a , int b);
+    int add(int a , int b);
+
+
+    // 它的最终写法是：
+    // public static final int AGE = 12 ;
+    int AGE  = 12; //常量
+    String SCHOOL_NAME = "程序员";
+
+}
+```
+
+## 基本的实现
+
+### 实现接口的概述
+
+类与接口的关系为实现关系，即**类实现接口**，该类可以称为接口的实现类，也可以称为接口的子类。实现的动作类似继承，格式相仿，只是关键字不同，实现使用 ` implements`关键字。
+
+### 实现接口的格式
+
+```java
+/**接口的实现：
+    在Java中接口是被实现的，实现接口的类称为实现类。
+    实现类的格式:*/
+class 类名 implements 接口1,接口2,接口3...{
+
+}
+```
+
+从上面格式可以看出，接口是可以被多实现的。大家可以想一想为什么呢？
+
+### 类实现接口的要求和意义
+
+1. 必须重写实现的全部接口中所有抽象方法。
+2. 如果一个类实现了接口，但是没有重写完全部接口的全部抽象方法，这个类也必须定义成抽象类。
+3. **意义：接口体现的是一种规范，接口对实现类是一种强制性的约束，要么全部完成接口申明的功能，要么自己也定义成抽象类。这正是一种强制性的规范。**
+
+### 类与接口基本实现案例
+
+假如我们定义一个运动员的**接口**（规范），代码如下：
+
+```java
+/**
+   接口：接口体现的是规范。
+ * */
+public interface SportMan {
+    void run(); // 抽象方法，跑步。
+    void law(); // 抽象方法，遵守法律。
+    String compittion(String project);  // 抽象方法，比赛。
+}
+```
+
+接下来定义一个乒乓球运动员类，实现接口，实现接口的**实现类**代码如下：
+
+```java
+package com.itheima._03接口的实现;
+/**
+ * 接口的实现：
+ *    在Java中接口是被实现的，实现接口的类称为实现类。
+ *    实现类的格式:
+ *      class 类名 implements 接口1,接口2,接口3...{
+ *
+ *
+ *      }
+ * */
+public class PingPongMan  implements SportMan {
+    @Override
+    public void run() {
+        System.out.println("乒乓球运动员稍微跑一下！！");
+    }
+
+    @Override
+    public void law() {
+        System.out.println("乒乓球运动员守法！");
+    }
+
+    @Override
+    public String compittion(String project) {
+        return "参加"+project+"得金牌！";
+    }
+}
+```
+
+**测试代码**：
+
+```java
+public class TestMain {
+    public static void main(String[] args) {
+        // 创建实现类对象。
+        PingPongMan zjk = new PingPongMan();
+        zjk.run();
+        zjk.law();
+        System.out.println(zjk.compittion("全球乒乓球比赛"));
+
+    }
+}
+```
+
+### 类与接口的多实现案例
+
+**类与接口之间的关系是多实现的，一个类可以同时实现多个接口。**
+
+首先我们先定义两个接口，代码如下：
+
+```java
+/** 法律规范：接口*/
+public interface Law {
+    void rule();
+}
+
+/** 这一个运动员的规范：接口*/
+public interface SportMan {
+    void run();
+}
+
+```
+
+然后定义一个实现类：
+
+```java
+/**
+ * Java中接口是可以被多实现的：
+ *    一个类可以实现多个接口: Law, SportMan
+ *
+ * */
+public class JumpMan implements Law ,SportMan {
+    @Override
+    public void rule() {
+        System.out.println("尊长守法");
+    }
+
+    @Override
+    public void run() {
+        System.out.println("训练跑步！");
+    }
+}
+```
+
+从上面可以看出类与接口之间是可以多实现的，我们可以理解成实现多个规范，这是合理的。
+
+## 接口与接口的多继承
+
+Java中，接口与接口之间是可以多继承的：也就是一个接口可以同时继承多个接口。大家一定要注意：
+
+**类与接口是实现关系**
+
+**接口与接口是继承关系**
+
+接口继承接口就是把其他接口的抽象方法与本接口进行了合并。
+
+案例演示：
+
+```java 
+public interface Abc {
+    void go();
+    void test();
+}
+
+/** 法律规范：接口*/
+public interface Law {
+    void rule();
+    void test();
+}
+
+ *
+ *  总结：
+ *     接口与类之间是多实现的。
+ *     接口与接口之间是多继承的。
+ * */
+public interface SportMan extends Law , Abc {
+    void run();
+}
+```
+
+## 扩展：接口的细节
+
+不需要背，只要当idea报错之后，知道如何修改即可。
+
+关于接口的使用，以下为语法上要注意的细节，虽然条目较多，但若理解了抽象的本质，无需死记硬背。
+
+1. 当两个接口中存在相同抽象方法的时候，该怎么办？
+
+> 只要重写一次即可。此时重写的方法，既表示重写1接口的，也表示重写2接口的。
+
+2. 实现类能不能继承A类的时候，同时实现其他接口呢？
+
+> 继承的父类，就好比是亲爸爸一样
+> 实现的接口，就好比是干爹一样
+> 可以继承一个类的同时，再实现多个接口，只不过，要把接口里面所有的抽象方法，全部实现。
+
+3. 实现类能不能继承一个抽象类的时候，同时实现其他接口呢？
+
+> 实现类可以继承一个抽象类的同时，再实现其他多个接口，只不过要把里面所有的抽象方法全部重写。
+
+4. 实现类Zi，实现了一个接口，还继承了一个Fu类。假设在接口中有一个方法，父类中也有一个相同的方法。子类如何操作呢？
+
+> 处理办法一：如果父类中的方法体，能满足当前业务的需求，在子类中可以不用重写。
+> 处理办法二：如果父类中的方法体，不能满足当前业务的需求，需要在子类中重写。
+
+5. 如果一个接口中，有10个抽象方法，但是我在实现类中，只需要用其中一个，该怎么办?
+
+> 可以在接口跟实现类中间，新建一个中间类（适配器类）
+> 让这个适配器类去实现接口，对接口里面的所有的方法做空重写。
+> 让子类继承这个适配器类，想要用到哪个方法，就重写哪个方法。
+> 因为中间类没有什么实际的意义，所以一般会把中间类定义为抽象的，不让外界创建对象
+
+
+
+# 内部类
+
+## 概述
+
+### 什么是内部类
+
+将一个类A定义在另一个类B里面，里面的那个类A就称为**内部类**，B则称为**外部类**。可以把内部类理解成寄生，外部类理解成宿主。
+
+### 什么时候使用内部类
+
+一个事物内部还有一个独立的事物，内部的事物脱离外部的事物无法独立使用
+
+1. 人里面有一颗心脏。
+2. 汽车内部有一个发动机。
+3. 为了实现更好的封装性。
+
+## 内部类的分类
+
+按定义的位置来分
+
+1. **成员内部内**，类定义在了成员位置 (类中方法外称为成员位置，无static修饰的内部类)
+2. **静态内部类**，类定义在了成员位置 (类中方法外称为成员位置，有static修饰的内部类)
+3. **局部内部类**，类定义在方法内
+4. **匿名内部类**，没有名字的内部类，可以在方法中，也可以在类中方法外。
+
+## 成员内部类
+
+**成员内部类特点**：
+
+- 无static修饰的内部类，属于外部类对象的。
+- 宿主：外部类对象。
+
+**内部类的使用格式**：
+
+```java
+ 外部类.内部类。 // 访问内部类的类型都是用 外部类.内部类
+```
+
+**获取成员内部类对象的两种方式**：
+
+方式一：外部直接创建成员内部类的对象
+
+```java
+外部类.内部类 变量 = new 外部类（）.new 内部类（）;
+```
+
+方式二：在外部类中定义一个方法提供内部类的对象
+
+**案例演示**
+
+```java
+方式一：
+public class Test {
+    public static void main(String[] args) {
+        //  宿主：外部类对象。
+       // Outer out = new Outer();
+        // 创建内部类对象。
+        Outer.Inner oi = new Outer().new Inner();
+        oi.method();
+    }
+}
+
+class Outer {
+    // 成员内部类，属于外部类对象的。
+    // 拓展：成员内部类不能定义静态成员。
+    public class Inner{
+        // 这里面的东西与类是完全一样的。
+        public void method(){
+            System.out.println("内部类中的方法被调用了");
+        }
+    }
+}
+
+
+方式二：
+public class Outer {
+    String name;
+    private class Inner{
+        static int a = 10;
+    }
+    public Inner getInstance(){
+        return new Inner();
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Outer o = new Outer();
+        System.out.println(o.getInstance());
+
+
+    }
+}
+```
+
+## 成员内部类的细节
+
+编写成员内部类的注意点：
+
+1. 成员内部类可以被一些修饰符所修饰，比如： private，默认，protected，public，static等
+2. 在成员内部类里面，JDK16之前不能定义静态变量，JDK16开始才可以定义静态变量。
+3. 创建内部类对象时，对象中有一个隐含的Outer.this记录外部类对象的地址值。（请参见3.6节的内存图）
+
+详解：
+
+​	内部类被private修饰，外界无法直接获取内部类的对象，只能通过3.3节中的方式二获取内部类的对象
+
+​	被其他权限修饰符修饰的内部类一般用3.3节中的方式一直接获取内部类的对象
+
+​	内部类被static修饰是成员内部类中的特殊情况，叫做静态内部类下面单独学习。
+
+​	内部类如果想要访问外部类的成员变量，外部类的变量必须用final修饰，JDK8以前必须手动写final，JDK8之后不需要手动写，JDK默认加上。
+
+## 成员内部类面试题
+
+请在?地方向上相应代码,以达到输出的内容
+
+注意：内部类访问外部类对象的格式是：**外部类名.this**
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        Outer.inner oi = new Outer().new inner();
+        oi.method();
+    }
+}
+
+class Outer {	// 外部类
+    private int a = 30;
+
+    // 在成员位置定义一个类
+    class inner {
+        private int a = 20;
+
+        public void method() {
+            int a = 10;
+            System.out.println(???);	// 10   答案：a
+            System.out.println(???);	// 20	答案：this.a
+            System.out.println(???);	// 30	答案：Outer.this.a
+        }
+    }
+}
+```
+
+## 成员内部类内存图
+
+## 静态内部类
+
+**静态内部类特点**：
+
+* 静态内部类是一种特殊的成员内部类。
+
+- 有static修饰，属于外部类本身的。
+- 总结：静态内部类与其他类的用法完全一样。只是访问的时候需要加上外部类.内部类。
+- **拓展1**:静态内部类可以直接访问外部类的静态成员。
+- **拓展2**:静态内部类不可以直接访问外部类的非静态成员，如果要访问需要创建外部类的对象。
+- **拓展3**:静态内部类中没有银行的Outer.this。
+
+**内部类的使用格式**：
+
+```
+外部类.内部类。
+```
+
+**静态内部类对象的创建格式**：
+
+```java
+外部类.内部类  变量 = new  外部类.内部类构造器;
+```
+
+**调用方法的格式：**
+
+* 调用非静态方法的格式：先创建对象，用对象调用
+* 调用静态方法的格式：外部类名.内部类名.方法名();
+
+**案例演示**：
+
+```java
+// 外部类：Outer01
+class Outer01{
+    private static  String sc_name = "黑马程序";
+    // 内部类: Inner01
+    public static class Inner01{
+        // 这里面的东西与类是完全一样的。
+        private String name;
+        public Inner01(String name) {
+            this.name = name;
+        }
+        public void showName(){
+            System.out.println(this.name);
+            // 拓展:静态内部类可以直接访问外部类的静态成员。
+            System.out.println(sc_name);
+        }
+    }
+}
+
+public class InnerClassDemo01 {
+    public static void main(String[] args) {
+        // 创建静态内部类对象。
+        // 外部类.内部类  变量 = new  外部类.内部类构造器;
+        Outer01.Inner01 in  = new Outer01.Inner01("张三");
+        in.showName();
+    }
+}
+```
+
+## 局部内部类
+
+- **局部内部类** ：定义在**方法中**的类。
+
+定义格式:
+
+```java
+class 外部类名 {
+	数据类型 变量名;
+	
+	修饰符 返回值类型 方法名(参数列表) {
+		// …
+		class 内部类 {
+			// 成员变量
+			// 成员方法
+		}
+	}
+}
+```
+
+## 匿名内部类【重点】
+
+### 概述
+
+**匿名内部类** ：是内部类的简化写法。他是一个隐含了名字的内部类。开发中，最常用到的内部类就是匿名内部类了。
+
+### 格式
+
+```java
+new 类名或者接口名() {
+     重写方法;
+};
+```
+
+包含了：
+
+* 继承或者实现关系
+
+* 方法重写
+* 创建对象
+
+所以从语法上来讲，这个整体其实是匿名内部类对象
+
+### 什么时候用到匿名内部类 
+
+**实际上，如果我们希望定义一个只要使用一次的类，就可考虑使用匿名内部类。匿名内部类的本质作用**
+
+**是为了简化代码**。 
+
+之前我们使用接口时，似乎得做如下几步操作：
+
+1. 定义子类
+2. 重写接口中的方法
+3. 创建子类对象
+4. 调用重写后的方法
+
+```java
+interface Swim {
+    public abstract void swimming();
+}
+
+// 1. 定义接口的实现类
+class Student implements Swim {
+    // 2. 重写抽象方法
+    @Override
+    public void swimming() {
+        System.out.println("狗刨式...");
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        // 3. 创建实现类对象
+        Student s = new Student();
+        // 4. 调用方法
+        s.swimming();
+    }
+}
+```
+
+我们的目的，最终只是为了调用方法，那么能不能简化一下，把以上四步合成一步呢？匿名内部类就是做这样的快捷方式。
+
+### 匿名内部类前提和格式
+
+匿名内部类必须**继承一个父类**或者**实现一个父接口**。
+
+**匿名内部类格式**
+
+```java
+new 父类名或者接口名(){
+    // 方法重写
+    @Override 
+    public void method() {
+        // 执行语句
+    }
+};
+```
+
+### 使用方式
+
+以接口为例，匿名内部类的使用，代码如下：
+
+```java
+interface Swim {
+    public abstract void swimming();
+}
+
+public class Demo07 {
+    public static void main(String[] args) {
+        // 使用匿名内部类
+		new Swim() {
+			@Override
+			public void swimming() {
+				System.out.println("自由泳...");
+			}
+		}.swimming();
+
+        // 接口 变量 = new 实现类(); // 多态,走子类的重写方法
+        Swim s2 = new Swim() {
+            @Override
+            public void swimming() {
+                System.out.println("蛙泳...");
+            }
+        };
+
+        s2.swimming();
+        s2.swimming();
+    }
+}
+```
+
+### 匿名内部类的特点
+
+1. 定义一个没有名字的内部类
+2. 这个类实现了父类，或者父类接口
+3. 匿名内部类会创建这个没有名字的类的对象
+
+### 匿名内部类的使用场景
+
+通常在方法的形式参数是接口或者抽象类时，也可以将匿名内部类作为参数传递。代码如下：
+
+```java
+interface Swim {
+    public abstract void swimming();
+}
+
+public class Demo07 {
+    public static void main(String[] args) {
+        // 普通方式传入对象
+        // 创建实现类对象
+        Student s = new Student();
+        
+        goSwimming(s);
+        // 匿名内部类使用场景:作为方法参数传递
+        Swim s3 = new Swim() {
+            @Override
+            public void swimming() {
+                System.out.println("蝶泳...");
+            }
+        };
+        // 传入匿名内部类
+        goSwimming(s3);
+
+        // 完美方案: 一步到位
+        goSwimming(new Swim() {
+            public void swimming() {
+                System.out.println("大学生, 蛙泳...");
+            }
+        });
+
+        goSwimming(new Swim() {
+            public void swimming() {
+                System.out.println("小学生, 自由泳...");
+            }
+        });
+    }
+
+    // 定义一个方法,模拟请一些人去游泳
+    public static void goSwimming(Swim s) {
+        s.swimming();
+    }
+}
+```

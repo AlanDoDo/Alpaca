@@ -1,0 +1,350 @@
+---
+title: "数据结构小复习"
+description: "算法的确定性是指指令不能有二义性"
+date: "2023-11-26"
+category: "编程"
+tags: ["数据结构与算法"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x264.jpg"
+source: "legacy-blog"
+---
+
+## Emphasis 
+
+* 算法的确定性是指指令不能有**二义性**
+
+* 数据在计算机内有**链式**和**顺序**两种存储方式，在存储空间使用的灵活性上，链式存储要比顺序存储要**高**
+
+* 数据在计算机存储器内表示时，物理地址与逻辑地址不相同的，称之为**链式存储结构**
+
+* 数据结构是指**数据元素的组织形式**
+
+* 线性结构的特点是元素之间的关系是**一对一的关系**
+
+* 输出一个二维数组`b[m][n]`中所有元素值的时间复杂度为 `O(m*n)`
+
+* 某算法的时间复杂度为 O(n*2) ,表明该算法的 执行时间与 `n*2` 成正比
+
+* 设f(n)=nsin(n),则f(n)的渐进时间复杂度为 **O(n)**
+
+* 被计算机加工的数据元素不是孤立的，它们彼此之间一般存在某种关系，通常把数据元素之间的这种关系称为 **结构**
+
+* 在Data structure=(D,R)中，D是 **数据元素** 的有限集合
+
+* 数据结构的讨论包括数据的**逻辑结构**、**存储结构**和**基本运算**等三个方面
+
+* 以下选项中 **高效性** 不是算法必须具备的特性
+
+* 顺序存储结构中数据元素之间的逻辑关系是由 **存储位置** 表示的
+
+* **数据元素**是数据的基本单位
+
+* 与数据元素本身的形式、内容、相对位置、个数无关的是数据的 **逻辑结构**
+
+* **数据项**是数据的最小单位
+
+* 树形结构是数据元素之间存在的一种 **一对多关系**
+
+* 计算机所处理的数据一般具备某种内在联系，这是指 **元素和元素之间存在某种关系**
+
+* 数据采用链式存储结构时，要求 **每个结点占用一片连续的存储区域**
+
+* 可以用 **抽象数据类型** 定义一个完整的数据结构
+
+* 以下属于逻辑结构的是 **有序表**
+
+* 计算机算法必须具备输入、输出和有限性、确定性、可执行性等五个特性
+
+## Linear list
+
+* 在一个以L为头指针的单循环链表中，p指针指向链尾的条件是 **p->next==L**
+
+* 设对 n(n>1)个元素的线性表的运算只有4种：删除第一个元素，删除最后一个元素，在第一个元素之前插入新元素，在最后一个元素之后插入新元素，则最好使用 **只有头结点指针没有尾结点指针的循环双链表**
+
+* 在一个单链表中，已知 q 所指结点是 p 所指结点的前驱结点，若在q和p之间插入结点s，则执行 **q->next=s;s->next=p;**
+
+* 在不带头结点的尾指针为tail的单循环链表中,线性表中只有一个结点的条件是 
+ **tail->next==tail**
+
+* 创建一个包括n个结点的有序单链表的时间复杂度是 `O(n*2)`
+
+* 在单链表中，要将s所指结点插入到p所指结点之后，其语句应 `s-＞next=p-＞next;p-＞next=s;`
+
+* 在双向链表存储结构中，删除p所指的结点时须修改指针 `p-＞prior-＞next=p-＞next;p-＞next-＞prior=p-＞prior;`
+
+* 在双向循环链表中，在p指针所指的结点后插入q所指向的新结点，其修改指针的操作是 **q-＞prior=p;q-＞next=p-＞next;p-＞next-＞prior=q;p-＞next=q;**
+
+* 不带头结点的单链表head为空的判定条件是 **head==NULL**
+
+* 已知指针h指向一个带头结点的非空单循环链表，结点结构为：（data，next），其中next是指向直接后继结点的指针，p是尾指针，q为临时指针。现要删除该链表的第一个元素，正确的语句序列是 **q=h-＞next;  h-＞next=q-＞next;  if(p==q) p=h;  free(q);**
+
+* 现有非空双向链表 L，其结点结构为prer、data、next。prer 是指向前直接前驱结点的指针，next 是指向直接后继结点的指针。若要在 L 中指针 p 所指向的结点（非尾结点）之后插入指针 s 指向的新结点， 则在执行了语句序列：“**s->next=p->next;p->next=s;**”后，还要执行 **s->prer=s->next->prer; s->next->prer=s;**
+
+* 在循环链表中，将头指针改设为尾指针（rear）后，其首元结点和尾结点的存储位置分别是 **rear->next->next和rear**
+
+## Stack and Queue
+
+* 栈和队列具有相同的 **逻辑结构**
+
+* 顺序栈存放在数组 `a[n]` 中，top指向栈顶，top= -1 表示栈空。在栈不满的情况下，元素x进栈的操作为 `a[++top]=x`
+
+* 若一个栈以向量 `V[1，＆hellip;，n]` 存储，初始栈顶指针top设为n+1，则元素x进栈的正确操作是 `top--; V[top]=x;`
+
+* 一个递归算法必须包括 **终止条件和递归部分**
+
+* 将编号为0和1的两个栈存放于同一个数组空间 `v[m]` 中，栈底分别处于数组的两端。0号栈的栈顶 `top[0]=-1` 时栈空；1号栈的栈顶 `top[1]=m` 时栈空。则判断此共享栈已满的条件是 `top[0]==top[1]-1`
+
+* 循环队列存放在数组 `Q[n]` 中。h指向头元素，t指向队尾元素的后一个位置。设队列中元素个数小于n，则队列中一共有 `(n+t-h)%n` 个元素
+
+## 作业A*寻路算法
+
+```c++
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#include <graphics.h>
+
+using namespace std;
+
+#define ROWS  10 // 行
+#define COLS  10 // 列
+
+#define ZXDJ 10
+#define XXDJ 14
+
+//图形化定义，一个格子的宽高
+#define SPACE 50
+
+IMAGE road, wall, pos, ren;
+
+enum direct { p_up, p_down, p_left, p_right, p_lup, p_ldown, p_rup, p_rdown };
+
+struct MyPoint {
+    int row; // y
+    int col; // x
+    int f, g, h;
+
+    void getF() { f = g + h; }
+};
+
+struct treeNode {
+    MyPoint pos;
+    treeNode* pParent;
+    vector<treeNode*> child;
+};
+
+treeNode* createNode(MyPoint pos) {
+    treeNode* pNew = new treeNode{
+        MyPoint{pos.row, pos.col, 0, 0, 0},
+        nullptr,
+        vector<treeNode*>()
+    };
+    return pNew;
+}
+
+int getH(MyPoint pos, MyPoint endPos);
+
+void releaseMemory(const vector<treeNode*>& nodes) {
+    for (auto node : nodes) {
+        delete node;
+    }
+}
+
+void printMap(const vector<vector<bool>>& pathMap, const int map[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; ++i) {
+        for (int j = 0; j < COLS; ++j) {
+            if (pathMap[i][j]) {
+                cout << "X "; // Mark the path
+            }
+            else if (map[i][j] == 1) {
+                cout << "# "; // Obstacle
+            }
+            else {
+                cout << ". "; // Empty space
+            }
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+//图形界面显示地图
+void drawMap(int map[ROWS][COLS]);
+
+void printCurrentPosition(const MyPoint& pos) {
+    cout << "当前位置: (" << pos.row + 1 << "," << pos.col + 1 << ")" << endl;
+}
+
+int main() {
+
+    //做窗口
+    initgraph(COLS * SPACE, ROWS * SPACE, SHOWCONSOLE);
+
+    loadimage(&road, L"road.bmp", SPACE, SPACE, true);
+    loadimage(&wall, L"wall.bmp", SPACE, SPACE, true);
+    // 加载 ren 图片
+    loadimage(&ren, L"ren.bmp", SPACE, SPACE, true);
+
+
+    // 0 路 1 墙
+    int map[ROWS][COLS] = {
+        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+        { 1, 0, 1, 0, 0, 1, 1, 0, 0, 1 },
+        { 1, 0, 1, 1, 0, 1, 1, 0, 1, 1 },
+        { 1, 0, 1, 1, 0, 1, 1, 0, 1, 1 },
+        { 1, 0, 0, 0, 0, 0, 1, 0, 1, 1 },
+        { 1, 0, 1, 0, 1, 1, 1, 0, 1, 1 },
+        { 1, 0, 1, 0, 0, 0, 0, 0, 1, 1 },
+        { 1, 0, 1, 0, 1, 1, 1, 0, 0, 1 },
+        { 1, 0, 1, 0, 1, 1, 1, 0, 1, 1 },
+        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+    };
+
+    vector<vector<bool>> pathMap(ROWS, vector<bool>(COLS, false));
+
+
+    MyPoint begPos = { 1, 1 };
+    MyPoint endPos = { 7, 8 };
+
+    pathMap[begPos.row][begPos.col] = true;
+    treeNode* pRoot = createNode(begPos);
+
+    vector<treeNode*> buff;
+    vector<treeNode*>::iterator it;
+    vector<treeNode*>::iterator itMin;
+
+    treeNode* pCurrent = pRoot;
+    bool isFindEnd = false;
+
+    // 在图形界面中显示当前位置
+    putimage(pCurrent->pos.col * SPACE, pCurrent->pos.row * SPACE, &pos);
+    drawMap(map);
+
+    // 显示 ren 图像
+    putimage(pCurrent->pos.col * SPACE, pCurrent->pos.row * SPACE, &ren);
+    
+    while (1) {
+        // 清除上一个位置的 ren 图像
+        putimage(pCurrent->pos.col * SPACE, pCurrent->pos.row * SPACE, &road);
+        for (int i = 0; i < 8; i++) {
+            treeNode* pTemp = createNode(pCurrent->pos);
+            switch (i) {
+            case p_up:
+                pTemp->pos.row--;
+                pTemp->pos.g += ZXDJ;
+                break;
+            case p_down:
+                pTemp->pos.row++;
+                pTemp->pos.g += ZXDJ;
+                break;
+            case p_left:
+                pTemp->pos.col--;
+                pTemp->pos.g += ZXDJ;
+                break;
+            case p_right:
+                pTemp->pos.col++;
+                pTemp->pos.g += ZXDJ;
+                break;
+            case p_lup:
+                pTemp->pos.row--;
+                pTemp->pos.col--;
+                pTemp->pos.g += XXDJ;
+                break;
+            case p_ldown:
+                pTemp->pos.row++;
+                pTemp->pos.col--;
+                pTemp->pos.g += XXDJ;
+                break;
+            case p_rup:
+                pTemp->pos.row--;
+                pTemp->pos.col++;
+                pTemp->pos.g += XXDJ;
+                break;
+            case p_rdown:
+                pTemp->pos.row++;
+                pTemp->pos.col++;
+                pTemp->pos.g += XXDJ;
+                break;
+            }
+
+            if (pTemp->pos.row >= 0 && pTemp->pos.row < ROWS &&
+                pTemp->pos.col >= 0 && pTemp->pos.col < COLS &&
+                !pathMap[pTemp->pos.row][pTemp->pos.col] &&
+                map[pTemp->pos.row][pTemp->pos.col] == 0) {
+                pTemp->pos.h = getH(pTemp->pos, endPos);
+                pTemp->pos.getF();
+                pCurrent->child.push_back(pTemp);
+                pTemp->pParent = pCurrent;
+                buff.push_back(pTemp);
+            }
+            else {
+                delete pTemp;
+            }
+        }
+
+        if (buff.empty()) {
+            break;
+        }
+
+        itMin = min_element(buff.begin(), buff.end(), [](const treeNode* a, const treeNode* b) {
+            return a->pos.f < b->pos.f;
+            });
+
+        pCurrent = *itMin;
+        pathMap[pCurrent->pos.row][pCurrent->pos.col] = true;
+        printMap(pathMap, map);
+        printCurrentPosition(pCurrent->pos);
+        buff.erase(itMin);
+
+        // 在新位置显示 ren 图像
+        putimage(pCurrent->pos.col* SPACE, pCurrent->pos.row* SPACE, &ren);
+
+        // 保留这一行用于显示图形窗口，不要关闭窗口
+        getchar();
+
+        if (pCurrent->pos.row == endPos.row && pCurrent->pos.col == endPos.col) {
+            isFindEnd = true;
+            break;
+        }
+    }
+
+    if (isFindEnd) {
+        cout << "找到终点了!" << endl;
+        cout << "最终路径: ";
+        while (pCurrent) {
+            cout << "(" << pCurrent->pos.row + 1 << "," << pCurrent->pos.col + 1 << ")";
+            pCurrent = pCurrent->pParent;
+        }
+        cout << endl;
+    }
+    else {
+        cout << "未找到路径!" << endl;
+    }
+
+    releaseMemory(buff);
+
+    return 0;
+}
+
+int getH(MyPoint pos, MyPoint endPos) {
+    int x = (pos.col > endPos.col) ? (pos.col - endPos.col) : (endPos.col - pos.col);
+    int y = (pos.row > endPos.row) ? (pos.row - endPos.row) : (endPos.row - pos.row);
+    return (x + y) * ZXDJ;
+}
+
+//图形界面显示地图
+void drawMap(int map[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (map[i][j] == 1) { //墙壁
+                putimage(j * SPACE, i * SPACE, &wall);
+            }
+            else { //路
+                putimage(j * SPACE, i * SPACE, &road);
+            }
+        }
+    }
+}
+```

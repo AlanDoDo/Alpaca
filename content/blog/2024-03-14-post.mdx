@@ -1,0 +1,253 @@
+---
+title: "MINI机械臂舵机控制"
+description: "舵机是一种位置伺服的电机，与马达不同，我们需要马达提供的是旋转，控制的是转速和方向。而舵机不需要整圈的旋转，需要的是旋转角度并维持住。一般舵机旋转的角度范围是 0 度到 180 度。舵机引线为 3 线，分别用棕、红、橙三种颜色进行区分，舵机品牌和生产厂家不同，会有些许差异，使用之前需查看资料。我们使用的是最常见的舵机，棕、红、橙分别对应“电源负极，电源…"
+date: "2024-03-14"
+category: "机器人"
+tags: ["嵌入式"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x314.jpg"
+source: "legacy-blog"
+---
+
+## 舵机介绍
+
+舵机是一种**位置伺服**的电机，与马达不同，我们需要马达提供的是旋转，控制的是转速和方向。而舵机不需要整圈的旋转，需要的是旋转角度并维持住。一般舵机旋转的角度范围是 0 度到 180 度。舵机引线为 3 线，分别用棕、红、橙三种颜色进行区分，舵机品牌和生产厂家不同，会有些许差异，使用之前需查看资料。我们使用的是最常见的舵机，**棕、红、橙分别对应“电源负极，电源正极，控制信号”**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x315.jpg)
+
+通过向舵机的信号线发送**电平时序信号**来控制舵机的转动位置
+
+**SG90:**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x317.jpg)
+
+**MG996R与MG90S:**
+
+* 0.5ms--------------0度； 2.5% （0.5ms高电平 + 19.5低电平）
+* 1.0ms------------45度； 5.0% （1.0ms高电平 + 19.0低电平）
+* 1.5ms------------90度； 7.5% （1.5ms高电平 + 18.5低电平）
+* 2.0ms-----------135度；10% （2.0ms高电平 + 18.0低电平）
+* 2.5ms-----------180度；12.5%（2.5ms高电平 + 17.5低电平）
+
+舵机的控制周期通常为**20毫秒、50Hz的频率**，但是许多舵机在 40 至 200 Hz的范围内都能正常工作。
+
+```c
+#include <Arduino.h>
+#include <ESP32Servo.h>
+
+Servo servo1; //初始化舵机
+
+int minUs = 500;
+int maxUs = 2500; //MG996R的范围是500-2500us
+
+int servo1Pin = 23;//定义引脚
+
+ESP32PWM pwm;
+void setup() {
+    Serial.begin(9600);
+    servo1.setPeriodHertz(50); // Standard 50hz servo，设置周期赫兹
+    servo1.attach(servo1Pin, minUs, maxUs);
+    //将Servo变量附加到引脚,语法servo.attach(pin)servo.attach(pin, min, max)
+    //参数说明servo，一个类型为servo的变量pin，连接至舵机的引脚编号
+    //min(可选)，舵机为最小角度（0度）时的脉冲宽度，单位为微秒，默认为544
+    //max(可选)，舵机为最大角度（180度时）的脉冲宽度，单位为微秒，默认为2400
+    servo1.write(0);//向舵机写入一个数值，来直接控制舵机的轴。在一个标准的舵机中，这将设定齿轮的角度.
+    //将齿轮转到对应的位置。在一个连续旋转的舵机中，这将设置一个舵机的角度
+    //0作为全速向一边，180为全速向另一边，在90附近的值为停止
+    delay(3000);
+
+}
+
+void loop() {
+    int pos = 0; 
+    for (pos = 0; pos <= 180; pos += 1) { // sweep from 0 degrees to 180 degrees
+        // in steps of 1 degree
+        servo1.write(pos);
+        delay(20); // waits 20ms for the servo to reach the position,调速作用
+    }
+    for (pos = 180; pos >= 0; pos -= 1) { // sweep from 180 degrees to 0 degrees
+        servo1.write(pos);
+        delay(20);
+    }
+    delay(3000);
+}
+//完成舵机从0-180°，在到0°的循环编程。
+```
+
+**多舵机控制**
+
+```c
+#include <Arduino.h>
+#include <ESP32Servo.h>
+
+//定义四个舵机
+Servo servoA;
+Servo servoB;
+Servo servoC;
+Servo servoG;
+
+int minUs = 500;
+int maxUs = 2500;
+
+int servoAPin = 23;
+int servoBPin = 22;
+int servoCPin = 21;
+int servoGPin = 19;
+
+//定义四个电机引脚
+void setup() {
+    Serial.begin(9600);
+    //频率设置50Hz 1s 50个脉冲 每个脉冲20ms
+    servoA.setPeriodHertz(50);      
+    servoB.setPeriodHertz(50);      
+    servoC.setPeriodHertz(50);      
+    servoG.setPeriodHertz(50);      
+    //设置范围是1000us到2000us， 1000us等于0的角，1500us等于90度，2000us等于1800 度。
+    servoA.attach(servoAPin, minUs, maxUs);
+    servoB.attach(servoBPin, minUs, maxUs);
+    servoC.attach(servoCPin, minUs, maxUs);
+    servoG.attach(servoGPin, minUs, maxUs);
+}
+
+void loop() {
+    //all turn to 0°
+    servoA.write(0);
+    servoB.write(0);
+    servoC.write(0);
+    servoG.write(0);
+    delay(2000);
+    servoA.write(30);
+    servoB.write(30);
+    servoC.write(30);
+    servoG.write(30);
+    delay(2000);
+    servoA.write(70);
+    servoB.write(70);
+    servoC.write(70);
+    servoG.write(70);
+    delay(2000);
+    servoA.write(30);
+    servoB.write(30);
+    servoC.write(30);
+    servoG.write(30);
+    delay(2000);
+}
+//同时控制四个舵机的旋转角度编程·
+```
+
+**速度控制**
+
+1. 初始化舵机控制结构体，把5个舵机控制变量放入结构体内
+2. 编写定时器函数，每15ms执行一轮，通过当前角度与控制角度检测舵机是否需要运动
+3. 编写设置舵机控制角度函数，后续可以通过该函数控制运动角度
+4. 编写舵机回原点控制函数，后续可通过该函数控制所有舵机回原点
+
+```c
+#include <Arduino.h>
+#include <ESP32Servo.h>
+#include <Ticker.h>//可以设置以固定时间间隔反复执行某个任务
+
+#define SERVO_NUM 4
+
+#define RESET_ANGLE 0
+
+#define PIN_SERVOA 23
+#define PIN_SERVOB 22
+#define PIN_SERVOC 21
+#define PIN_SERVOG 19
+
+typedef struct 
+{
+    Servo servo[SERVO_NUM];
+    uint8_t last_angle[SERVO_NUM];//上一角度
+    uint8_t set_angle[SERVO_NUM];//设置角度
+}t_servo_list;//初始化舵机控制结构体，把5个舵机控制变量放入结构体内
+
+t_servo_list list;
+
+Ticker read_state_timer;//初始化一个定时器
+//判断舵机是否运动到所需角度的函数
+static uint8_t em_motor_speed_ctl_run(uint8_t id,uint8_t set_angle,uint8_t now_angle){
+    if(set_angle > now_angle){
+        now_angle++;
+        list.servo[id].write(now_angle);
+    }else if(set_angle < now_angle){
+        now_angle--;
+        list.servo[id].write(now_angle);
+    }
+    return now_angle;
+}
+
+static void motor_timer_callbackfun(){
+    for(int index = 0;index < SERVO_NUM;index++){
+        list.last_angle[index] = em_motor_speed_ctl_run(index, list.set_angle[index] ,
+        list.last_angle[index]);
+    }
+}
+
+static bool check_angle(uint8_t *angle)
+{
+    for(int index = 0;index < SERVO_NUM ;index++){
+        if (angle[index] < 0 || angle[index] > 180)
+            return false;
+    }
+    return true;
+}//检查舵机转动角度是否在0-180°之间
+
+void em_motor_run(uint8_t *angle)
+{
+    if (check_angle(angle) == false)
+        return;
+    for(int index = 0;index < SERVO_NUM;index++){
+        list.set_angle[index] = angle[index];
+    }
+}
+
+void em_motor_run_by_angle(uint8_t angle1,uint8_t angle2,uint8_t angle3,uint8_t angle4){
+    list.set_angle[0] = angle1;
+    list.set_angle[1] = angle2;
+    list.set_angle[2] = angle3;
+    list.set_angle[3] = angle4;
+}
+
+void em_motor_reset()
+{
+    for(int index = 0;index < SERVO_NUM;index++){
+        list.set_angle[index] = RESET_ANGLE;
+    }
+    // Serial.printf("执行复位\n")，清空上次设置角度，以进行下一次角度转动;
+}
+
+void em_motor_init()
+{
+    // 例如，如果范围是500us到2500us， 500us等于0的角，1500us等于90度，2500us等于180 度。
+    list.servo[0].attach(PIN_SERVOA, 500, 2500);
+    list.servo[1].attach(PIN_SERVOB, 500, 2500);
+    list.servo[2].attach(PIN_SERVOC, 500, 2500);
+    list.servo[3].attach(PIN_SERVOG, 500, 2500);
+    // timer init 15ms转1°
+    read_state_timer.attach_ms(15,motor_timer_callbackfun);//每15ms，执行一次角度判断函数
+    //初始化位置
+    for(int index = 0;index < SERVO_NUM;index++){
+        list.set_angle[index] = RESET_ANGLE;
+        //设置当前角度，因为舵机上电时无法知道自身角度，所以这里假设角度为原点+1
+        //这就要求我们上电前把机械臂调整到安装的原点角度，也就是每个轴都在0°附近
+        //否则会导致机械臂第一次控制运动非常快
+        list.last_angle[index] = RESET_ANGLE + 1;
+    }
+}
+
+void setup() {
+  em_motor_init();
+}
+
+void loop() {
+  em_motor_run_by_angle(0,0,0,0);
+  delay(5000);
+  em_motor_run_by_angle(90,90,90,90);
+  delay(5000);
+  em_motor_run_by_angle(180,180,180,180);
+  delay(5000); 
+}
+```

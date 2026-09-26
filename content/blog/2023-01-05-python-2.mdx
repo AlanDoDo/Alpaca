@@ -1,0 +1,1055 @@
+---
+title: "Python基础学习笔记(二)"
+description: "函数: 是组织好的，可重复使用的，用来实现特定功能的代码段。"
+date: "2023-01-05"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a13.jpg"
+source: "legacy-blog"
+---
+
+***
+
+# 第五章
+
+## 函数的初体验
+
+* 函数: 是组织好的，可重复使用的，用来实现特定功能的代码段。
+
+```py
+# 需求：统计字符申的长度，不使用内置函数Len()
+str1 = "itheima"
+str2 = "itcast"
+str3 = "python"
+
+# 定义一个计数的变量
+count = 0
+for i in str1:
+    count += 1
+print(f"字符串{str1}的长度是: {count}")
+
+count = 0
+for i in str2:
+    count += 1
+print(f"字符申{str2}的长度是: {count}")
+
+count = 0
+for i in str3:
+    count += 1
+print(f"字符串{str3}的长度是: {count}")
+
+# 优化后的代码
+def my_len(data):
+    count = 0
+    for i in data:
+        count += 1
+    print(f"字符串{data}的长度是：{count}")
+
+my_len(str1)
+my_len(str2)
+my_len(str3)
+```
+
+**案例 函数基础定义**
+```py
+函数的定义:
+def 函数名(传入参数):
+    函数体
+    return 返回值
+```
+```py
+# 定义一个函数，输出相关信息
+def say_hi():
+    print("Hi,我是python,学Python,找AlanDoDo")
+# 调用参数,让定义的函数开始工作
+say_hi()
+```
+## 函数的传入参数
+* 传入参数的功能是:在函数进行计算的时候，接受外部(调用时)提供的数据
+```py
+#定义2个数相加的函数，通过参数接收被计算的2个数字
+def add(x,y):
+    result = x + y
+    print(f"{x} + {y} 的计算结果是: {result}")
+# 调用函数，传入被计算的2个数字
+add(5,6)
+```
+* 练习案例: 升级版自动查核酸
+定义一个函数，名称任意，并接受一个参数传入(数字类型，表示体温)
+在函数内进行体温判断(正常范围:小于等于37.5度)，并输出如下内容:
+```py
+# 定义函数，接收1个形式参数，数字类型，表示体温
+def check(num):
+    # 在函数体内进行判断体温
+    print("欢迎来到python! 请出示您的健康码以及72小时核酸证明,并配合测量体温!")
+    if num <= 37.5:
+        print(f"体温测量中，您的体温是: {num}度，体温正常请进!")
+    else:
+        print(f"体温测量中，您的体温是: {num}度，需要隔离!")
+# 调用函数，传入实际参数
+check(37.1)
+```
+## 函数的返回值定义语法
+* 函数在执行完成后，返回给调用者的结果(使用关键字:`return` 来返回结果)
+```py
+# 定义一个函数，完成2数相加功能
+def add(a,b):
+    result = a + b
+# 通过返回值，将相加的结果返回给调用者
+    return result
+    # 返回结果后，还想输出一句话
+    print("我完事了")
+# 函数的返回值，可以通过变量去接收并
+r = add(5,6)
+print(r)
+```
+## 函数返回值之None类型
+> Python中有一个特殊的字面量: None，其类型是:<class'NoneType'>:无返回值的函数，实际上就是返回了: None这个字面量
+```py
+# 无return语句的函数返回值
+def say_hi():
+    print("你好呀")
+result = say_hi()
+
+print(f"无返回值函数，返回的内容是: {result}")
+print(f"无返回值函数，返回的内容类型是: {type(result)}")
+# 主动返回None的函数
+def say_hi2():
+    print("你好呀")
+    return None
+
+result=say_hi2()
+
+print(f"无返回值函数，返回的内容是: {result}")
+print(f"无返回值函数，返回的内容类型是:{type(result)}")
+# None用于if判断
+def check_age(age):
+    if age > 18:
+        return "SUCCESS"
+    else:
+        return None
+    
+result =check_age(16)
+if not result:
+    # 进入if表示result是None值 也就是False
+    print("未成年，不可以进入")
+# None用于声明无初始内容的交量
+name = None
+```
+## 函数的说明文档
+* 我们可以给函数添加说明文档，辅助理解函数的作用
+语法如下:
+```py
+def func(x，y) :
+"""
+函数说明
+:param x:形参x的说明
+:param y: 形参y的说明
+:return: 返回值的说明
+"""
+函数体
+return 返回值
+```
+* 通过多行注释的形式，对函数进行说明解释
+```py
+# 定义函数，进行文档说明
+def add(x, y):
+    """
+    add函数可以接收2个参数，进行2数相加的功能
+    :param x:形参x表示相加的其中一个数宁
+    :param y:形参y表示相加的另一个数宇
+    :return: 返回值是2数相加的结果
+    """
+    result = x + y
+    print(f"2数相加的结果是:{result}")
+    return result
+
+add (5,6)
+```
+
+## 函数的嵌套使用
+* 所谓函数嵌套调用指的是一个函数里面又调用了另外一个函数
+```py
+# 定义函数func_b
+def func_b():
+    print("---2---")
+# 定义函数func_a,并在内部调用func_b
+def func_a():
+    print("---1---")
+    
+    # 嵌套用func_b
+    func_b()
+    
+    print("---3---")
+# 调用函数func_a
+func_a()
+```
+## 变量在函数中的作用域
+* 变量作用域指的是变量的作用范围(变量在哪里可用，在哪里不可用)主要分为两类: 局部变量和全局变量
+* 所谓局部变量是定义在函数体内部的变量，即只在函数体内部生效
+```py
+# global关键字，在函数内声明交量为全局变属
+num = 200
+
+def test_a():
+    print(f"test_a: {num}")
+def test_b():
+    global num   # 设置内部定义的交量为全局交眉
+    num = 500
+    print(f"test_b: {num}")
+    
+test_a()
+test_b()
+print(num)
+```
+* 综合案例 函数
+1. 定义一个全局变量:money，用来记录银行卡余额(默认5000000)
+2. 定义一个全局变量:name，用来记录客户姓名 (启动程序时输入),定义如下的函数:
+**查询余额函数**, **存款函数**, **取款函数**, **主菜单函数**
+
+**要求:**
+1. 程序启动后要求输入客户姓名
+2. 查询余额、存款、取款后都会返回主菜单
+3. 存款、取款后，都应显示一下当前余额
+4. 客户选择退出或输入错误，程序会退出，否则一直运行
+
+```py
+# 定义全局交量money name
+money = 5000000
+name = None
+# 要求客户输入姓名
+name = input("请输入您的姓名:")
+# 定义查询函数
+def query(show_header):
+    if show_header:
+        print("-------------查询余额---------")
+    print(f"{name}，您好，您的余额剩余: {money}元")
+    
+# 定义存款丽数
+def saving(num):
+    global money # money在西数内部定义为全局变量
+    money += num
+    print("-------------存款-------------")
+    print(f"{name}，您好，您存款{num}元成功。")
+    
+    # 调用query函数查询余额
+    query(False)
+    
+# 定义取款函数
+def get_money(num):
+    global money
+    money -= num
+    print("---------------取款-------------")
+    print(f"{name}，您好，您取款{num}元成功。")
+    
+    # 调用query函数查询余额
+    query(False)
+    
+# 定义主菜单函数
+def main():
+    print("------------主菜单---------------")
+    print(f"{name},您好,欢迎来到python银行ATM,请选择操作:")
+    print("查询余额\t[输入1]")
+    print("存款\t\t[输入2]")
+    print("取款\t\t[输入3]")  # 通过\t制表符对齐输出
+    print("退出\t\t[输入4]")
+    return input("请输入您的选择:")
+
+# 设置无限箭环，确保程序不退出
+while True:
+    keyboard_input = main()
+    if keyboard_input =="1":
+        query(True)
+        continue    # 通continue继续下一次筋环，一进来就是同到了主袭单
+    elif keyboard_input =="2":
+        num = int(input("您想要存多少钱? 请输入:"))
+        saving(num)
+        continue
+    elif keyboard_input =="3":
+        num = int(input("您想要取多少钱? 请输入:"))
+        get_money(num)
+        continue
+    else:
+        print("程序退出啦")
+        break    # 越过break退出循环
+```
+
+# 第六章
+## 数据容器入门
+* Python中的数据容器
+一种可以容纳**多份数据**的数据类型
+* Python有哪些数据容器?
+list(列表)、tuple(元组)、str(字符串)、set(集合)、dict(字典)
+它们各有特点，但都满足可容纳多个元素的特性
+## 列表的定义语法
+```py
+# 演示数据容器之:List 列表
+# 语法:[元素，元素，....]
+
+# 定义一个列表 List
+my_list = ["itheima", "itcast", "python"]
+print(my_list)
+print(type(my_list))
+
+my_list = ["itheima",666, True]
+print(my_list)
+print(type(my_list))
+
+# 定义一个收套的列表
+my_list = [[1,2,3],[4, 5,6]]
+print(my_list)
+print(type(my_list))
+```
+## 列表的下表索引
+```py
+# 通过下标素引取出对应位置的数据
+my_list =["Tom","Lily","Rose"]
+# 列表[下标索引]，从前向后从0开始，每次+1，从后向前从-1开始，每次-1
+print(my_list[0])
+print(my_list[1])
+print(my_list[2])
+# 错误示范
+# print(my_list[3])
+
+# 通过下标索引取出数招（倒序取出)
+print(my_list[-1])
+print(my_list[-2])
+print(my_list[-3])
+
+# 取出嵌套列表的元素
+my_list = [[1,2,3],[4,5,6]]
+print(my_list[1][1])
+```
+## 列表的常用操作方法
+列表除了可以:
+* 定义
+* 使用下标索引获取值
+
+列表也提供了一系列功能:插入元素,删除元素,清空列表,修改元素,统计元素个数等等功能，这些功能我们都称之为:**列表的方法**
+
+```py
+# 语法:列表.index(元素)
+# List列表的常用操作
+mylist = ["itcast","itheima","python"]
+
+# 1.1 查找某元素在列表内的下标索引
+index = mylist.index("itheima")
+print(f"itheima在列表中的下标索引值是:(index)")
+
+# 1.2如果被查找的元素不存在，会报错
+# index = mylist.index("hello")
+# print(f"hello在列表中的下标索引值是: {index}")
+
+# 修改特定下标资引的值
+mylist[0] = "传智教育"
+print(f"列表被修改元素值后，结果是:{mylist}")
+
+# 语法: 列表.insert(下标,元素)，在指定的下标位置，插入指定的元素
+# 在指定下标位置插入新元素
+mylist.insert(1,"best")
+print(f"列表插入元素后，结果是: {mylist}")
+
+# 语法: 列表appen(元素)，将指定元素，追加到列表的尾部
+# 在列表的尾部追加单个新元素
+mylist.append("黑马程序员")
+print(f"列表在追加了元素后，结果是:{mylist}")
+
+# 在列表的尾部追加一批新元素
+mylist2 = [1,2,3]
+mylist.extend(mylist2)
+print(f"列表在追加了一个新的列表后，结果是:{mylist}")
+
+# 语法1: del列表[下标]  
+mylist =["itcast","itheima","python"]
+del mylist[2]
+print(f"列表删除元素后结果是: {mylist}")
+
+# 语法2:列表.pop(下标)
+mylist =["itcast","itheima","python"]
+element = mylist.pop(2)
+print(f"通过pop方法取出元素后列表内容: {mylist}，取出的元素是:{element}")
+
+# 删除某元素在列表中的第一个匹配项
+mylist = ["itcast","itheima","itcast","itheima","python"]
+mylist.remove("itheima")
+print(f"通过remove方法移除元素后,列表的结果是: {mylist}")
+
+# 清空列表
+mylist.clear()
+print(f"列表被清空了。结果是:{mylist}")
+
+# 统计列表内某元素的数量
+mylist = ["itcast", "itheima", "itcast", "itheima", "python"]
+count = mylist.count("itheima")
+print(f"列表中itheima的数星是: {count}")
+
+# 统计列表中全部的元素数量
+mylist =["itcast","itheima","itcast","itheima","python"]
+count = len(mylist)
+print(f"列表的元素数量总共有:{count}个")
+```
+
+* 案例
+* 有一个列表，内容是:[21,25,21,23,22,20]，记录的是一批学生的年龄,进行练习
+```py
+# 1. 定义这个列表，并用变量接收它，内容是:[21，25，21，23，22，20]
+mylist =[21,25,21,23,22,20]
+
+# 2.追加一个数字31，到列表的尾部
+mylist.append(31)
+
+# 3，追加一个新列表[29，33，30]，到列表的尾部
+mylist.extend([29,33,30])
+
+# 4.取出第一个元素(应是:21)
+num1 = mylist[0]
+print(f"从列表中取出来第一个元素,应该是21,实际上是: {num1}")
+
+# 5，取出最后一个元素(应是:30)
+num2 = mylist[-1]
+print(f"从列表中取出来最后一个元素,应该是30,实际上是: {num2}")
+
+# 6.查找元清31，在列表中的下标位置
+index = mylist.index(31)
+print(f"元素31在列表的下标位置是: {index}")
+print(f"最后列表的内容是: {mylist}")
+```
+## 列表的循环遍历
+* 使用while,对List列表的循环
+```py
+def list_while_func():
+# 使用while循环遍历列表的演示函数
+# :return: None
+    my_list = ["教育", "程序员", "Python"]
+    # 循环控制变量通过下标索引来控制，默认0
+    # 每一次循环将下标索引变量+1
+    # 循环条件:下标索引变量 < 列表的元素数量
+
+    # 定义一个变量用来标记列表的下标
+    index =0   # 初始值为0
+    while index < len(my_list):
+        # 通过index变量取出对应下标的元素
+        element = my_list[index]
+        print(f"列表的元素: {element}")
+        
+        # 至关重要 将循环变量(index)每一次循环都+1
+        index += 1
+    
+list_while_func()
+```
+* for循环对列表数据容器进行遍历
+```py
+def list_for_func():
+    # 使用for循环遍历列表的演示函数
+    # :return: None
+    my_list = [1, 2, 3, 4, 5]
+    # for 临时变量 in 数据容器:
+    for element in my_list:
+        print(f"列表的元素有: {element}")
+
+list_for_func()
+```
+
+## 元组的定义和操作
+* 元组同列表一样，都是可以封装多个、不同类型的元素在内。但最大的不同点在于:
+
+元组一旦定义完成,就不可修改,所以，当我们需要在程序内封装数据，又不希望封装的数据被篡改，那么元组就非常合适了
+```py
+# 定义元组
+t1 = (1,"Hello",True)
+t2=()
+t3 = tuple()
+print(f"t1的类型是: {type(t1)}，内容是: {t1}")
+print(f"t2的类型是: {type(t2)}，内容是: {t2}")
+print(f"t3的类型是: {type(t3)}，内容是: {t3}")
+
+# 定义单个元素的元素
+t4 = ("hello",)
+print(f"t4的类型是: {type(t4)},t4的内容是: {t4}")
+# 元组的嵌套
+t5 = ( (1,2,3),(4,5,6) )
+print(f"t5的类型是: {type(t5)}，内容是: {t5}")
+
+# 下标索引去取出内容
+num = t5[1][2]
+print(f"从嵌套元组中取出的数据是: {num}")
+
+# 元组的操作:index查找方法
+t6 = ("传智教育","黑马程序员","Python")
+index = t6.index("黑马程序员")
+print(f"在元组t6中查找黑马程序员,的下标是: {index}")
+# 元组的操作:count统计方法
+t7 = ("传智教育","黑马程序员","黑马程序员","黑马程序员","Python")
+num = t7.count("黑马程序员")
+print(f"在元组t7中统计黑马程序员的数量有: {num}个")
+# 元组的操作:Len函数统计元组元素数量
+t8 = ("传智教育","黑马程序员","黑马程序员","黑马程序员","Python")
+num = len(t8)
+print(f"t8元组中的元素有: {num}个")
+
+# 元组的遍历:while
+index = 0
+while index < len(t8):
+    print(f"元组的元素有: {t8[index]}")
+    # 至关重要
+    index += 1
+# 元组的遍历:for
+for element in t8:
+    print(f"2元组的元素有: {element}")
+
+# 修改元组内容
+# t8[0]="itcast"
+```
+
+## 字符串的定义和操作
+```py
+# 演示以数据容器的角色，学习字符申的相关操作
+my_str = "itheima and itcast"
+# 通过下标索引取值
+value = my_str[2]
+value2 = my_str[-16]
+print(f"从字符串{my_str}取下标为2的元素,。值是: {value},取下标为-16的元素。值是: {value2}")
+
+# my_str[2]="H"
+
+# index方法
+value = my_str.index("and")
+print(f"在字符申{my_str}中查找and,其起始下标是: {value}")
+    
+# replace方法
+new_my_str = my_str.replace("it","程序")
+print(f"将字符申{my_str}，进行替换后得到: {new_my_str}")
+
+
+# 语法:字符串.split(分隔符字符串 )
+# 功能:按照指定的分隔符字符串，将字符串划分为多个字符串，并存人列表对象中
+# 注意:学符串本身不变，而是得到了一个列表对象
+# split方法
+my_str = "hello python itheima itcast"
+my_str_list = my_str.split(" ")
+print(f"将字符串{my_str}进行split切分后得到:{my_str_list}，类型是: {type(my_str_list)}")
+
+# strip方法
+my_str ="  itheima and itcast  "
+new_my_str = my_str.strip() # 不传入参数，去除首尾空格
+print(f"字符串{my_str}被strip后,结果: {new_my_str}")
+
+my_str ="12itheima and itcast21"
+new_my_str = my_str.strip("12")
+print(f"字符申{my_str}被strip('12')后,结果: {new_my_str}")
+
+# 统计字符串中某字符串的出现次数，count
+my_str ="itheima and itcast"
+count = my_str.count("it")
+print(f"字符串{my_str}中it出现的次数是: {count}")
+
+# 统计字符串的长度,len()
+num = len(my_str)
+print(f"字符申{my_str}的长度是: {num}")
+```
+
+## 数据容器（序列）的切片
+* 切片: 从一个序列中，取出一个子序列
+```py
+# List进行切片，从1开始，4结束，步长1
+my_list = [0,1,2,3,4,5,6]
+result1 = my_list[1:4] # 步长默认是1，所以可以省略不写
+print(f"结果1: {result1}")
+
+# tuple进行切片，从头开始，到最后结束，步长1
+my_tuple = (0,1,2,3,4,5,6)
+result2 = my_tuple[:] # 起始和结束不写表示从头到尾，步长为1可以省略
+print(f"结果2: {result2}")
+
+# str进行切片，从头开始，到最后结束，步长2
+my_str = "01234567"
+result3 = my_str[::2]
+print(f"结果3: {result3}")
+
+# str进行切片，从头开始，到最后结束，步长-1
+my_str ="01234567"
+result4 = my_str[::-1]  # 等同于将序列反转了
+print(f"结果4:{result4}")
+
+# 对列表进行切片，从3开始，到1结束，步长-1
+my_list = [0,1,2,3,4,5,6]
+result5 = my_list[3:1:-1]
+print(f"结果5: {result5}")
+
+# 对元组进行切片，从头开始，到尾结束，步长-2
+my_tuple = (0,1,2,3,4,5,6)
+result6 = my_tuple[::-2]
+print(f"结果6:{result6}")
+```
+
+## 集合的定义和操作
+```py
+# 定义集合
+my_set ={"教育","程序员","it","教育","程序员","it","教育","程序员","it"}
+my_set_empty = set()  # 定义空集合
+print(f"my_set的内容是: {my_set}，类型是: {type(my_set)}")
+print(f"my_set_empty的内容是: {my_set_empty}，类型是: {type(my_set_empty)}")
+
+# 添加新元素
+my_set.add("Python")
+my_set.add("教育")
+print(f"my_set添加元素后结果是: {my_set}")
+
+# 移除元素
+my_set.remove("程序员")
+print(f"my_set移除程序员后,结果是: {my_set}")
+
+# 随机取出一个元素
+my_set = {"教育","程序员","it"}
+element = my_set.pop()
+print(f"集合被取出元素是: {element}，取出元素后: {my_set}")
+
+# 清空集合，clear
+my_set.clear()
+print(f"集合被清空啦，结果是: {my_set}")
+
+# 取2个集合的差集
+set1 = {1,2,3}
+set2 = {1,5,6}
+set3 = set1.difference(set2)
+print(f"取出差集后的结果是: {set3}")
+print(f"取差集后,原有set1的内容: {set1}")
+print(f"取差集后,原有set2的内容: {set2}")
+
+# 消除2个集合的差集
+set1 = {1,2,3}
+set2 = {1,5,6}
+set1.difference_update(set2)
+print(f"消除差集后,集合1结果: {set1}")
+print(f"消除差集后,集合2结果: {set2}")
+
+# 2个集合合并为1个
+set1 = {1,2,3}
+set2 = {1,5,6}
+set3 = set1.union(set2)
+print(f"2集合合并结果: {set3}")
+print(f"合并后集合1: {set1}")
+print(f"合并后集合2: {set2}")
+
+# 统计集合元素数量Len()
+set1 = {1,2,3,4,5,1,2,3,4,5}
+num = len(set1)
+print(f"集合内的元素数量有: {num}个")
+
+# 集合的遍历
+# 集合不支持下标索引，不能用while循环,可以用for循环
+set1 = {1,2,3,4,5}
+for element in set1:
+    print(f"集合的元素有: {element}")
+```
+
+## 字典的定义
+* 字典的定义，同样使用{},不过存储的元素是一个个的:**键值对**
+```py
+# 定义字典{key: value,key: value,...}
+my_dict1 = {"王力鸿": 99,"周杰轮": 88,"林俊节": 77}
+# 定义空宇典
+my_dict2 = {}
+my_dict3 = dict()
+print(f"字典1的内容是: {my_dict1}，类型:{type(my_dict1)}")
+print(f"字典2的内容是: {my_dict2}，类型:{type(my_dict2)}")
+print(f"字典3的内容是: {my_dict3}，类型:{type(my_dict3)}")
+
+# 定义重复Key的宇典,新的会覆盖老的
+my_dict1 = {"王力鸿": 99,"王力鸿": 88,"林俊节": 77}
+print(f"重复key的字典的内容是: {my_dict1}")
+
+# 从字典中基于Key获取Value[]
+my_dict1 = {"王力鸿": 99,"周杰轮": 88,"林俊节": 77}
+score = my_dict1["王力鸿"]
+print(f"王力鸿的考试分数是:{score}") 
+
+# 定义嵌套宇典
+# 记录学生各科的考试信息
+stu_score_dict = {
+    "王力鸿": {
+        "语文": 77,
+        "数学": 66,
+        "英语": 33
+    },"周杰轮":{
+        "语文": 88,
+        "数学": 86,
+        "英语": 55
+    },"林俊节": {
+        "语文": 99,
+        "数学": 96,
+        "英语": 66
+    }
+}
+print(f"学生的考试信息是: {stu_score_dict}")
+
+# 从套字典中获取数据
+# 看一下周杰轮的语文信息
+score = stu_score_dict["周杰轮"]["语文"]
+print(f"周杰轮的语文分数是:{score}")
+```
+## 字典的常用操作
+```py
+# 语法:字典[Key] = Value,结果:字典被修改，新增了元素
+# 语法:字典[Key] = Value,结果:字典被修改，元素被更新
+# 注意:字典Key不可以重复，所以对已存在的Key执行上述操作，就是更新Value值
+my_dict={"周杰轮":99,"林俊节":88,"张学油": 77}
+# 新增元素
+my_dict["张信哲"] = 66
+print(f"字典经过新增元素后，结果: {my_dict}")
+# 更新元素
+my_dict["周杰轮"] = 33
+print(f"字典经过更新后，结果: {my_dict}")
+# 删除元素
+score = my_dict.pop("周杰轮")
+print(f"字典中被移除了一个元素，结果: {my_dict}，周杰轮的考试分数是: {score}")
+
+# 清空元素，clear
+my_dict.clear()
+print(f"字典被清空了，内容是: {my_dict}")
+
+# 获取全部的key
+my_dict = {"周杰轮": 99,"林俊节": 88,"张学油": 77}
+keys = my_dict.keys()
+print(f"字典的全部keys是:{keys}")
+
+# 遍历字典
+# (1)通过获取到全部的key来完成遍历
+for key in keys:
+    print(f"字典的key是:{key}")
+    print(f"字典的value是: {my_dict[key]}")
+#(2)直接对字典进行for循环，每一次循环都是直接得到key
+for key in my_dict:
+    print(f"2字典的key是:{key}")
+    print(f"2字典的value是: {my_dict[key]}")
+
+# 统计字典内的元素数量，len()函数
+num = len(my_dict)
+print(f"字典中的元素数量有: {num}个")
+```
+* **案例**
+* 有如下员工信息，请使用字典完成数据的记录。
+并通过for循环，对所有级别为1级的员工，级别上升1级，薪水增加1000元
+```py
+# 演示宇典的课后练习:升职加薪，对所有级别为1级的员工，级别上升1级，薪水增加1000元
+# 组织宇典记录数据
+info_dict = {
+    "王力鸿":{
+    "部门":"科技部",
+    "工资": 3000,
+    "级别": 1
+    },
+    "周杰轮":{
+    "部门":"市场部",
+    "工资": 5000,
+    "级别": 2
+    },
+    "林俊节":{
+    "部门":"市场部",
+    "工资": 7000,
+    "级别":3
+    },
+    "张学油":{
+    "部门":"科技部",
+    "工资": 4000,
+    "级别":1
+    },
+    "刘德滑":{
+    "部门":"市场部",
+    "工资": 6000,
+    "级别": 2
+    }
+}
+print(f"员工在升值加薪之前的结果: {info_dict}")
+# for循环遍历字典
+for name in info_dict:
+    # if条件判断符合条件员工
+    if info_dict[name]["级别"] == 1:
+        # 升职加薪操作
+        # 获取到员工的信息宇典
+        employee_info_dict = info_dict[name]
+        # 修改员工的信息
+        employee_info_dict["级别"] = 2 # 级别+1
+        employee_info_dict["工资"] += 1000 # 工资+1000
+        # 将员工的信息更新回info_dict
+        info_dict[name] = employee_info_dict
+    
+# 输出结果
+print(f"对员工进行升级加薪后的结果是: {info_dict}")
+```
+## 类数据容器的总结对比
+* 基于各类数据容器的特点，它们的应用场景如下:
+1. 列表:一批数据，可修改、可重复的存储场景
+2. 元组:一批数据，不可修改、可重复的存储场景
+3. 字符串:一串字符串的存储场景
+4. 集合:一批数据，去重存储场景
+5. 字典:一批数据，可用Key检索Value的存储场景
+## 数据容器的通用操作
+* 首先，在遍历上:
+5类数据容器都支持for循环遍历
+列表、元组、字符串支持while循环，集合、字典不支持 (无法下标索引)
+```py
+# 演示数据容器的通用功能
+my_list = [1,2,3,4,5]
+my_tuple = (1,2,3,4,5)
+my_str ="abcdefg"
+my_set = {1,2,3,4,5}
+my_dict = {"key1": 1,"key2": 2,"key3": 3,"key4": 4,"key5": 5}
+
+# Len元素个数
+print(f"列表 元素个数有:{len(my_list)}")
+print(f"元组 元素个数有:{len(my_tuple)}")
+print(f"字符串元素个数有:{len(my_str)}")
+print(f"集合 元素个数有:{len(my_set)}")
+print(f"字典 元素个数有:{len(my_dict)}")
+
+# max最大/最小元素
+print(f"列表 最大的元素是:{max(my_list)}")
+print(f"元组 最大的元素是:{max(my_tuple)}")
+print(f"字符串最大的元素是:{max(my_str)}")
+print(f"集合 最大的元素是:{max(my_set)}")
+print(f"字典 最大的元素是:{max(my_dict)}")
+
+# 类型转换: 容器转列表/元组(tuple)/字符串(str)/集合(set)
+print(f"列表转列表的结果是:{list(my_list)}")
+print(f"元组转列表的结果是:{list(my_tuple)}")
+print(f"字符串转列表结果是:{list(my_str)}")
+print(f"集合转列表的结果是:{list(my_set)}")
+print(f"字典转列表的结果是:{list(my_dict)}")
+
+# 进行容器的排序
+my_list = [3,1,2,5,4]
+my_tuple = (3,1,2,5,4)
+my_str ="bdcefga"
+my_set = {3,1,2,5,4}
+my_dict = {"key3": 1,"key1": 2,"key2": 3,"key5": 4,"key4": 5}
+
+print(f"列表对象的排序结果: {sorted(my_list)}")
+print(f"元组对象的排序结果: {sorted(my_tuple)}")
+print(f"字符串对象的排序结果: {sorted(my_str)}")
+print(f"集合对象的排序结果: {sorted(my_set)}")
+print(f"字典对象的排序结果: {sorted(my_dict)}")
+
+print(f"列表对象的反向排序结果: {sorted(my_list,reverse=True)}")
+print(f"元组对象的反向排序结果: {sorted(my_tuple,reverse=True)}")
+print(f"字符串对象反向的排序结果: {sorted(my_str,reverse=True)}")
+print(f"集合对象的反向排序结果: {sorted(my_set,reverse=True)}")
+print(f"字典对象的反向排序结果::{sorted(my_dict,reverse=True)}")
+```
+## 拓展-字符串大小比较的方式
+* 字符串是按位比较，也就是一位位进行对比，只要有一位大，那么整体就大
+```py
+# abc 比较 abd
+print(f"abd大于abc,结果: {'abd'> 'abc'}")
+# a比较 ab
+print(f"ab大于a,结果: {'ab'> 'a'}")
+# a比较A
+print(f"a 大于 A,结果: {'a'> 'A'}")
+# key1 比较 key2
+print(f"key2 > key1,结果: {'key2'> 'key'}")
+```
+
+# 第七章
+## 函数的多返回值
+* 按照返回值的顺序，写对应顺序的多个变量接收即可
+* 变量之间用逗号隔开,支持不同类型的数据return
+```py
+# 演示使用多个变量，接收多个返回值
+def test_return():
+    return 1,"hello",True
+x,y,z=test_return()
+print(x)
+print(y)
+print(z)
+```
+## 函数的多种参数使用形式
+* 位置参数:调用函数时根据函数定义的参数位置来传递参数
+* 关键字参数:函数调用时通过“**键=值**”形式传递参数
+作用: 可以让函数更加清晰、容易使用，同时也清除了参数的顺序需求.
+* 缺省参数:缺省参数也叫默认参数，用于定义函数，为参数提供默认值，调用函数时可不传该默认参数的值(注意:所有位置参数必须出现在默认参数前，包括函数定义和调用).
+作用:当调用函数时没有传递参数，就会使用默认是用缺省参数对应的值.
+* 不定长参数也叫可变参数.用于不确定调用的时候会传递多少个参数(不传参也可以)的场景
+作用:当调用函数时不确定参数个数时，可以使用不定长参数
+```py
+# 演示多种传参的形式
+# 注意:传递的参数和定义的参数的顺序及个数必须一致
+def user_info(name,age,gender):
+    print(f"姓名是:{name}，年龄是:{age}，性别是:{gender}")
+# 位置参数 - 默认使用形式
+user_info('小明',20,'男')
+
+# 关键字参数
+# 注意:函数调用时，如果有位置参数时，位置参数必须在关键字参数的前面，但关键字参数之间不存在先后顺序
+user_info(name='小王',age=11,gender='女')
+user_info(age=10,gender='女',name='潇潇') # 可以不按照参数的定义顺序传参
+user_info('甜甜',gender='女',age=9)
+
+# 缺省参数(默认值)
+# 注意:函数调用时，如果为缺省参数传值则修改默认参数值，否则使用这个默认值
+def user_info(name,age,gender):
+    print(f"姓名是:{name}，年龄是:{age}，性别是:{gender}")
+
+user_info('小天',13,'男')
+
+# 不定长- 位置不定长，*号
+# 不定长定义的形式参数会作为元组存在，接收不定长数量的参数传入
+# 位置不定长传递以*号标记一个形式参数，以元组的形式接受参数形式参数一般命名为args
+def user_info(*args):
+    print(f"args参数的类型是: {type(args)}，内容是:{args}")
+
+user_info(1,2,3,'小明','男孩')
+
+# 不定长 - 关键字不定长，** 号
+# 关键字不定长传递以**号标记一个形式参数，以字典的形式接受参数，形式参数一般命名为kwargs
+def user_info(**kwargs):
+    print(f"args参数的类型是: {type(kwargs)}，内容是:{kwargs}")
+
+user_info(name='小王',age=11,gender='男孩')
+```
+
+## 函数作为参数传递
+* 函数本身，也可以作为参数传入另一个函数内
+```py
+# 定义一个函数，接收另一个函数作为传入参数
+def test_func(compute):
+    result = compute(1,2)  # 确定cmpute是函数
+    print(f"compute参数的类型是:{type(compute)}")
+    print(f"计算结果: {result}")
+    
+# 定义一个函数，准备作为参数传入另一个函数
+def compute(x,y):
+    return x + y
+# 调用，并传入函数
+test_func(compute)
+```
+* 将函数传入的作用在于:传入计算逻辑，而非传入数据。
+## lambda匿名函数
+* 函数的定义中
+**def关键字**，可以定义带有名称的函数,有名称的函数，可以基于名称重复使用
+**lambda关键字**，可以定义匿名函数 (无名称),无名称的匿名函数，只可临时使用一次
+```py
+# 演示Lambda匿名函数 lambda 传入参数: 函数体(一行代码)
+# 定义一个函数，接受其它函数输入
+def test_func(compute):
+    result = compute(1,2)
+    print(f"结果是:{result}")
+# 通过Lambda匿名函数的形式，将匿名函数作为参数传入
+def add(x,y):
+    return x + y
+test_func(add)
+test_func(lambda x,y: x + y)
+```
+
+# 第八章
+## 文件编码概念
+* 什么是编码?
+编码就是一种规则集合，记录了内容和二进制间进行相互转换的逻辑编码有许多中，我们最常用的是UTF-8编码(UTF-8是目前全球通用的编码格式，除非有特殊需求，否则，一律以UTF-8格式进行文件编码即可。)
+
+* 为什么需要使用编码?
+计算机只认识0和1，所以需要将内容翻译成0和1才能保存在计算机中同时也需要编码，将计算机保存的0和1，反向翻译回可以识别的内容
+
+## 文件的读取操作
+* 内存中存放的数据在计算机关机后就会消失。要长久保存数据，就要使用硬盘、光盘、I 盘等设备。为了便于数据的管理和检索，引入了“**文件**”的概念。
+* open函数，可以打开一个已经存在的文件，或者创建一个新文件
+```py
+# 语法如下 open(name,,mode,encoding)
+# name:是要打开的目标文件名的字符串(可以包含文件所在的具体路径)
+# mode: 设置打开文件的模式(访问模式): 只读、写入、追加等。
+# encoding: 编码格式(推荐使用UTF-8)
+# 打开文件
+f = open("F:\Code\测试.txt","r",encoding="UTF-8")
+print(type(f))
+# 读取文件 - read()
+print(f"读取10个字节的结果: {f.read(10)}")
+print(f"read方法读取全部内容的结果是: {f.read()}")
+print("------------------------")
+
+# 读取文件 - readLines()
+lines = f.readlines()  # 读取文件的全部行，封装到列表中
+print(f"lines对象的类型: {type(lines)}")
+print(f" ines对象的内容是: {lines}")
+```
+```py
+# 打开文件
+import time
+f = open("F:\Code\测试.txt","r",encoding="UTF-8")
+print(type(f))
+print("---------------")
+# 读取文件- readline()
+line1 = f.readline()
+line2 = f.readline()
+line3 = f.readline()
+print(f"第一行数据是: {line1}")
+print(f"第二行数据是: {line2}")
+print(f"第三行数据是: {line3}")
+# for循坏读取文件行
+for line in f:
+    print(f"每一行数据是:{line}")
+    
+# 文件的关闭
+f.close()
+time.sleep(500000)
+
+# with open 语法操作文件
+# import.time
+# with open("F:\Code\测试.txt","r",encoding="UTF-8") as f:
+#    for line in f:
+#        print(f"每一行数据是: {line}")
+    
+# time.sleep(500000)
+```
+## 文件的写出操作
+* 直接调用write，内容并未真正写入文件，而是会积攒在程序的内存中，称之为缓冲区
+* 当调用flush的时候，内容会真正写入文件
+* 这样做是避免频繁的操作硬盘，导致效率下降(攒一堆，一次性写磁盘)
+
+```py
+# 打开文件，不存在的文件，r，w，a
+import time
+
+# f = open("F:\Code\text.txt","w",encoding="UTF-8")
+# write写入
+# f.write("Hello World!!!")  # 内容写入到内存中
+# flush刷新
+# f.flush()  # 将内存中积攒的内容，写入到硬盘的文件中
+#  close关闭
+# f.close()  # close方法，内置了flush的功能的
+
+#打开一个存在的文件
+f = open("F:\Code\text.txt","w",encoding="UTF-8")
+# write写入、fLush刷新
+f.write("程序员")
+# cLose关闭
+f.close()
+```
+
+1. 写入文件使用open函数的"w"模式进行写入
+2. 写入的方法有:
+wirte()，写入内容
+flush()，刷新内容到硬盘中
+3. 注意事项
+w模式，文件不存在，会创建新文件
+w模式，文件存在，会清空原有内容
+close()方法，带有flush()方法的功能
+
+## 文件的追加写入操作
+* a模式，文件不存在会创建文件
+* 文件存在会在最后，追加写入文件
+```py
+# 打开文件，不存在的文件
+# f= open("F:\Code\text.txt","a",encoding="UTF-8")
+# write写入
+# f.write("黑马程序员")
+# # flush刷新
+# f.flush()
+# # close关闭
+# f.close()
+# 打开一个存在的文件
+f = open("F:\Code\text.txt","a",encoding="UTF-8")
+# write写入,fLush刷新
+f.write("学Python最佳选择")
+# cLose关闭
+f.close()
+```

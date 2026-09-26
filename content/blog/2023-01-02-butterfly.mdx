@@ -1,0 +1,972 @@
+---
+title: "Butterfly重装日记"
+description: "1. 博客魔改有风险，记得备份如果博客魔改出问题了，可及时回滚"
+date: "2023-01-02"
+category: "编程"
+tags: ["butterfly"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a27.jpg"
+source: "legacy-blog"
+---
+
+***
+## 前置
+1. 博客魔改有风险，记得备份如果博客魔改出问题了，可及时回滚
+2. 这部分魔改基本上都是大佬们造好的轮子，我按照大佬们的轮子结合自己的喜好进行魔改的，本处仅做一个总结，如有侵权请联系删除。
+3. 鉴于每个人的根目录名称都不一样，本帖博客根目录一律以[BlogRoot]指代。
+4. 本帖基于Butterfly主题进行魔改方案编写，因此请读者优先掌握Butterfly主题官方文档的内容后再来进行魔改。
+## npm镜像（淘宝镜像源）
+```
+npm config set registry https://registry.npm.taobao.org
+# 切回源
+npm config set registry https://registry.npmjs.org/
+```
+## 一图流教程
+
+#### 点击查看教程
+
+1.在[BlogRoot]\source文件夹下新建一个文件夹css，该文件夹用于存放自定义的css样式，再新建一个名为custom.css，在里面写入以下代码：
+```css
+/* 页脚与头图透明 */
+#footer {
+  background: transparent !important;
+}
+#page-header {
+  background: transparent !important;
+}
+
+/* 白天模式遮罩透明 */
+#footer::before {
+  background: transparent !important;
+}
+#page-header::before {
+  background: transparent !important;
+}
+
+/* 夜间模式遮罩透明 */
+[data-theme="dark"] #footer::before {
+  background: transparent !important;
+}
+[data-theme="dark"] #page-header::before {
+  background: transparent !important;
+}
+```
+2.在主题配置文件[BlogRoot]\_config.butterfly.yml文件中的inject配置项的head子项加入以下代码，代表引入刚刚创建的custom.css文件（这是相对路径的写法）
+```yml
+inject:
+  head:
+    - <link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'">
+```
+3.在主题配置文件[BlogRoot]\_config.butterfly.yml文件中的index_img和footer_bg配置项取消头图与页脚图的加载项避免冗余加载
+```yml
+# The banner image of home page
+index_img: 
+
+# Footer Background
+footer_bg: false
+```
+4.部分人反映一图流改完了背景图也没了，那大概率是你之前没设置背景图。在主题配置文件[BlogRoot]\_config.butterfly.yml文件中的background配置项设置背景图
+```yml
+background: url(你的图片地址/链接)
+```
+
+## 文章置顶滚动栏
+
+#### 点击查看教程
+
+1.安装插件,在博客根目录[BlogRoot]下打开终端，运行以下指令：
+```bash
+npm install hexo-butterfly-swiper --save
+```
+2.添加配置信息，以下为写法示例
+在站点配置文件_config.yml或者主题配置文件_config.butterfly.yml中添加
+```yml
+# hexo-butterfly-swiper
+# see https://akilar.top/posts/8e1264d1/
+swiper:
+  enable: true # 开关
+  priority: 5 #过滤器优先权
+  enable_page: all # 应用页面
+  timemode: date #date/updated
+  layout: # 挂载容器类型
+    type: id
+    name: recent-posts
+    index: 0
+  default_descr: 再怎么看我也不知道怎么描述它的啦！
+  swiper_css: https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css #swiper css依赖
+  swiper_js: https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js #swiper js依赖
+  custom_css: https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css # 适配主题样式补丁
+  custom_js: https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js # swiper初始化方法
+```
+3.使用方法:在文章的front_matter中添加swiper_index配置项即可。
+```markdown
+---
+title: 文章标题
+date: 创建日期
+updated: 更新日期
+cover: 文章封面
+description: 文章描述
+swiper_index: 1 #置顶轮播图顺序，非负整数，数字越大越靠前
+---
+```
+
+## 黑夜霓虹灯（纯CSS实现）
+
+#### 点击查看教程
+
+1.在自定义的custom.css中添加如下代码，实现的原理就是关键帧线性插值，然后一直循环，这里默认是左上角标题、中间标题和副标题，还有文章页头的标题和信息有循环霓虹灯，菜单的文字实现起来要改一下源码，个人觉得没必要了，这样就够了，多了反而花里胡哨：
+```css
+/* 日间模式不生效 */
+[data-theme="light"] #site-name,
+[data-theme="light"] #site-title,
+[data-theme="light"] #site-subtitle,
+[data-theme="light"] #post-info {
+  animation: none;
+}
+/* 夜间模式生效 */
+[data-theme="dark"] #site-name,
+[data-theme="dark"] #site-title {
+  animation: light_15px 10s linear infinite;
+}
+[data-theme="dark"] #site-subtitle {
+  animation: light_10px 10s linear infinite;
+}
+[data-theme="dark"] #post-info {
+  animation: light_5px 10s linear infinite;
+}
+/* 关键帧描述 */
+@keyframes light_15px {
+  0% {
+    text-shadow: #5636ed 0 0 15px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 15px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 15px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 15px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 15px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 15px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 15px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 15px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 15px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 15px;
+  }
+}
+
+@keyframes light_10px {
+  0% {
+    text-shadow: #5636ed 0 0 10px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 10px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 10px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 10px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 10px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 10px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 10px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 10px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 10px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 10px;
+  }
+}
+
+@keyframes light_5px {
+  0% {
+    text-shadow: #5636ed 0 0 5px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 5px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 5px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 15px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 5px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 5px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 5px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 5px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 5px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 5px;
+  }
+}
+```
+2.刷新页面即可看到效果，默认是夜间模式才开启的，因为白天模式开启霓虹灯会显得很奇怪
+
+## 星空背景和流星特效
+
+#### 点击查看教程
+
+1.在[BlogRoot]/source/js目录下新建universe.js，输入以下代码：
+```js
+function dark() {window.requestAnimationFrame=window.requestAnimationFrame||window.mozRequestAnimationFrame||window.webkitRequestAnimationFrame||window.msRequestAnimationFrame;var n,e,i,h,t=.05,s=document.getElementById("universe"),o=!0,a="180,184,240",r="226,225,142",d="226,225,224",c=[];function f(){n=window.innerWidth,e=window.innerHeight,i=.216*n,s.setAttribute("width",n),s.setAttribute("height",e)}function u(){h.clearRect(0,0,n,e);for(var t=c.length,i=0;i<t;i++){var s=c[i];s.move(),s.fadeIn(),s.fadeOut(),s.draw()}}function y(){this.reset=function(){this.giant=m(3),this.comet=!this.giant&&!o&&m(10),this.x=l(0,n-10),this.y=l(0,e),this.r=l(1.1,2.6),this.dx=l(t,6*t)+(this.comet+1-1)*t*l(50,120)+2*t,this.dy=-l(t,6*t)-(this.comet+1-1)*t*l(50,120),this.fadingOut=null,this.fadingIn=!0,this.opacity=0,this.opacityTresh=l(.2,1-.4*(this.comet+1-1)),this.do=l(5e-4,.002)+.001*(this.comet+1-1)},this.fadeIn=function(){this.fadingIn&&(this.fadingIn=!(this.opacity>this.opacityTresh),this.opacity+=this.do)},this.fadeOut=function(){this.fadingOut&&(this.fadingOut=!(this.opacity<0),this.opacity-=this.do/2,(this.x>n||this.y<0)&&(this.fadingOut=!1,this.reset()))},this.draw=function(){if(h.beginPath(),this.giant)h.fillStyle="rgba("+a+","+this.opacity+")",h.arc(this.x,this.y,2,0,2*Math.PI,!1);else if(this.comet){h.fillStyle="rgba("+d+","+this.opacity+")",h.arc(this.x,this.y,1.5,0,2*Math.PI,!1);for(var t=0;t<30;t++)h.fillStyle="rgba("+d+","+(this.opacity-this.opacity/20*t)+")",h.rect(this.x-this.dx/4*t,this.y-this.dy/4*t-2,2,2),h.fill()}else h.fillStyle="rgba("+r+","+this.opacity+")",h.rect(this.x,this.y,this.r,this.r);h.closePath(),h.fill()},this.move=function(){this.x+=this.dx,this.y+=this.dy,!1===this.fadingOut&&this.reset(),(this.x>n-n/4||this.y<0)&&(this.fadingOut=!0)},setTimeout(function(){o=!1},50)}function m(t){return Math.floor(1e3*Math.random())+1<10*t}function l(t,i){return Math.random()*(i-t)+t}f(),window.addEventListener("resize",f,!1),function(){h=s.getContext("2d");for(var t=0;t<i;t++)c[t]=new y,c[t].reset();u()}(),function t(){document.getElementsByTagName('html')[0].getAttribute('data-theme')=='dark'&&u(),window.requestAnimationFrame(t)}()};
+dark()
+```
+2.在[BlogRoot]/source/css目录下新建universe.css，输入以下代码：
+```css
+/* 背景宇宙星光  */
+#universe{
+  display: block;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* 这个是调置顶的优先级的，-1在文章页下面，背景上面，个人推荐这种 */
+  z-index: -1;
+}
+```
+3.在主题配置文件_config.butterfly.yml的inject配置项中bottom下填入：
+```yml
+inject:
+  bottom:
+   - <canvas id="universe"></canvas>
+   - <script defer src="/js/universe.js"></script>
+```
+4.在主题配置文件_config.butterfly.yml的inject配置项中head下填入：
+```yml
+inject:
+  head:
+   - <link rel="stylesheet" href="/css/universe.css">
+```
+5.重新编译即可看到效果。
+
+## 页面样式调节
+
+#### 点击查看教程
+
+这个教程是通过css样式调节各个页面透明度、模糊度（亚克力效果）、圆角、边框样式等，看起来会更加舒适。
+1.制以下代码进去自定义的custom.css文件
+```css
+:root {
+  --trans-light: rgba(255, 255, 255, 0.88);
+  --trans-dark: rgba(25, 25, 25, 0.88);
+  --border-style: 1px solid rgb(169, 169, 169);
+  --backdrop-filter: blur(5px) saturate(150%);
+}
+
+/* 首页文章卡片 */
+#recent-posts > .recent-post-item {
+  background: var(--trans-light);
+  backdrop-filter: var(--backdrop-filter);
+  border-radius: 25px;
+  border: var(--border-style);
+}
+
+/* 首页侧栏卡片 */
+#aside-content .card-widget {
+  background: var(--trans-light);
+  backdrop-filter: var(--backdrop-filter);
+  border-radius: 18px;
+  border: var(--border-style);
+}
+
+/* 文章页、归档页、普通页面 */
+div#post,
+div#page,
+div#archive {
+  background: var(--trans-light);
+  backdrop-filter: var(--backdrop-filter);
+  border: var(--border-style);
+  border-radius: 20px;
+}
+
+/* 导航栏 */
+#page-header.nav-fixed #nav {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="dark"] #page-header.nav-fixed #nav {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 夜间模式遮罩 */
+[data-theme="dark"] #recent-posts > .recent-post-item,
+[data-theme="dark"] #aside-content .card-widget,
+[data-theme="dark"] div#post,
+[data-theme="dark"] div#archive,
+[data-theme="dark"] div#page {
+  background: var(--trans-dark);
+}
+
+
+/* 夜间模式页脚页头遮罩透明 */
+[data-theme="dark"] #footer::before {
+  background: transparent !important;
+}
+[data-theme="dark"] #page-header::before {
+  background: transparent !important;
+}
+
+/* 阅读模式 */
+.read-mode #aside-content .card-widget {
+  background: rgba(158, 204, 171, 0.5) !important;
+}
+.read-mode div#post {
+  background: rgba(158, 204, 171, 0.5) !important;
+}
+
+/* 夜间模式下的阅读模式 */
+[data-theme="dark"] .read-mode #aside-content .card-widget {
+  background: rgba(25, 25, 25, 0.9) !important;
+  color: #ffffff;
+}
+[data-theme="dark"] .read-mode div#post {
+  background: rgba(25, 25, 25, 0.9) !important;
+  color: #ffffff;
+}
+```
+2.参数说明：
+* --trans-light：白天模式带透明度的背景色，如rgba(255, 255, 255, 0.88)底色是纯白色，其中0.88就透明度，在0-1之间调节，值越大越不透明；
+* --trans-dark: 夜间模式带透明度的背景色，如rgba(25, 25, 25, 0.88)底色是柔和黑色，其中0.88就透明度，在0-1之间调节，值越大越不透明;
+* --border-style: 边框样式，1px solid rgb(169, 169, 169)指宽度为1px的灰色实体边框;
+* --backdrop-filter: 背景过滤器，如blur(5px) saturate(150%)表示饱和度为150%的、高斯模糊半径为5px的过滤器，这是亚克力效果的一种实现方法;
+* 大家可以根据自己喜好进行调节，不用拘泥于我的样式！
+3.记住在主题配置文件_config.butterfly.yml的inject配置项中引入该css文件：
+```diff
+inject: 
+  head: 
++    - <link rel="stylesheet" href="/css/custom.css">
+```
+4.重启项目即可看见效果：
+```bash
+hexo cl; hexo s
+```
+
+## 文章H1~H6标题小风车转动效果
+
+#### 点击查看教程
+
+1.修改主题配置文件_config.butterfly.yml文件的beautify配置项：
+```yml
+beautify:
+  enable: true
+  field: post # site/post
+  # title-prefix-icon: '\f0c1' 原内容
+  title-prefix-icon: '\f863'
+  title-prefix-icon-color: "#F47466"
+```
+2.在[BlogRoot]\source\css\custom.css 中加入以下代码，可以自己调节一下转速:
+```css
+/* 文章页H1-H6图标样式效果 */
+/* 控制风车转动速度 4s那里可以自己调节快慢 */
+h1::before,
+h2::before,
+h3::before,
+h4::before,
+h5::before,
+h6::before {
+  -webkit-animation: ccc 4s linear infinite;
+  animation: ccc 4s linear infinite;
+}
+/* 控制风车转动方向 -1turn 为逆时针转动，1turn 为顺时针转动，相同数字部分记得统一修改 */
+@-webkit-keyframes ccc {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(-1turn);
+    transform: rotate(-1turn);
+  }
+}
+@keyframes ccc {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(-1turn);
+    transform: rotate(-1turn);
+  }
+}
+/* 设置风车颜色 */
+#content-inner.layout h1::before {
+  color: #ef50a8;
+  margin-left: -1.55rem;
+  font-size: 1.3rem;
+  margin-top: -0.23rem;
+}
+#content-inner.layout h2::before {
+  color: #fb7061;
+  margin-left: -1.35rem;
+  font-size: 1.1rem;
+  margin-top: -0.12rem;
+}
+#content-inner.layout h3::before {
+  color: #ffbf00;
+  margin-left: -1.22rem;
+  font-size: 0.95rem;
+  margin-top: -0.09rem;
+}
+#content-inner.layout h4::before {
+  color: #a9e000;
+  margin-left: -1.05rem;
+  font-size: 0.8rem;
+  margin-top: -0.09rem;
+}
+#content-inner.layout h5::before {
+  color: #57c850;
+  margin-left: -0.9rem;
+  font-size: 0.7rem;
+  margin-top: 0rem;
+}
+#content-inner.layout h6::before {
+  color: #5ec1e0;
+  margin-left: -0.9rem;
+  font-size: 0.66rem;
+  margin-top: 0rem;
+}
+/* s设置风车hover动效 6s那里可以自己调节快慢*/
+#content-inner.layout h1:hover,
+#content-inner.layout h2:hover,
+#content-inner.layout h3:hover,
+#content-inner.layout h4:hover,
+#content-inner.layout h5:hover,
+#content-inner.layout h6:hover {
+  color: var(--theme-color);
+}
+#content-inner.layout h1:hover::before,
+#content-inner.layout h2:hover::before,
+#content-inner.layout h3:hover::before,
+#content-inner.layout h4:hover::before,
+#content-inner.layout h5:hover::before,
+#content-inner.layout h6:hover::before {
+  color: var(--theme-color);
+  -webkit-animation: ccc 6s linear infinite;
+  animation: ccc 6s linear infinite;
+}
+```
+3.在主题配置文件_config.butterfly.yml的inject配置项进行引入（不再赘述）。
+
+## 顶部渐变色加载条
+
+#### 点击查看教程
+
+1. 新建[BlogRoot]\source\css\progress_bar.css文件，写入以下内容（或者你在[BlogRoot]\source\css\custom.css直接加也行，最后在配置文件记得引入即可）
+```css
+.pace {
+    -webkit-pointer-events: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    z-index: 2000;
+    position: fixed;
+    margin: auto;
+    top: 4px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    border-radius: 8px;
+    width: 7rem;
+    background: #eaecf2;
+    border: 1px #e3e8f7;
+    overflow: hidden
+}
+
+.pace-inactive .pace-progress {
+    opacity: 0;
+    transition: .3s ease-in
+}
+
+.pace .pace-progress {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    max-width: 200px;
+    position: absolute;
+    z-index: 2000;
+    display: block;
+    top: 0;
+    right: 100%;
+    height: 100%;
+    width: 100%;
+    /* linear-gradient(to right, #3494e6, #ec6ead) */
+    background: linear-gradient(to right, #43cea2, #3866ca);
+    animation: gradient 2s ease infinite;
+    background-size: 200%
+}
+
+.pace.pace-inactive {
+    opacity: 0;
+    transition: .3s;
+    top: -8px
+}
+```
+2. 在主题配置文件_config.butterfly.yml的inject配置项加入刚刚的css样式和必须的js依赖：
+```yml
+inject:
+  head:
+    - xxx
+    - <link rel="stylesheet" href="/css/progress_bar.css" media="defer" onload="this.media='all'"> 
+  bottom: 
+  	- xxx
+    - <script async src="//npm.elemecdn.com/pace-js@1.2.4/pace.min.js"></script>
+```
+
+## Bilibili视频适配
+
+#### 点击查看教程
+
+1. 在[BlogRoot]\source\css\custom.css自定义样式的文件中引入如下代码（这是我的，你可以自行微调）：
+```css
+/*哔哩哔哩视频适配*/
+.aspect-ratio {
+  position: relative;
+  width: 90%;
+  height: auto;
+  padding-bottom: 75%;
+  margin: 3% auto;
+  text-align: center;
+}
+.aspect-ratio iframe {
+  position: absolute;
+  width: 100%;
+  height: 86%;
+  left: 0;
+  top: 0;
+}
+```
+2. 直接复制插入你的 md 文章就行，修改里面的 aid 为你视频的 AV号：
+```markdown
+<div align=center class="aspect-ratio">
+    <iframe src="https://player.bilibili.com/player.html?aid=474023258&&page=1&as_wide=1&high_quality=1&danmaku=0" 
+    scrolling="no" 
+    border="0" 
+    frameborder="no" 
+    framespacing="0" 
+    high_quality=1
+    danmaku=1 
+    allowfullscreen="true"> 
+    </iframe>
+</div>
+```
+
+## 快速添加友链
+
+#### 点击查看教程
+
+1. 新建文件[BlogRoot]\source\js\kslink.js，并写入如下代码：
+```js
+var leonus = {
+    linkCom: e => {
+        var t = document.querySelector(".el-textarea__inner");
+        "bf" == e ? (t.value = "```yml\n", t.value += "- name: \n  link: \n  avatar: \n  descr: \n  siteshot: ", t.value += "\n```", t.setSelectionRange(15, 15)) : (t.value = "站点名称：\n站点地址：\n头像链接：\n站点描述：\n站点截图：", t.setSelectionRange(5, 5)), t.focus()
+    },
+    owoBig: () => {
+        if (!document.getElementById("post-comment") || document.body.clientWidth < 768) return;
+        let e = 1,
+            t = "",
+            o = document.createElement("div"),
+            n = document.querySelector("body");
+        o.id = "owo-big", n.appendChild(o), new MutationObserver((l => {
+            for (let a = 0; a < l.length; a++) {
+                let i = l[a].addedNodes,
+                    s = "";
+                if (2 == i.length && "OwO-body" == i[1].className) s = i[1];
+                else {
+                    if (1 != i.length || "tk-comment" != i[0].className) continue;
+                    s = i[0]
+                }
+                s.onmouseover = l => {
+                    e && ("OwO-body" == s.className && "IMG" == l.target.tagName || "tk-owo-emotion" == l.target.className) && (e = 0, t = setTimeout((() => {
+                        let e = 3 * l.path[0].clientHeight,
+                            t = 3 * l.path[0].clientWidth,
+                            a = l.x - l.offsetX - (t - l.path[0].clientWidth) / 2,
+                            i = l.y - l.offsetY;
+                        a + t > n.clientWidth && (a -= a + t - n.clientWidth + 10), a < 0 && (a = 10), o.style.cssText = `display:flex; height:${e}px; width:${t}px; left:${a}px; top:${i}px;`, o.innerHTML = `<img src="${l.target.src}">`
+                    }), 300))
+                }, s.onmouseout = () => {
+                    o.style.display = "none", e = 1, clearTimeout(t)
+                }
+            }
+        })).observe(document.getElementById("post-comment"), {
+            subtree: !0,
+            childList: !0
+        })
+    },
+};
+```
+2. 新建文件[BlogRoot]\source\css\kslink.css，并写入如下代码，颜色可以换成你自己喜欢的：
+```css
+/* 添加友链按钮 */
+/* 快速填写格式 */
+.addBtn {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.addBtn button {
+    transition: .2s;
+    display: flex;
+    margin: 5px auto;
+    color: var(--global-bg);
+    padding: 15px;
+    border-radius: 40px;
+    background: var(--search-result-title);
+    align-items: center;
+}
+
+button {
+    padding: 0;
+    outline: 0;
+    border: none;
+    background: 0 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.fa-solid, .fas {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+.addBtn i {
+    font-size: 1.3rem;
+    margin-right: 10px;
+}
+.addBtn button:hover {
+    background: var(--theme-color);
+    color: #fff;
+}
+```
+3. 为了节省DOM规模，仅在你的友链页面(例如[BlogRoot]\source\link\index.md)对应的md文件最后，引入以上两个文件以及定义按钮元素：
+```markdown
+<div class="addBtn"><button onclick="leonus.linkCom()"><i class="fa-solid fa-circle-plus"></i>快速申请 (默认样式)</button> <button onclick="leonus.linkCom(&quot;bf&quot;)"><i class="fa-solid fa-circle-plus"></i>快速申请 (Butterfly)</button></div>
+<link rel="stylesheet" href="/css/kslink.css">
+<script src="/js/kslink.js"></script>
+```
+4. 重启项目并进入友链页面底部，看看效果吧：
+```bash
+hexo cl; hexo s
+```
+
+## 樱花、落叶特效
+
+#### 点击查看教程
+
+1. 樱花特效：在主题配置文件_config.butterfly.yml的inject配置项中bottom下引入sakura.js即可
+```js
+//(如果你想在某个页面引入，直接在对应页面写上如下即可)
+<script async src="https://npm.elemecdn.com/tzy-blog/lib/js/other/sakura.js"></script>
+```
+
+```diff
+inject:
+  bottom:
+   # 樱花飘落效果
+   # - <script async src="https://npm.elemecdn.com/tzy-blog/lib/js/other/sakura.js"></script>
+```
+2. 落叶特效：在主题配置文件_config.butterfly.yml的inject配置项中bottom下引入sakura.js即可
+```js
+var stop, staticx;
+var img = new Image();
+// 将引入的图片文件替换为你想要的即可
+img.src = "https://img.cdn.nesxc.com/upload/wordpress/202202251325420webp";
+
+function Sakura(x, y, s, r, fn) {
+    this.x = x;
+    this.y = y;
+    this.s = s;
+    this.r = r;
+    this.fn = fn
+}
+Sakura.prototype.draw = function (cxt) {
+    cxt.save();
+    var xc = 20 * this.s / 2;
+    cxt.translate(this.x, this.y);
+    cxt.rotate(this.r);
+    cxt.drawImage(img, 0, 0, 20 * this.s, 20 * this.s);
+    cxt.restore()
+};
+Sakura.prototype.update = function () {
+    this.x = this.fn.x(this.x, this.y);
+    this.y = this.fn.y(this.y, this.y);
+    this.r = this.fn.r(this.r);
+    if (this.x > window.innerWidth || this.x < 0 || this.y > window.innerHeight || this.y < 0) {
+        this.r = getRandom("fnr");
+        if (Math.random() > 0.4) {
+            this.x = getRandom("x");
+            this.y = 0;
+            this.s = getRandom("s");
+            this.r = getRandom("r")
+        } else {
+            this.x = window.innerWidth;
+            this.y = getRandom("y");
+            this.s = getRandom("s");
+            this.r = getRandom("r")
+        }
+    }
+};
+SakuraList = function () {
+    this.list = []
+};
+SakuraList.prototype.push = function (sakura) {
+    this.list.push(sakura)
+};
+SakuraList.prototype.update = function () {
+    for (var i = 0, len = this.list.length; i < len; i++) {
+        this.list[i].update()
+    }
+};
+SakuraList.prototype.draw = function (cxt) {
+    for (var i = 0, len = this.list.length; i < len; i++) {
+        this.list[i].draw(cxt)
+    }
+};
+SakuraList.prototype.get = function (i) {
+    return this.list[i]
+};
+SakuraList.prototype.size = function () {
+    return this.list.length
+};
+
+function getRandom(option) {
+    var ret, random;
+    switch (option) {
+        case "x":
+            ret = Math.random() * window.innerWidth;
+            break;
+        case "y":
+            ret = Math.random() * window.innerHeight;
+            break;
+        case "s":
+            ret = Math.random();
+            break;
+        case "r":
+            ret = Math.random() * 4;
+            break;
+        case "fnx":
+            random = -0.5 + Math.random() * 1;
+            ret = function (x, y) {
+                return x + 0.5 * random - 1.7
+            };
+            break;
+        case "fny":
+            random = 1.5 + Math.random() * 0.7;
+            ret = function (x, y) {
+                return y + random
+            };
+            break;
+        case "fnr":
+            random = Math.random() * 0.03;
+            ret = function (r) {
+                return r + random
+            };
+            break
+    }
+    return ret
+}
+
+function startSakura() {
+    requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame;
+    var canvas = document.createElement("canvas"),
+        cxt;
+    staticx = true;
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.setAttribute("style", "position: fixed;left: 0;top: 0;pointer-events: none;");
+    canvas.setAttribute("id", "canvas_sakura");
+    document.getElementsByTagName("body")[0].appendChild(canvas);
+    cxt = canvas.getContext("2d");
+    var sakuraList = new SakuraList();
+    for (var i = 0; i < 50; i++) {
+        var sakura, randomX, randomY, randomS, randomR, randomFnx, randomFny;
+        randomX = getRandom("x");
+        randomY = getRandom("y");
+        randomR = getRandom("r");
+        randomS = getRandom("s");
+        randomFnx = getRandom("fnx");
+        randomFny = getRandom("fny");
+        randomFnR = getRandom("fnr");
+        sakura = new Sakura(randomX, randomY, randomS, randomR, {
+            x: randomFnx,
+            y: randomFny,
+            r: randomFnR
+        });
+        sakura.draw(cxt);
+        sakuraList.push(sakura)
+    }
+    stop = requestAnimationFrame(function () {
+        cxt.clearRect(0, 0, canvas.width, canvas.height);
+        sakuraList.update();
+        sakuraList.draw(cxt);
+        stop = requestAnimationFrame(arguments.callee)
+    })
+}
+window.onresize = function () {
+    var canvasSnow = document.getElementById("canvas_snow")
+};
+img.onload = function () {
+    startSakura()
+};
+
+function stopp() {
+    if (staticx) {
+        var child = document.getElementById("canvas_sakura");
+        child.parentNode.removeChild(child);
+        window.cancelAnimationFrame(stop);
+        staticx = false
+    } else {
+        startSakura()
+    }
+};
+```
+3. 重启项目：
+```bash
+hexo cl; hexo s
+```
+
+## 信息卡片背景图
+
+#### 点击查看教程
+
+在custom.css中加入以下样式：
+```css
+/* 个人信息卡片背景图 */
+[data-theme="light"] #aside-content > .card-widget.card-info {
+  background-image: url(https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a4.jpg);
+  background-repeat: no-repeat;
+  background-attachment: inherit;
+  background-size: 100%;
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info {
+  background-image: url(https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a2.jpg);
+  background-repeat: no-repeat;
+  background-attachment: inherit;
+  background-size: 100%;
+}
+```
+这里一个是白天模式，一个是夜间模式，可以根据自己的喜好选择图片，我的图片你可以下载下来
+
+## 头像呼吸灯
+
+#### 点击查看教程
+
+呼吸灯，这个可以用js实现，也可以用纯css的关键帧实现，貌似css的性能会高点，在custom.css添加如下代码，颜色和时间啥的大家可以根据自己的喜好调节，其实就是关键帧之间通过某个插值方法连续变样式而已，会这一个你就会DIY各种高大上的动画啦
+```css
+/* 头像呼吸灯 */
+[data-theme="light"] .avatar-img {
+  animation: huxi_light 4s ease-in-out infinite;
+}
+[data-theme="dark"] .avatar-img {
+  animation: huxi_dark 4s ease-in-out infinite;
+}
+@keyframes huxi_light {
+  0% {
+    box-shadow: 0px 0px 1px 1px #e9f5fa;
+  }
+  50% {
+    box-shadow: 0px 0px 5px 5px #e9f5fa;
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px #e9f5fa;
+  }
+}
+@keyframes huxi_dark {
+  0% {
+    box-shadow: 0px 0px 1px 1px #39c5bb;
+  }
+  50% {
+    box-shadow: 0px 0px 5px 5px #39c5bb;
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px #39c5bb;
+  }
+}
+```
+
+## 网站恶搞标题
+
+#### 点击查看教程
+
+1. 新建文件[BlogRoot]\source\js\title.js，写入以下内容：
+```js
+//动态标题
+var OriginTitile = document.title;
+var titleTime;
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) {
+    //离开当前页面时标签显示内容
+    document.title = '👀跑哪里去了~';
+    clearTimeout(titleTime);
+  } else {
+    //返回当前页面时标签显示内容
+    document.title = '🐖抓到你啦～';
+    //两秒后变回正常标题
+    titleTime = setTimeout(function () {
+      document.title = OriginTitile;
+    }, 2000);
+  }
+});
+```
+2. 在主题配置文件_config.butterfly.yml引入该文件：
+```diff
+inject: 
+  bottom: 
++    - <script async src="/js/title.js"></script>
+```
+3. 重启项目：
+```bash
+hexo cl; hexo s
+```
+
+## 待更新
+
+#### 点击查看教程

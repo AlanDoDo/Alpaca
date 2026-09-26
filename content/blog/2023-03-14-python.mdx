@@ -1,0 +1,1309 @@
+---
+title: "Python经典实战练习"
+description: "number1 = 1.5"
+date: "2023-03-14"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m164.jpg"
+source: "legacy-blog"
+---
+
+## 两数之和
+```py
+number1 = 1.5
+number2 = 3.8
+
+sum = number1 + number2
+
+print(f"{number1} + {number2} = {sum}")
+```
+## 数字的阶乘
+```py
+def get_factorial(number):
+    result = 1
+    while number > 0:
+        result = result * number
+        number = number - 1
+    return result
+
+print("factorial 6 = ",get_factorial(6))
+print("factorial 3 = ",get_factorial(3))
+print("factorial 100 = ",get_factorial(100))
+```
+## 计算圆的面积
+```py
+import math
+
+def compute_area_of_circle(r):
+    return round(math.pi * r * r, 2)
+
+print("area of 2 is:", compute_area_of_circle(2))
+print("area of 3.14 is:", compute_area_of_circle(3.14))
+print("area of 6.78 is:", compute_area_of_circle(6.18))
+```
+## 区间内所有的素数
+```py
+def is_prime(number):
+    if number in (1, 2):
+        return True
+    for idx in range(2, number):
+        if number % idx == 0:
+            return False
+    return True
+
+def print_primes(begin, end):
+    for number in range(begin, end + 1):
+        if is_prime(number):
+            print(f"{number} is a prime")
+            
+begin = 11
+end = 25
+print_primes(begin, end)
+```
+## 求前N个数字的平方和
+```py
+def sum_of_square(n):
+    result = 0
+    for number in range(1, n + 1):
+        result += number * number
+    return result
+
+print("sum of squre 3:", sum_of_square(3))
+print("sum of squre 5:", sum_of_square(5))
+print("sum of squre 10:", sum_of_square(10))
+```
+## Python计算列表数字的和
+```py
+def sum_of_list(param_list):
+    total = 0
+    for item in param_list:
+        total += item
+    return total
+
+list1 = [1, 2, 3, 4]
+list2 = [17, 5, 3, 5]
+print(f"sum of {list1},", sum_of_list(list1))
+print(f"sum of {list2},", sum_of_list(list2))
+```
+## 数字范围内的所有偶数
+```py
+def get_even_numbers(begin, end):
+    result = []
+    for item in range (begin, end):
+        if item % 2 == 0:
+            result.append(item)
+    return result
+
+begin = 4
+end = 15
+print(f"begin={begin}, end={end}, even numbers: ", get_even_numbers(begin, end))
+
+# data = [item for item in range(begin, end) if item % 2 == 0]
+# print(f"begin={begin}, end={end}, even numbers: ", data)
+```
+## 从列表中移除多个元素
+```py
+def remove_elements_from_list(lista, listb):
+    for item in listb:
+        lista.remove(item)
+    return lista
+
+lista = [3, 5, 7, 9, 11, 13]
+listb = [7, 11]
+print(f"from {lista} remove {listb} result : ", remove_elements_from_list(lista, listb))
+
+# data = [item for item in lista if item not in listb]
+# print(f"from {lista} remove {listb} result : ", data)
+```
+## 怎样实现对列表的去重
+```py
+def get_unique_list(lista):
+    result = []
+    for item in lista:
+        if item not in result:
+            result.append(item)
+    return result
+
+lista = [10, 20, 30, 10, 20]
+print(f"source list {lista}, unique list:", get_unique_list(lista))
+
+# print(f"source list {lista}, unique list:", list(set(lista)))
+```
+## 实现对简单列表进行排序
+```py
+lista = [20, 40, 30, 50, 10]
+# lista.sort()
+listb = sorted(lista, reverse=True) # reverse函数反序排列
+print(f"lista is {lista}")
+print(f"listb is {listb}")
+```
+## 实现学生成绩的排序
+```py
+students = [
+    {"sno": 101, "sname": "小张", "sgrade": 88},
+    {"sno": 102, "sname": "小王", "sgrade": 99},
+    {"sno": 103, "sname": "小李", "sgrade": 66},
+    {"sno": 104, "sname": "小赵", "sgrade": 77},
+]
+
+students_sort = sorted(students, key=lambda x: x["sgrade"], reverse=True)
+
+print(f"source {students}, sort result: {students_sort}")
+```
+## 读取成绩文件实现排序
+```py
+def read_file():
+    result = []
+    with open("./student_grade_input.txt") as fin:
+        for line in fin:
+            line = line[:-1]
+            result.append(line.split(","))
+    return result
+
+def sort_grades(datas):
+    return sorted(datas,
+                  key=lambda x: int(x[2]),
+                  reverse=True)
+                  
+def write_file(datas):
+    with open("./student_grade_input.txt", "w") as fout:
+        for data in datas:
+            fout.write(",".join(data) + "\n")
+# 读取文件
+datas = read_file()
+print("read_file datas:", datas)
+# 排序数据
+datas = sort_grades(datas)
+print("sort_grades datas:", datas)
+# 写出文件
+write_file(datas)
+```
+## 读取成绩文件计算最高分最低分平均分
+```py
+def compute_score():
+    scores = []
+    with open("./student_garde_input.txt") as fin:
+        for line in fin:
+            line = line[:-1]
+            fields = line.sqlit(",")
+            scores.append(int(fields[-1]))
+    max_score = max(scores)
+    min_score = min(scores)
+    avg_score = round(sum(scores) / len(scores), 2)
+    return max_score,min_score,avg_score
+
+max_score, min_score, avg_score = compute_score()
+print(f"max_score={max_score}, min_score={max_score}, avg_score{avg_score}")
+```
+## 统计英语文章出现最多的单词数目
+```py
+word_count = {}
+
+with open("./Beginner Guide to Python.txt") as fin:
+    for line in fin:
+        line = line[:-1]
+        words = line.split()
+        for word in words:
+            if word not in word_count:
+                word_count[word] = 0
+            word_count[word] += 1
+
+print(
+    sorted(
+        word_count.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
+)
+```
+## 统计目录下的文件大小
+```py
+import os
+print(os.path.getsize("Beginner Guide to Python.txt"))
+
+sum_size = 0
+for file in os.listdir("."):
+    if os.path.isfile(file):
+        sum_size += os.path.getsize(file)
+        
+print("all size of dir:", sum_size/1000)
+```
+## 按文件后缀整理文件夹
+```py
+import os
+import shutil
+
+dir = "./arrange_dir"
+
+for file in os.listdir(dir):
+    ext = os.path.splitext(file)[1]
+    ext = ext[1:]
+    if not os.path.isdir(f"{dir}/{ext}"):
+        os.mkdir(f"{dir}/{ext}")
+        
+    source_path = f"{dir}/{ext}/{file}"
+    target_path = f"{dir}/{ext}/{file}"
+    shutil.move(source_path, target_path)
+```
+## 计算每个班级的最高分最低分平均分
+```py
+# key: course，value: grade list
+
+course_grades = {}
+
+with open("course_student_grade_input.txt",encoding='utf-8') as fin:
+    for line in fin:
+        line = line[:-1]
+        course, sno, sname, grade = line.split(",")
+        if course not in course_grades:
+            course_grades[course] = []
+        course_grades[course].append(int(grade))
+        
+print(course_grades)
+
+for course, grades in course_grades.items():
+    print(
+        course,
+        max(grades),
+        min(grades),
+        sum(grades) / len(grades)
+    )
+```
+## 实现不同文件的关联
+```py
+course_teacher_map = {}
+with open("./datas/course_teacher.txt") as fin:
+    for line in fin:
+        line = line[:-1]
+        course, teacher = line.split(",")
+        course_teacher_map[course] = teacher
+
+print(course_teacher_map)
+
+with open("./course_student_grade_input.txt") as fin:
+    for line in fin:
+        line = line[:-1]
+        course, sno, sname, sgrade = line.split(",")
+        teacher = course_teacher_map.get(course)
+        print(course, teacher, sno, sname, sgrade)
+```
+## 实现批量Txt文件的合并
+小知识: Python读取文件的两个方法
+方法1:按行读取 for line in fin
+方法2: 一次读取所有内容到一个字符串 content = fin.read()
+```py
+import os
+
+data_dir = "./datas/many_texts"
+
+contents = []
+for file in os.listdir(data_dir):
+    file_path = f"{data_dir}/{file}"
+    if os.path.isfile(file_path) and file.endswith(".txt"):
+        with open(file_path) as fin:
+            contents.append(fin.read())
+
+final_contentl= "\n".join(contents)
+
+with open("./datas/many_texts.txt" "w") as fout:
+    fout.write(final_content)
+```
+## 统计每个兴趣的学生人数
+```py
+like_count = {}
+
+with open("./datas/student_like.txt") as fin:
+    for line in fin:
+        line = line[:-1]
+        sname, likes = line.split("")
+        like_list = likes.split(",")
+        for like in like_list:
+            if like not in like_count:
+                like_count[like] = 0
+                like_count[like] += 1
+
+print(like_count)
+```
+## 获取当前的日期和时间
+```py
+import datetime
+
+curr_datetime = datetime.datetime.now()
+
+print(curr_datetime, type(curr_datetime))
+
+# date time to string
+str_time = curr_datetime.strftime("%Y-%m-d %H:%M:%S")
+print("str_time", str_time)
+
+print("year", curr_datetime.year)
+print("month", curr_datetime.month)
+print("day", curr_datetime.day)
+print("hour", curr_datetime.hour)
+print("minute", curr_datetime.minute)
+print("second", curr_datetime.second)
+```
+## 计算两个日期相隔的天数
+```py
+import datetime
+
+birthday = "1999-9-9"
+birthday_date = datetime.datetime.strptime(birthday, "%Y-%m-%d")
+print(birthday_date, type(birthday_date))
+
+curr_datetime = datetime.datetime.now()
+print(curr_datetime, type(curr_datetime))
+
+minus_datetime = curr_datetime - birthday_date
+print(minus_datetime, type(minus_datetime))
+
+print(minus_datetime.days)
+print(minus_datetime.days / 365)
+```
+## 计算任意日期7天前的日期
+```py
+import datetime
+
+def get_diff_days(pdate, days):
+    pdate_obj = datetime.datetime.strptime(pdate, '%Y-%m-%d')
+    time_gap = datetime.timedelta(days=days)
+    pdate_result = pdate_obj - time_gap
+    return pdate_result.strftime("%Y-%m-%d")
+    
+print(get_diff_days("2023-04-28",1))
+print(get_diff_days("2023-04-28",3))
+print(get_diff_days("2023-04-28",7))
+print(get_diff_days("2023-04-01",3))
+```
+## 计算日期范围的所有日期
+```py
+import datetime
+
+def get_date_range(begin_date, end_date):
+    date_list = []
+    while begin_date <= end_date:
+        date_list.append(begin_date)
+        begin_date_object = datetime.datetime.strptime(begin_date, "%Y-%m-%d")
+        days1_timedelta = datetime.timedelta(days=1)
+        begin_date = (begin_date_object + days1_timedelta).strftime("%Y-%m-%d")
+    return date_list
+
+begin_date = "2023-04-28"
+end_date = "2023-05-03"
+date_list = get_date_range(begin_date, end_date)
+print(date_list)
+```
+## 将Unix时间戳转换成格式化日期
+```py
+import datetime
+
+unix_time = 1691847647
+
+datetime_obj = datetime.datetime.fromtimestamp(unix_time)
+datetime_str = datetime_obj.strftime("%Y-%m-%d %H:%M:%S")
+
+print(datetime_str)
+```
+## 计算日期数据周同比
+```py
+import datetime
+
+date_sale = {}
+is_first_line = True
+with open("./datas/date_sale_data.txt") as fin:
+    for line in fin:
+        if is_first_line:
+            is_first_line = False
+            continue
+        line = line[:-1]
+        date, sale_number = line.split("\t")
+        date_sale[date] = float(sale_number)
+        
+def get_diff_days(date, days):
+    curr_date = datetime.datetime.strptime(date, "Y-%m-%d")
+    timedelta = datetime.timedelta(days=-days)
+    return (curr_date + timedelta).strftime("%Y-%m-%d")
+
+for date, sale_number in date_sale.items():
+    date7 = get_diff_days(date, 7)
+    sale_number7 = date_sale.get(date7, 0)
+    if sale_number7 == 0:
+        print(date, sale_number, 0)
+    else:
+        week_diff = (sale_number - sale_number7) / sale_number7
+        print(date, sale_number, date7, sale_number7, week_diff)
+```
+## 正则表达式判断字符串是否是日期
+```py
+import re
+
+def date_is_right(date):
+    return re.match("\d{4}-\d{2}-\d{2}", date) is not None
+
+date1= "2023-05-20"
+date2= "202-05-20"
+date3= "2023/05-20"
+date4 = "20210520"
+date5 = "20a10520"
+
+print(date1, date_is_right(date1))
+print(date2, date_is_right(date2))
+print(date3, date_is_right(date3))
+print(date4, date_is_right(date4))
+print(date5, date_is_right(date5))
+```
+## 自动提取电子邮箱地址
+```py
+content = """
+    寻隐者12345@qq.com不遇
+    朝代:唐asdf12dsa#abc.com代
+    作python666@163.cn者: 贾岛
+    松下问童子，言师python-abc@163com采药去。
+    只在python_ant-666@sina.net此山中，云深不知处。
+"""
+
+# python666@163.cn
+
+import re
+
+pattern = re.compile(r"""
+    [a-zA-Z0-9_-]+
+    @
+    [a-zA-Z0-9]+
+    \.
+    [a-zA-z]{2,4}
+""",re.VERBOSE)
+
+results = pattern.findall(content)
+
+for result in results:
+    print(result)
+```
+## 验证用户密码是否规范
+```py
+"""
+1.长度位于[6, 20]之间
+2.必须包含至少1个小写字母
+3.必须包含至少1个大写字母
+4.必须包含至少1个数字
+5.必须包含至少1个特殊字符
+
+返回
+    True, None
+    或者 False, 原因
+"""
+
+import re
+
+def check_password(password):
+    if not 6 <= len(password) <= 20:
+        return False, "密码必须在6~20之间"
+    if not re.findall(r"[a-z]", password):
+        return False, "必须包含至少1个小写字母"
+    if not re.findall(r"[A-Z]", password):
+        return False, "必须包含至少1个大写字母"
+    if not re.findall(r"[0-9]", password):
+        return False, "必须包含至少1个数字"
+    if not re.findall(r"[^0-9a-zA-Z]", password):
+        return False, "必须包含至少1个特殊字符"
+    return True, None
+
+print("Helloworld#666", check_password("Helloworld#666"))
+print("Helloworld#",check_password("Helloworld#"))
+print("helloworld#666", check_password("helloworld#666"))
+print("Helloworld666", check_password("Helloworld666"))
+```
+## 提取商品价格
+```py
+content = """
+小明上街买菜
+买了1斤黄瓜花了8元;
+买了2斤葡萄花了13.5元;
+买了3斤白菜花了5.4元;
+"""
+
+
+# 要求提取 (1、黄瓜、8)、 (2、葡萄、13.5) 、 (3、白菜、5.4)
+
+import re
+
+for line in content.split("\n"):
+    pattern = r"(\d)斤(.*)花了(\d+(\.\d+)?)元"
+    match = re.search(pattern, line)
+    if match:
+        print(f"{match.group(1)}\t{match.group(2)}\t{match.group(3)}")
+```
+## 给文章中手机号打马赛克效果
+```py
+content = """
+    白日依19989881888山尽，黄河入45645546468798978海流。
+    欲穷12345千里目，更上15619292345一层楼。
+"""
+
+import re
+
+pattern = r"(1[3-9])\d{9}"
+
+print(re.sub(pattern, r"\1#####", content))
+```
+## 进行多种日期格式的标准化
+```py
+# 目标:2023-05-28
+content = """
+    白日依2023/05/26山尽,黄河入2023.05.27海流。
+    欲穷05-28-2023千里目,更上5/29/2023一层楼。
+    欲穷04-28-2023千里目,更上4/29/2023一层楼。
+"""
+
+import re
+
+content = re.sub(r"(\d{4})/(\d{2})/(\d{2})", r"\1-\2-\3", content)
+print(content)
+
+content = re.sub(r"(\d{4})\.(\d{2})\.(\d{2})", r"\1-\2-\3", content)
+print(content)
+
+content = re.sub(r"(\d{2})-(\d{2})-(\d{4})", r"\3-\1-\2", content)
+print(content)
+
+content = re.sub(r"(\d{1})/(\d{2})/(\d{4})", r"\3-0\1-\2", content)
+print(content)
+```
+## 实现英文分词计算词频
+```py
+import re
+
+with open("./Beginner Guide to Python.txt") as fin:
+    content = fin.read()
+
+# print(content.split())
+words = re.split(r"[\s.()-?]+", content)
+
+import pandas as pd
+print(pd.Series(words).value_counts()[:20])
+```
+## 实现中文文章分词
+```py
+content = """
+    春姑娘悄悄地来到了我们的校园!
+    绿油油的小草争着抢着从地下探出头来，东张西望地看着四周。
+    池塘边的柳树，抽出了新的柳枝和柳叶，微风轻轻一吹，柳树就晃动着自己的秀发。
+    花园里各种各样的花儿都开了，
+    有艳红的玫瑰花、粉色的桃花、雪白的梨花......五颜六色，美不胜收。
+"""
+
+import jieba
+import re
+
+content = re.sub(r"[\s。…，、]","", content)
+                 
+word_list = jieba.cut(content)
+
+print(list(word_list))
+```
+## 统计《鹿鼎记》小说中的人名
+```py
+# content = “李明喜欢韩梅梅，他俩早恋了"
+
+with open("./datas/鹿鼎记.txt") as fin:
+    content = fin.read()
+
+import jieba.posseg as posseg
+
+words = []
+for word, flag in posseg.cut(content):
+    if flag == "nr":
+        words.append(word)
+
+import pandas as pd
+print(pd.Series(words).value_counts()[:20])
+```
+## 数组插入一个数组
+```py
+if __name__ == '__main__':
+    # 方法一 ： 0 作为加入数字的占位符
+    a = [1,4,6,9,13,16,19,28,40,100,0]
+    print ('原始列表:')
+    for i in range(len(a)):
+        print (a[i])
+    number = int(input("\n插入一个数字:\n"))
+    end = a[9]
+    if number > end:
+        a[10] = number
+    else:
+        for i in range(10):
+            if a[i] > number:
+                temp1 = a[i]
+                a[i] = number
+                for j in range(i + 1,11):
+                    temp2 = a[j]
+                    a[j] = temp1
+                    temp1 = temp2
+                break
+    print ('排序后列表:')
+    for i in range(11):
+        print (a[i])
+```
+## 将一个数组逆序输出
+```py
+a = [1, 2, 3,4,5]
+for i in range(0,(len(a)-1)//2):
+    temp= a[i]
+    a[i] = a[len(a)-i-1]
+    a[len(a)-i-1] = temp
+    
+print(a)
+```
+## 模仿静态变量的用法
+```py
+class Test :
+    var = 0
+    def test(self):
+        self.var += 1
+        print(self.var)
+        
+a = Test()
+print(Test.var)
+print(a.var)
+a.test()
+a.test()
+a.test()
+print(a.var)
+print(Test.var)
+```
+## 学习使用atuo定义变量的用法
+```py
+num = 2
+def test():
+    num = 1
+    print("test num: %d" % num)
+    num += 1
+for i in range(3):
+    print("num: %d" % num)
+    num += 1
+    test()
+```
+## 模仿静态变量(static)另一案例
+```py
+class Test:
+    num = 1
+    def test(self):
+        self.num += 1
+        print(self.num)
+
+num = 1
+a = Test()
+print(Test.num) # 1
+num += 1
+print(num) # 2
+print(a.num) # 1
+a.test()
+print(a.num) # 2
+print(num) # 2
+print(Test.num) # 1
+```
+## 两个矩阵相加
+```py
+x = [[12,7,3],
+    [4,5,6],
+    [7,8,9]]
+
+y = [[5,8,1],
+    [6,7,3],
+    [4,5,9]]
+
+z = [[0,0,0],
+    [0,0,0],
+    [0,0,0]]
+
+for i in range(3):
+    for j in range(3):
+        z[i][j] = x[i][j] + y[i][j]
+        
+for i in z:
+    print(i)
+```
+## 统计1到100之和
+```py
+sum = 0
+for i in range(1,101):
+    sum += i
+    print(sum)
+```
+## 两个变量值互换
+```py
+a = 10
+b = 20
+
+# 第三方变量
+# c = a
+# a = b
+# b = c
+# print(a,b)
+# 加减法
+# a = a+b
+# b = a-b
+# a = a-b
+# print(a,b)
+# 语言特性
+a,b = b,a
+print(a)
+print(b)
+```
+## 数字比较
+```py
+i = 10
+j = 20
+if i > j:
+    print(">")
+elif i == j:
+    print("==")
+elif i < j:
+    print("<")
+else:
+    print("未知")
+```
+## 使用lambda来创建匿名函数
+```py
+POWER = lambda x,y : x ** y
+a = 10
+b = 20
+print(POWER(10,20))
+```
+## 输出一个随机数
+```py
+import random
+print(random.randint(10,20))
+print(random.random())
+print(random.uniform(10,20))
+```
+## 学习使用按位与 &
+```py
+if __name__ == '__name__':
+    a = 0x77
+    b = a & 3
+    print ('a & b = %d' % b)
+    b &= 7
+    print ('a & b = %d' %b)
+```
+## 学习使用按位或 _
+```py
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+ 
+if __name__ == '__main__':
+    a = 0o77
+    b = a | 3
+    print ('a | b is %d' % b)
+    b |= 7
+    print ('a | b is %d' % b)
+```
+## 学习使用按位异 ^
+```py
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+if __name__ == '__main__':
+    a = 0o77
+    b = a ^ 3
+    print ('The a ^ 3 = %d' % b)
+    b ^= 7
+    print ('The a ^ b = %d' % b)
+```
+## 取一个整数a从右端开始的4~7位
+```py
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+ 
+if __name__ == '__main__':
+    a = int(input('input a number:\n'))
+    b = a >> 4
+    c = ~(~0 << 4)
+    d = b & c
+    print ('%o\t%o' %(a,d))
+```
+## 学习使用按位取反 ~
+```py
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+a = 7
+b = ~a
+
+c = -7
+d = ~c
+
+print ('变量 a 取反结果为： %d' % b)
+print ('变量 c 取反结果为： %d' % d)
+```
+## 统计字符串长度
+```py
+str = input("Please input the string:")
+print("The length of your string is %d" % len(str))
+```
+## 打印出杨辉三角形
+```py
+a = []
+n = int(input("n:"))
+for i in range(n):
+    a.append([])
+    for j in range(i+1):
+        if j==0 or j==i:
+            a[i].append(1)
+        else:
+            a[i].append(a[i-1][j]+a[i-1][j-1])
+
+for i in a: print(i)
+```
+## 查找字符串
+```py
+str1 = input()
+str2 = input()
+print(str1.find(str2))
+```
+## 输入三个数按大小顺序输出
+```py
+num1 = int(input())
+num2 = int(input())
+num3 = int(input())
+
+# a = []
+# a.append(num1)
+# a.append(num2)
+# a.append(num3)
+# a.sort( )
+# print(a)
+
+if num1 > num2:
+    if num2 > num3:
+        print(num1,num2,num3)
+    else:
+        print(num1,num3,num1)
+else: # num1 <= num2
+    if num2 < num3:
+        print(num3,num2,num1)
+    else: # num3 <= num2
+        if num1 > num3:
+            print(num2,num1,num3)
+        else:
+            print(num2,num3,num1)
+```
+## 输入数组，最大的与第一个元素交换，最小的与最后一个元素交换，输出数组
+```py
+def inp(numbers):
+    for i in range(6):
+        numbers.append(int(raw_input('输入一个数字:\n')))
+p = 0
+ 
+def arr_max(array):
+    max = 0
+    for i in range(1,len(array) - 1):
+        p = i
+        if array[p] > array[max] : max = p
+    k = max
+    array[0],array[k] = array[k],array[0]
+def arr_min(array):
+    min = 0
+    for i in range(1,len(array) - 1):
+        p = i
+        if array[p] < array[min] : min = p
+    l = min
+    array[5],array[l] = array[l],array[5]
+ 
+def outp(numbers):
+    for i  in range(len(numbers)):
+        print numbers[i]
+ 
+if __name__ == '__main__':
+    array = []
+    inp(array)        # 输入 6 个数字并放入数组
+    arr_max(array)    # 获取最大元素并与第一个元素交换
+    arr_min(array)    # 获取最小元素并与最后一个元素交换
+    print '计算结果：'
+    outp(array)
+            
+```
+## 有n个整数，使其前面各数顺序向后移m个位位置，最后m个数变成最前面的
+```py
+a = [2,8,6,1,78,45,34,2]
+b = [0,0,0,0, 0, 0, 0,0]
+m = int(input("m:"))
+t = 0
+for i in range(m,len(b)):
+    b[i] = a[t]
+    t += 1
+for i in range(len(b) - t):
+    b[i] = a[t]
+    t += 1
+print(b)
+```
+## 有n个人围成一圈，顺序排号，从第一个人开始报数 (从1到3报数)
+```py
+if __name__ == '__main__':
+    nmax = 50
+    n = int(raw_input('请输入总人数:'))
+    num = []
+    for i in range(n):
+        num.append(i + 1)
+ 
+    i = 0
+    k = 0
+    m = 0
+ 
+    while m < n - 1:
+        if num[i] != 0 : k += 1
+        if k == 3:
+            num[i] = 0
+            k = 0
+            m += 1
+        i += 1
+        if i == n : i = 0
+ 
+    i = 0
+    while num[i] == 0: i += 1
+    print num[i]
+```
+## 写一个函数，求一个字符串的长度，在main函数中输入字符串，并输出其长度
+```py
+def my_len(s):
+    i = 0
+    for each in s:
+        i += 1
+    return i
+
+s = input("Please input the string here:")
+print(my_len(s))
+```
+## 编写input()和output()函数输入，输出5个学生的数据记录
+```py
+n = int(input("n:"))
+student = []
+def input_stu():
+    for i in range(n):
+        print("------第%d位学生的信息录入开始------" % (i+1))
+        name = input("请输入学生姓名: ")
+        chinese = int(input("请输入%s的语文成绩: " % name))
+        math = int(input("请输入%s的数学成绩: " % name))
+        english = int(input("请输入%s的英语成绩: " % name))
+
+        student.append([])
+        student[i].append(name)
+        student[i].append(chinese)
+        student[i].append(math)
+        student[i].append(english)
+            
+# 打印学生信息
+def output_stu():
+    for i in student:
+        print("-------%s-------" % i[0])
+        print("chinese: %d" % i[1])
+        print("math: %d" % i[2])
+        print("english: %d" % i[3])
+        
+input_stu()
+output_stu()
+```
+## 创建一个链表格
+```py
+ptr = [input("please input the number:") for x in range(5)]
+print(ptr)
+```
+## 反向输出一个链表
+```py
+ptr = [input("please input the number:") for x in range(5)]
+
+# 1
+# ptr.reverse()
+# print(ptr)
+
+# 2
+for i in range(4,-1,-1):
+    print(ptr[i])
+```
+## 列表排序及连接
+```py
+a = [3, 4, 5, 1, 2]
+
+# a.sort(reverse=True)
+# print(a)
+
+print(str(123)+'123')
+```
+## 放松一下，算一道简单的题目
+```py
+if __name__ == '__main__':
+    for i in range(5):
+        n = 0
+        if i != 1: n += 1
+        if i == 3: n += 1
+        if i == 4: n += 1
+        if i != 4: n += 1
+        if n == 3: print(64 + i)
+        
+print(n)
+```
+## 编写一个函数，输入n为偶数时，调用函数求1_2+1_4+...+1
+```py
+def a(n):
+    if n%2 == 0:
+        print(b(n))
+    else:
+        print(c(n))
+    return
+def b(n):
+    # 2 - n
+    sum = 0
+    for i in range(2,n+1,2):
+        sum += 1/i
+    return sum
+def c(n):
+    # 1 --- n
+    sum = 0
+    for i in range(1,n+1,2):
+        print(i)
+    return sum
+
+if __name__ == '__main__':
+    n = int(input("n:"))
+    a(n)
+```
+## 循环输出列表
+```py
+a = [s for s in "Fuck you!"]
+for i in range(len(a)):
+    print(a[i],end='')
+```
+## 找到年龄最大的人，并输出。请找出程序中有什么问题
+```py
+person = {"li":18, "wang": 50, "zhang":20, "sun":22}
+m ='li'
+for i in person.keys():
+    if person[m] < person[i]:
+        m=i
+        
+print("%s %d" % (m,person[m]))
+```
+## 字符串排序
+```py
+str1 = input("string1:")
+str2 = input("string2:")
+str3 = input("string3:")
+print(str1,str2,str3)
+if str1>str2: str1,str2 = str2,str1
+if str1>str3: str1,str3 = str3,str1
+if str2>str3: str2,str3 = str3,str2
+print(str1,str2,str3)
+```
+## 猴子分桃
+```py
+i=1
+while 1:
+    # 0 - 4
+    temp = i
+    for j in range(5):
+        if temp % 5 != 1:
+            break
+        else:
+            temp = (temp-1)/5*4
+            if j==4:
+                print(i)
+                exit()
+    i += 1
+```
+## 具体如下
+题目:809*??=800*??+9*?? 其中??代表的两位数,809*??为四位数，8*??的结果为两位数，9*??的结果为3位数。求??代表的两位数，及809*??后的结果
+```py
+for i in range(10,100):
+    a = 809 * i
+    b = 800 * i
+    c = 9 * i
+    if a >= 1000 and a <= 9999 and b>=10 and b<=99 and c>=100 and c<=999 and a==b*100+c:
+        print(i, a)
+```
+## 八进制转换为十进制
+```py
+a = "12345"
+sum = 0
+for i in range(len(a)):
+    num = ord(a[i]) - ord('0')
+    (len(a) - i - 1)
+    sum += num * 8 ** (len(a) - i - 1)
+print(sum)
+```
+## 求0-7所能组成的奇数个数
+```py
+j=4
+sum = 0
+for i in range(1,11):
+    if i==2:
+        j *= 7
+    elif i>2:
+        j *= 8
+    sum += j
+    print("{0}位数有{1}个".format(i,j))
+print("总共有{0}个".format(sum))
+```
+## 连接字符串
+```py
+# str1 = input()
+# str2 = input()
+# print(str1+str2)
+
+fenge ="-"
+# mylist = ["Ben","Tony","Jacky","Becky","Jason","John"]
+mystr = "ABCDEFG"
+mystr = fenge.join(mystr)
+print(mystr)
+```
+## 输入一个奇数，然后判断最少几个9除于该数的结果为整数
+```py
+a = int(input("n:"))
+b = 9
+# 9 / 13
+while b%a!=0:
+    b = b * 10 + 9 # 99
+print(len(str(b)))
+```
+## 两个字符串连接程序
+```py
+a = input()
+b = input()
+print(a+b)
+```
+## 回答结果 (结构体变量传递)
+```py
+class student:
+    x = 0
+    c = 0
+def f(stu):
+    stu.x = 20
+    stu.c = 'c'
+    
+a = student()
+a.X = 3
+a.c = 'a'
+f(a)
+print(a.x,a.c)
+```
+## 读取七个数(1-50)的整数值，每读取一个值，程序打印出该值个数的*
+```py
+for i in range(7):
+    num = int(input("num:"))
+    while not(num>=1 and num<=50):
+        num = int(input("num:"))
+    print(num * '*')
+```
+## 某个公司采用公用电话传递数据...
+```py
+num = int(input("num:"))
+a = num % 10
+b = num // 10 % 10
+c = num // 100 % 10
+d = num // 1000
+res = 0
+res += (a + 5)%10
+res *= 10
+res += (b + 5)%10
+res *= 10
+res += (c + 5)%10
+res *= 10
+res += (d + 5)%10
+print(res)
+```
+## 列表使用实例
+```py
+matrix =[[1, 2, 3],
+         [4, 5, 6],
+         [7, 8, 9]]
+col2 = [row[0] for row in matrix] # get a column from a matrix
+print(col2)
+```
+## 时间函数举例1
+```py
+if __name__ == '__main__':
+    import time
+    print(time.ctime(time.time()))
+    print(time.asctime(time.localtime(time.time())))
+    print(time.asctime(time.gmtime(time.time())))
+```
+## 时间函数举例2
+```py
+import time
+start = time.time()
+for i in range(1000):
+    print(i)
+end = time.time()
+print(end-start)
+```
+## 时间函数举例3,一个猜数游戏，判断一个人反应快慢
+```py
+import time
+import random
+ans = random.randint(1,100)
+guess = 0
+start = time.time()
+while guess != ans:
+    guess = int(input("guess:"))
+    if guess > ans:
+        print("大了!")
+    elif guess < ans:
+        print("小了!")
+    else:
+        print("答对了! 你真帅!")
+end = time.time()
+print("你猜对答案用了 %d s " % (end-start))
+game_time = end-start
+if game_time <= 10:
+    print("你真他娘的是个天才!")
+elif game_time <= 20:
+    print("还不错，你的脑子一般般")
+else:
+    print("你可以去死了，不配玩这个游戏")
+```
+## 从键盘输入一些字符，逐个把它们写到磁盘文件上，指导输入一个#为止
+```py
+filename = input("请输入文件名: ")
+fp = open(filename, "w")
+s = input("请输入字符串: ")
+while s!='#':
+    fp.write(s+'\n')
+    s = input("请输入字符串:")
+print("end")
+```
+## 从键盘输入一个字符串，将小写字幕全部转换成大写字母，全部保存
+```py
+filename = input("filename:")
+a = input("str:")
+a = a.upper()
+fp = open(filename, "w")
+fp.write(a)
+print("写入完毕!")
+fp = open(filename, "r")
+print(fp.read())
+```
+## 有两个磁盘文件A和B,各存放一行字母,要求把这两个文件中的信息合并(按字母顺序排列), 输出到一个新文件C中
+```py
+fp1 = open("test1.txt", "r")
+a = fp1.read()
+fp1.close()
+
+fp2 = open("test2.txt", "r")
+b = fp2.read()
+fp2.close()
+
+fp3 = open("test3.txt", "w")
+c = list(a+b)
+c.sort()
+s = ''
+s = s.join(c)
+fp3.write(s)
+fp3.close()
+```
+## 列表转换为字典
+```py
+keys = ['a','b']
+values = [1,2]
+print(dict(zip(keys,values)))
+```

@@ -1,0 +1,196 @@
+---
+title: "Hexo博客搭建"
+description: "1. 我这名菜鸟程序员的学习路程，写这篇博客是为了大家尽量避免踩坑，博客搭建的过程中出bug是难免的，希望大家静下心来，寻找问题的最优解。"
+date: "2022-01-27"
+category: "编程"
+tags: ["Hexo"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a6.jpg"
+source: "legacy-blog"
+---
+
+***
+# 前言
+1. 我这名菜鸟程序员的学习路程，写这篇博客是为了大家尽量避免踩坑，博客搭建的过程中出bug是难免的，希望大家静下心来，寻找问题的最优解。
+2. 遇到任何问题，优先在本页面搜索，检查是否步骤正确，遇到难以问题的可以优先在评论区留言，注意留言时填写正确的邮箱，以确保能收到站长的回信。
+3. 实在解决不了的问题可以添加站长的联系方式，备注个人信息，在我能力范围内帮您解决。接下来我们开始动手搭建博客吧！
+4. Node.js和Git软件便捷安装链接：https://pan.baidu.com/s/1Ic77iAmdVluJlwSkY0V3Jw 
+提取码：2155 
+
+# 环境与基础工具准备
+
+* 本教程主要面对的是Windows10以上的用户
+* Node.js（必备）
+* Git（必备）
+* Hexo（必备）
+* 文本编辑器（可选）（推荐使用VSCode）
+* GitHub账号（必备）
+* 域名（推荐买一个域名）
+* 云服务器（可选）
+有了这些东西就可以搭建出博客啦，当然如果想要优化博客，就需要其他工具了
+
+# Node.js的配置
+
+1. 打开Node官网（[Node.js](https://nodejs.org/en/download/releases/ "Node.js")），下载和自己系统相配的Node的安装程序，根据自己的系统进行选择。点击Downloads进行**安装包**下载。**使用手机热点或者科学上网，自己联网很慢的**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m1.jpg)
+2. 大部分人应该是**微软的64位，选择msi位安装程序**，否则会出现安装问题。按照个人经验，可以选个低一些的版本。也可以根据我的版本选择，目前没有不兼容的问题。
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m2.jpg)
+3. 为了避免不必要的麻烦，C盘空间足够一般默认【C:/Program Files/nodejs/】安装即可，(不需要添加勾选项)如果想切换其他盘或者把环境变量切换到自定义路径也可以，具体教程百度(亲身经历坑比较多0.0！)
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m7.png)
+4. 安装完成后，检查是否安装成功。在键盘按下win + R键，输入CMD，然后回车，打开CMD窗口，执行以下命令，看到版本信息，则说明安装成功。
+* 测试
+```
+node -v
+npm -v
+```
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/99d4b3af359d470154869b13b7c8ed4.png)
+
+# Git配置
+## 下载Git（[Git官网](https://git-scm.com/ "Git官网")）
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m3.jpg)
+**自行下载安装的程序,看不懂的话翻译中文,同样使用手机热点,自己联网很慢的**
+## 安装Git
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m4.png)
+**默认就好，我们的博客不需要那么多的git功能，下面这个界面我们选择第二个，虽然这个影响不大，但是如果有小伙伴在github部署，那么还是比较友好的。**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m5.png)
+**无脑一路Next即可，如有需求自行百度**
+* Git CMD 是windows 命令行的指令风格
+* Git Bash 是linux系统的指令风格（建议使用）
+* Git GUI是图形化界面（新手学习不建议使用）
+
+# 博客初始化
+**选择要建立博客的位置，这里我选择在C盘建立了一个Blog文件夹，进入文件夹右键空白区域GIt Bash Here，如果没有,打开显示更多选项寻找**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m8.png)
+## 安装Hexo文件
+* 执行以下的命令，等待安装完成
+```bash
+npm install -g hexo-cli
+```
+**安装完后可以输入hexo -v验证是否安装成功**
+**注意复制完之后，在Git Bash中右键Paste粘贴，如果没有镜像这一步下载可能会稍微慢一点。**
+## 初始化博客
+* 执行以下命令，等待完成
+```bash
+hexo init blog-demo
+```
+**这里的blog-demo是项目名称，可以自己命名**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m6.jpg)
+
+* 出现这些文件就说明成功
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m9.jpg)
+**注意是在blog-demo文件夹内打开Git Bash**
+* 使用以下命令，生成相应的文件
+```bash
+hexo g
+```
+***执行完毕之后，我们会发现目录中多出了public文件，这个就是真正的hexo帮助我们转换的静态网页，每一次我们执行这个命令，就会重新生成并覆盖原来的public文件**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m11.jpg)
+* 执行以下命令，开启本地服务，可以查看已经生成的网页
+```
+hexo s
+```
+**复制该网址，就可以看到生成的网页啦**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m12.jpg)
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m13.webp)
+**注意在Git Bash中Ctrl + c 退出本地预览**
+
+# GitHub注册与创建仓库及配置
+
+## 仓库的注册
+* 进入官网[GitHub](https://github.com/ "GitHub")，翻译注册(因为github是国外的，所以可能因为网络原因打不开，可以等待一会或者过一会在进行注册)
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m42.jpg)
+* 填写自己的邮箱、密码、用户名等信息，然后用邮箱验证即可完成
+
+## 仓库的创建
+* 注册完成后，点击右上角的+按钮，选择New repository，创建一个<用户名>.github.io的仓库
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x400.jpg)
+* 仓库的格式必须为：<用户名>.github.io
+* Description：为描述仓库（选填）
+* 勾选 Initialize this repository with a README 初始化一个 README.md 文件
+* 点击 Creat repository 进行创建
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m44.jpg)
+
+## Git Bash的配置
+* 配置用户名和邮箱，这里打开Git Bash即可
+* 为你的GitHub用户名
+```bash
+git config --global user.name "你的用户名"
+git config --global user.email "你的邮箱"
+```
+* 通过git config -l 检查是否配置成功，至此git安装及配置全部完成
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m45.png)
+
+## ssh密钥配置
+* **连接至Github：**执行以下命令生成ssh公钥，此公钥用于你的计算机连接Github
+* 连接至Github
+```bash
+ssh-keygen -t rsa -C "你的邮箱"
+```
+* 之后打开C盘下用户文件夹下的.ssh的文件夹，会看到 id_rsa.pub
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m46.jpg)
+* 用记事本打开上述图片中的公钥（id_rsa.pub），复制里面的内容，然后开始在github中配置ssh密钥
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m47.jpg)
+* 将 SSH KEY 配置到 GitHub
+进入github，点击右上角头像 选择settings，进入设置页后选择 SSH and GPG keys，名字随便起，公钥填到Key那一栏
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m48.jpg)
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m49.jpg)
+* 测试连接，输入以下命令
+```bash
+ssh -T git@github.com
+```
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m50.jpg)
+* 配置密钥成功
+```bash
+ssh-keygen -t rsa -C "你的邮箱"
+```
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m53.png)
+
+**出现连接到账户的信息，说明已经大功告成，至此完成了环境准备工作**
+
+# 将静态博客挂载到 GitHub Pages
+* 安装 hexo-deployer-git
+```bash
+npm install hexo-deployer-git --save
+```
+* 修改 _config.yml 文件
+**这个需要安装VS Code，右击打开该文件即可**
+在blog-demo目录下的_config.yml，就是整个Hexo框架的配置文件了。可以在里面修改大部分的配置。详细可参考官方的配置描述。
+修改最后一行的配置，将repository修改为你自己的github项目地址即可，还有分支要改为main代表主分支（注意缩进,后三行Tab缩进）
+```git
+deploy:
+  type: git
+  repository: git@github.com:xxx/xxx.github.io.git //这里也可以使用https://github.com/xxx/xxx.github.io.git
+  branch: main
+```
+修改好配置后，运行如下命令，将代码部署到 GitHub（Hexo三连）
+```hexo
+hexo clean && hexo generate && hexo deploy  // Git BASH终端
+hexo clean; hexo generate; hexo deploy  // VSCODE终端
+```
+* hexo clean：删除之前生成的文件，若未生成过静态文件，可忽略此命令。
+* hexo generate：生成静态文章，可以用hexo g缩写
+* hexo deploy：部署文章，可以用hexo d缩写
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m51.jpg)
+* 注意：deploy时可能要你输入 username 和 password
+如果出现Deploy done，则说明部署成功了
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m52.jpg)
+稍等两分钟，打开浏览器访问：https://xxx.github.io ，这时候我们就可以看到之前博客内容了(这里是你的仓库名)
+
+## 无法连接至Github的解决方案
+注意：当你在与Github进行ssh通信时候出现超时或者是连接被关闭的情况，可以尝试以下解决方案。
+1.挂代理和换网络（这个就不用多说了）
+2.[Git问题：解决“ssh:connect to host github.com port 22: Connection timed out”](https://blog.csdn.net/weixin_41287260/article/details/124368189 "Git问题：解决“ssh:connect to host github.com port 22: Connection timed out”")
+3.这是评论区的朋友提供的，可以解决SSH连接超时等问题
+开源项目[Github](https://github.com/521xueweihan/GitHub520 "Github")
+通过修改Host文件的方法解决访问速度慢的问题
+* 连接有效性检验
+```bash
+#这里任选其一即可
+ping github.com
+ssh -T git@github.com
+```

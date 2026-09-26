@@ -1,0 +1,209 @@
+---
+title: "ChatGpt本地部署使用，从此告别人机验证等烦恼"
+description: "该教程是我在GitHub上找到的有趣的项目，能够本地部署chatgpt解决问答网络报错问题"
+date: "2023-03-28"
+category: "AI"
+tags: ["Chat GPT"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x196.jpg"
+source: "legacy-blog"
+---
+
+## 说说
+
+* 该教程是我在GitHub上找到的有趣的项目，能够本地部署chatgpt解决问答网络报错问题 
+* Python版本目测起码要3.7
+* 前提：拥有chatgpt账号
+
+## 下载压缩包
+
+链接：https://pan.baidu.com/s/1RJA70_oZI09n0UZVJBgAVg?pwd=2155 
+提取码：2155
+
+解压压缩包，进入文件，运行cmd
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x193.jpg)
+
+## 如何运行
+
+* 运行方式选一种即可
+
+## 快捷安装运行
+
+1. 复制命令粘贴运行即可
+```
+pip install pandora-chatgpt pandora
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x195.jpg)
+```
+2. 这一步复制粘贴运行即可
+```
+pip install .
+pandora
+```
+
+
+3. 启动pandora，打开本地网址
+
+* 登录账号密码即可运行
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x194.jpg)
+
+## 详细安装运行
+### pip安装运行
+```
+pip install pandora-chatgpt pandora
+```
+
+* 如果你想支持gpt-3.5-turbo模式：
+```
+pip install 'pandora-chatgpt[api]'
+// 或者
+pip install pandora-chatgpt[api]
+pandora
+```
+
+* 如果你想启用cloud模式：
+```
+pip install 'pandora-chatgpt[cloud]'
+// 或者
+pip install pandora-chatgpt[cloud]
+pandora-cloud
+```
+
+### 编译运行
+```
+pip install .
+pandora
+```
+
+* 如果你想支持gpt-3.5-turbo模式：
+```
+pip install '.[api]'
+// 或者
+pip install .[api]
+pandora
+```
+
+* 如果你想启用cloud模式：
+```
+pip install '.[cloud]'
+// 或者
+pip install .[cloud]
+pandora-cloud
+```
+
+### Docker Hub运行
+```
+docker pull pengzhile/pandora
+docker run -it --rm pengzhile/pandora
+```
+### Docker编译运行
+```
+docker build -t pandora .
+docker run -it --rm pandora
+```
+
+**输入用户名密码登录即可，登录密码理论上不显示出来，莫慌。**
+
+简单而粗暴，不失优雅。
+
+## 程序参数
+可通过 `pandora --help` 查看。
+`-p` 或 `--proxy` 指定代理，格式：`protocol://user:pass@ip:port`。
+`-t` 或 `--token_file` 指定一个存放`Access Token`的文件，使用`Access Token`登录。
+`-s` 或 `--server` 以`http`服务方式启动，格式：`ip:port`。
+`-a` 或 `--api` 使用`gpt-3.5-turbo`API请求，你可能需要向`OpenAI`支付费用。
+`-l` 或 `--local` 使用本地环境登录，你可能需要一个合适的代理IP以避免账号被风控！
+`--tokens_file` 指定一个存放多`Access Token`的文件，内容为`{"key": "token"}`的形式。
+`--threads` 指定服务启动的线程数，默认为 `8`，Cloud模式为 `4`。
+`-v` 或 `--verbose` 显示调试信息，且出错时打印异常堆栈信息，供查错使用。
+
+## Docker环境变量
+`PANDORA_ACCESS_TOKEN` 指定`Access Token`字符串。
+`PANDORA_TOKENS_FILE` 指定一个存放多`Access Token`的文件路径。
+`PANDORA_PROXY` 指定代理，格式：`protocol://user:pass@ip:port`。
+`PANDORA_SERVER` 以`http`服务方式启动，格式：`ip:port`。
+`PANDORA_API` 使用`gpt-3.5-turbo`API请求，你可能需要向`OpenAI`支付费用。
+`PANDORA_LOGIN_LOCAL` 使用本地环境登录，你可能需要一个合适的代理IP以避免账号被风控！
+`PANDORA_VERBOSE` 显示调试信息，且出错时打印异常堆栈信息，供查错使用。
+`PANDORA_THREADS` 指定服务启动的线程数，默认为 `8`，Cloud模式为 `4`。
+使用Docker方式，设置环境变量即可，无视上述程序参数。
+
+## 关于 Access Token
+使用`Access Token`方式登录，可以无代理直连。
+这个服务 可以帮你安全有效拿到`Access Token`，无论是否第三方登录。
+其中`accessToken`字段的那一长串内容即是`Access Token`。
+`Access Token`可以复制保存，其有效期目前为14天。
+不要泄露你的`Access Token`，使用它可以操纵你的账号。
+
+## HTTP服务文档
+如果你以`http`服务方式启动，现在你可以打开一个极简版的ChatGPT了。通过你指定的`http://ip:port`来访问。
+通过`http://ip:port/?token=xxx`，传递一个Token的名字，可以切换到对应的Access Token。
+
+## 操作命令
+对话界面连敲两次`Enter`发送你的输入给`ChatGPT`。
+对话界面使用`/?`可以打印支持的操作命令。
+`/title` 重新设置当前对话的标题。
+`/select` 回到选择会话界面。
+`/reload` 重新加载当前会话所有内容，`F5`你能懂吧。
+`/regen` 如果对`ChatGPT`当前回答不满意，可以让它重新回答。
+`/continue` 让`ChatGPT`继续输出回复的剩余部分。
+`/edit` 编辑你之前的一个提问。
+`/new` 直接开启一个新会话。
+`/del` 删除当前会话，回到会话选择界面。
+`/token` 打印当前的`Access Token`，也许你用得上，但不要泄露。
+`/copy` 复制`ChatGPT`上一次回复的内容到剪贴板。
+`/copy_code` 复制`ChatGPT`上一次回复的代码到剪贴板
+`/clear` 清屏，应该不用解释。
+`/version` 打印`Pandora`的版本信息。
+`/exit` 退出潘多拉。
+
+## 高阶设置
+本部分内容不理解的朋友，请勿擅动！
+环境变量 `OPENAI_API_PREFIX` 可以替换OpenAI Api的前缀`https://api.openai.com`。
+环境变量 `CHATGPT_API_PREFIX` 可以替换ChatGPT Api的前缀`https://ai.fakeopen.com`。
+如果你想持久存储`Docker`中`Pandora`产生的数据，你可以挂载宿主机目录至`/data`。
+如果你在国内使用`pip`安装缓慢，可以考虑切换至腾讯的源：`pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple`
+镜像同步版本可能不及时，如果出现这种情况建议切换至官方源：`pip config set global.index-url https://pypi.org/simple`
+默认使用`sqlite3`存储会话数据，如果你希望更换至`mysql`，可以这么做：
+
+    执行pip install PyMySQL安装驱动。
+    设置环境变量：DATABASE_URI为类似mysql+pymysql://user:pass@localhost/dbname的连接字符串。
+
+环境变量指定`OPENAI_EMAIL`可以替代登录输入用户名，`OPENAI_PASSWORD`则可以替代输入密码, `OPENAI_MFA_CODE`则可以替代输入二次验证。
+环境变量`API_SYSTEM_PROMPT`可以替换`api`模式下的系统`prompt`。
+
+## Cloud模式
+搭建一个跟官方很像的`ChatGPT`服务，不能说很像，只能说一样。
+该模式使用`pandora-cloud`启动，前提是你如前面所说安装好了。
+Docker环境变量：`PANDORA_CLOUD` 启动`cloud`模式。
+该模式参数含义与普通模式相同，可`--help`查看。
+
+## 使用Cloudflare Workers代理
+如果你感觉默认的`https://ai.fakeopen.com`在你那里可能被墙了，可以使用如下方法自行代理。
+
+你需要一个`Cloudflare`账号，如果没有，可以注册一个。
+
+登录后，点击`Workers`，然后点击`Create a Worker`，填入服务名称后点击`创建服务`。
+
+点开你刚才创建的服务，点击`快速编辑`按钮，贴入下面的代码，然后点击`保存并部署`。
+```js
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    url.host = 'ai.fakeopen.com';
+    return fetch(new Request(url, request))
+  }
+}
+```
+点击`触发器`选项卡，可以添加自定义访问域名。
+
+参考`高阶设置`中的环境变量使用你的服务地址进行替换。
+
+## 原文章
+
+https://github.com/pengzhile/pandora
+
+* 了解详细内容

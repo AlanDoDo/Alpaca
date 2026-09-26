@@ -1,0 +1,474 @@
+---
+title: "Web3.0 DeFi项目实战教程"
+description: "- 网络"
+date: "2023-08-15"
+category: "产业"
+tags: ["Web3.0"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x136.jpg"
+source: "legacy-blog"
+---
+
+# Web3.0-dapp开发
+
+## 初识web3.0
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093309289.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093358402.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093415621.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093438046.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093459028.png)
+
+## 认识区块链
+
+### 什么是区块链
+
+- 网络
+- 数据库
+- 计算机
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111093921274.png)
+
+### 区块链的应用
+
+- 众筹行为
+- 公证书
+- 供应链
+- 股权证
+
+## 以太坊介绍
+
+> 以太坊（英文Ethereum）是一个开源的有智能合约功能的公共区块链平台，通过其专用加密货币以太币（Ether，简称“ETH”）提供去中心化的以太虚拟机（Ethereum Virtual Machine）来处理点对点合约。
+
+> 以太坊的概念首次在2013至2014年间由程序员Vitalik Buterin受比特币启发后提出，大意为“下一代加密货币与去中心化应用平台”，在2014年通过ICO众筹开始得以发展。
+
+> 截至2018年2月，以太币是市值第二高的加密货币，仅次于比特币。
+
+### 哈希算法(Hash Function)
+
+将任意长度的二进制值串映射为固定长度的二进制值串，这个映射的规则就是哈希算法，而通过原始数据映射之后得到的二进制值串就是哈希值。
+
+构成哈希算法的条件：
+
+- 从哈希值不能反向推导出原始数据（所以哈希算法也叫单向哈希算法）
+- 对输入数据非常敏感，哪怕原始数据只修改了一个 Bit，最后得到的哈希值也大不相同；
+- 散列冲突的概率要很小，对于不同的原始数据，哈希值相同的概率非常小；
+- 哈希算法的执行效率要尽量高效，针对较长的文本，也能快速地计算出哈希值。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221111091800116.png)
+
+### Solidity语言简述
+
+> Solidity是一种智能合约高级语言，运行在Ethereum虚拟机（EVM）之上。
+
+它的语法接近于Javascript，是一种面向对象的语言。但作为一种真正意义上运行在网络上的去中心合约，它又有很多的不同，下面列举一些：
+
+- 以太坊底层是基于帐户，而非UTXO的，所以有一个特殊的`Address`的类型。用于定位用户，定位合约，定位合约的代码（合约本身也是一个帐户）。
+- 由于语言内嵌框架是支持支付的，所以提供了一些关键字，如`payable`，可以在语言层面直接支持支付，而且超级简单。
+- 存储是使用网络上的区块链，数据的每一个状态都可以永久存储，所以需要确定变量使用内存，还是区块链。
+- 运行环境是在去中心化的网络上，会比较强调合约或函数执行的调用的方式。因为原来一个简单的函数调用变为了一个网络上的节点中的代码执行，分布式的感觉。
+- 最后一个非常大的不同则是它的异常机制，一旦出现异常，所有的执行都将会被回撤，这主要是为了保证合约执行的原子性，以避免中间状态出现的数据不一致。
+
+```js
+pragma solidity ^0.4.0;
+
+contract HelloWorld{
+    uint balance;
+    function update(uint amount) returns (address, uint){
+        balance += amount;
+        return (msg.sender, balance);
+    }
+}
+```
+
+### Web3.js简述
+
+> Web3.js是一个库，它有很多函数，使用它可以在以太坊生态系统中通过HTTP或IPC与本地或者以太坊远程节点交互，如查看链上信息等
+>
+> 各种高级语言编写的程序可以使用web3 interface来与EVM交互，在此过程中使用是的JSON-RPC（一个无状态且轻量级的远程过程调用（RPC）传送协议，其传递内容透过 JSON 为主）
+
+**您可以使用web3.js**来读取和写入以太坊区块链，而不是使用 ajax 从 Web 服务器读取和写入数据。
+
+```js
+const web3 = new Web3(
+        Web3.givenProvider || "http://localhost:8545"
+);
+// 获取当前节点下的账号信息
+const accounts = await web3.eth.requestAccounts(); // 会返回当前的账号
+console.log('accounts', accounts)
+```
+
+## DApp
+
+> DApp的部分或全部逻辑是被存储在去中心化网络中的，而这个去中心化网络在区块链的世界里是叫做公有链。
+
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221107122318158.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221107122340881.png)
+
+
+## MetaMask
+
+> MetaMask是一个浏览器插件，可作为MetaMask Chrome扩展或Firefox附加组件使用。它的核心是它作为以太坊钱包：通过安装它，您将可以访问一个独特的以太坊钱包地址，您可以使用它开始发送和接收以太币或ERC20通证。
+
+但MetaMask不仅仅是以太坊钱包。作为浏览器扩展，它可以与您正在浏览的当前网页进行交互。它通过在您访问的每个网页中注入一个名为web3.js的JavaScript库来实现。注入后，web3将通过window.web3的JavaScript代码为你访问的每个网页提供一个对象。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221114085716392.png)
+
+
+**MetaMask 有什么优势？**
+
+- 用户只需一个插件即可访问各种 Dapp
+
+- 用户无需管理私钥，只需记住单词列表即可代表他们签名交易。
+
+- 用户无需下载以太坊区块链，因为它将请求发送到用户计算机外部的节点。
+
+- Dapps 旨在与之配合使用，因此发送和发送以太坊变得更加容易。
+
+**MetaMask 的缺点**
+
+- 第三方私钥存储-MetaMask 在用户的浏览器中保存私钥。这比硬件或纸钱包安全性低。
+
+## Ganache
+
+> https://trufflesuite.com/ganache/
+
+Ganache 是一个用与本地开发的区块链，用于在以太坊区块链上开发去中心化的应用程序。Ganache 模拟了以太坊网络，你可以在发布到生产环境之前看到你的 DApp 将如何执行。
+
+所以我们需要通过 ganache 来帮我们模拟一个以太坊的节点。测试通过后可以直接切换使用真实的以太坊的账号和区块节点就可以了。
+
+```shell
+cnpm i ganache -g
+```
+
+## Web3.js
+
+> Web3.js是一个库，它有很多函数，使用它可以在以太坊生态系统中通过HTTP或IPC与本地或者以太坊远程节点交互，如查看链上信息等
+>
+> 各种高级语言编写的程序可以使用web3 interface来与EVM交互，在此过程中使用是的JSON-RPC（一个无状态且轻量级的远程过程调用（RPC）传送协议，其传递内容透过 JSON 为主）
+
+**您可以使用web3.js**来读取和写入以太坊区块链，而不是使用 ajax 从 Web 服务器读取和写入数据。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221115085526871.png)
+
+
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/image-20221115090833652.png)
+
+### 获取区块
+
+```js
+ var web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+
+ web3.eth.getBlockNumber()
+            .then(console.log);
+```
+
+### 获取余额
+
+```js
+ var web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+
+ web3.eth.getBalance("0x6b5aC29F2a2Ca361BE4fed60862C51D2F853842a").then(res => {
+                console.log(web3.utils.fromWei(res, "ether"))
+            })
+```
+
+### 交易
+
+```js
+web3.eth.sendTransaction({
+        from:"0x342361F2a62A5820A396e277481d104C0fc3CC60",
+        to:"0xeF2233172704bbD3A02D35E9d5620a3053F1E2E2",
+        value:web3.utils.toWei("1","ether")
+      })
+```
+
+
+
+## 智能合约
+
+### Remix IDE
+
+>  Remix IDE是开发以太坊智能合约的在线IDE工具，部署简单的智能合约非常方便
+>
+>  Remix地址：https://remix.ethereum.org/
+
+### Truffle
+
+> Truffle是一个世界级的智能合约开发框架，专门为智能合约而生。
+
+- 管理智能合约的生命周期
+- 自动化合约测试
+- 可编程，可部署，可发布合约
+- 不用过多的关注网络管理
+- 强大的交互式控制台
+
+目录结构：
+
+- contracts/ : 存放solidity智能合约文件
+
+- migrations/ : truffle使用migration system 来控制合约的部署。 
+
+- test/ : 测试文件存放文字（javascript or solidity）
+
+- truffle-config.js : 配置文件
+
+### Solidity语言
+
+#### 数据位置
+
+solidity数据存储位置有三类：storage，memory和calldata。不同存储位置的gas成本不同。storage类型的数据存在链上，类似计算机的硬盘，消耗gas多；memory和calldata类型的临时存在内存里，消耗gas少。大致用法：
+
+1. storage：合约里的状态变量默认都是storage，存储在链上。
+
+2. memory：函数里的参数和临时变量一般用memory，存储在内存中，不上链。
+
+3. calldata：和memory类似，存储在内存中，不上链。与memory的不同点在于calldata变量不能修改（immutable），一般用于函数的参数。
+
+#### 作用域
+
+变量的作用域：Solidity中变量按作用域划分有三种，分别是状态变量（state variable），局部变量（local variable）和全局变量(global variable)。
+
+1. 状态变量：状态变量是数据存储在链上的变量，所有合约内函数都可以访问 ，gas消耗高。状态变量在合约内、函数外声明。可以在函数里更改状态变量的值：
+
+2. 局部变量：局部变量是仅在函数执行过程中有效的变量，函数退出后，变量无效。局部变量的数据存储在内存里，不上链，gas低。局部变量在函数内声明。
+
+3. 全局变量：全局变量是全局范围工作的变量，都是solidity预留关键字。他们可以在函数内不声明直接使用（类似于 msg.sender,block.number）
+
+
+#### 作用域类型
+
+**状态变量可以有三种作用域类型。**
+
+- Public 公共状态变量可以在内部访问，也可以通过消息访问。对于公共状态变量，将生成一个自动getter函数。
+- Internal – 内部状态变量只能从当前合约或其派生合约内访问。
+- Private – 私有状态变量只能从当前合约内部访问，派生合约内不能访问。
+
+**函数可以指定为 external ，public ，internal 或者 private**
+
+external
+
+- 外部函数是合约接口的一部分，这意味着可以从其他合约或通过事务调用它们。但是内部无法调用。
+
+public 
+
+- 外部调用和内部都可以调用
+
+internal  
+
+- 只能从当前合约或从当前合约派生的合约中访问，外部无法访问它们，由于它们没有通过合约的 ABI 向外部公开，所以它们可以接受内部类型的参数，比如映射或存储引用。
+
+private
+
+- 私有函数类似于内部函数，但它们在派生合约中不可见。
+
+#### 智能合约脚本
+
+```js
+// SPDX-License-Identifier: GPL-3.0 
+// 源码遵循协议， MIT...
+pragma solidity >=0.4.16 <0.9.0; //限定solidity编译器版本
+
+contract StudentStorage {
+    uint public age; //状态变量是数据存储在链上的变量，所有合约内函数都可以访问 ，gas消耗高。状态变量在合约内、函数外声明。可以在函数里更改状态变量的值
+    string public name; //公共状态变量与内部状态变量的不同之处在于，编译器会自动为它们生成 getter 函数，
+
+    function setData(string memory _name,uint _age) public {
+        name = _name;
+        age= _age;
+    }
+
+    //一类是 view 函数（也称为视图函数），另一类是 pure 函数（也称为纯函数）。他们的区别是 view 函数不修改状态，pure 函数即不修改状态也不读取状态。
+    function getData() public view returns (string memory,uint) {
+        return (name,age);
+    }//在Solidity中一个函数方法是可以返回多个结果的
+}
+```
+
+#### 部署脚本
+
+```js
+/*
+ * @作者: kerwin
+ */
+//"artifacts.require()"方法告诉truffle我们将要与那个合约交互，导入某个合约
+const Contacts = artifacts.require("StudentStorage.sol");  
+module.exports = function (deployer) {
+    deployer.deploy(Contacts);  //部署这个合约  
+    // 如果还有其他合约的话后面可以继续编写
+    // deployer.deploy(合约文件)
+};
+```
+
+#### 脚本测试
+
+- mocha测试
+- truffle 脚本
+
+```js
+/*
+ * @作者: kerwin
+ */
+const StudentStorage = artifacts.require('StudentStorage')
+
+module.exports = async function(callabck){
+    const studentStorage = await StudentStorage.deployed()
+
+    await studentStorage.setData("kerwin",100)
+    console.log(await studentStorage.getData())
+    console.log(await studentStorage.name())
+    console.log(await studentStorage.age())
+    callabck() //必须写，否则不结束
+ }
+ 
+```
+
+## 打通Web3.js到智能合约
+
+> ABI 非常类似于 API（应用程序接口），一种人类可读的代码接口表示。ABI 定义了用于与二进制合约交互的方法和结构，就像 API 所做的那样，只是在较低的级别上。
+
+```html
+<!--
+ * @作者: kerwin
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+    <input type="text" id="myname">
+    <input type="number" id="age">
+    <button id="add">add</button>
+
+    <ul id="list"></ul>
+    <script type="module">
+        var web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+        const account = await web3.eth.requestAccounts()
+        console.log(account)
+        const studentStorage = new web3.eth.Contract(
+            "合约的abi",
+            "合约的address"
+        );
+
+        add.onclick = async function(){
+            await studentStorage.methods.addList(myname.value,age.value).send({from:account[0]})
+            getList()
+        }
+        getList()
+        async function getList(){
+            var mylist = await studentStorage.methods.getList().call(); 
+            console.log(mylist)
+            list.innerHTML  = mylist.map(item=>`
+                <li>${item.id}-${item.name}-${item.age}
+                  </li>
+            `).join("")
+        }
+    </script>
+</body>
+
+</html>
+```
+
+```js
+// SPDX-License-Identifier: GPL-3.0
+// 源码遵循协议， MIT...
+pragma solidity >=0.4.16 <0.9.0; //限定solidity编译器版本
+
+contract StudentStorage {
+    struct Student {
+        uint id;
+        string name;
+        uint age;
+        address addr;
+    }
+    Student[] public StudentList;
+
+    function getList() public view returns (Student[] memory) {
+        Student[] memory list = StudentList;
+        return list;
+    }
+
+    function addList(string memory _name, uint _age)
+        public
+        returns (uint)
+    {
+        uint len = StudentList.length;
+        uint index = len + 1;
+        StudentList.push(Student(index, _name, _age, msg.sender)); 
+        return StudentList.length;
+    }
+}
+
+```
+
+
+## 加密货币
+
+**什么叫做代币？**
+
+代币可以在以太坊中表示任何东西：
+
+- 在线平台中的信誉积分
+- 金融资产类似于公司股份的资产
+- 像美元一样的法定货币
+- 一盎司黄金
+- 及更多...
+
+> **ERC-20**就是一套**基于以太坊网络的标准代币发行协议**。有了ERC-20，**开发者们得以高效、可靠、低成本地创造专属自己项目的代币；**我们甚至可以将ERC-20视为以太坊网络为早期区块链世界做出的最重要贡献.
+
+
+https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
+
+ERC-20 的功能示例包括：
+
+- 将代币从一个帐户转到另一个帐户
+- 获取帐户的当前代币余额
+- 获取网络上可用代币的总供应量
+- 批准一个帐户中一定的代币金额由第三方帐户使用
+
+### 方法
+
+```js
+function name() public view returns (string)
+function symbol() public view returns (string)
+function decimals() public view returns (uint8)
+function totalSupply() public view returns (uint256)
+function balanceOf(address _owner) public view returns (uint256 balance)
+function transfer(address _to, uint256 _value) public returns (bool success)
+function transferFrom(address _from, address _to, uint256 _value) public returns (bool success)
+function approve(address _spender, uint256 _value) public returns (bool success)
+function allowance(address _owner, address _spender) public view returns (uint256 remaining)
+
+```
+
+### 事件
+
+```js
+event Transfer(address indexed _from, address indexed _to, uint256 _value)
+event Approval(address indexed _owner, address indexed _spender, uint256 _value)
+
+```
+
+### 
+
+**第三方库**
+
+```js
+import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
+using SafeMath for uint256; //为了uint256后面使用 sub ,add方法，，，
+
+```

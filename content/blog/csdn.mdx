@@ -1,0 +1,1709 @@
+---
+title: "C语言基础"
+description: "C语言基础入门"
+date: "2024-03-16"
+category: "编程"
+tags: ["C语言"]
+author: "TechAlpaca"
+featured: false
+cover: "https://techalpaca.vercel.app/blogs/csdn/33428733a8d56a16.jpg"
+source: "legacy-online"
+---
+
+## 前言
+
+C 语言是入门工科的基础，我们一开始接触 C 语言都不明白 C 语言到底是干什么的，但是你问学过几年的人来说，由于它们 `408` 这套东西学过了，所以他们会说 C 语言基础挺好入门，但是你入门连 "\n" 是什么都不清楚。这里我想说一句废话，**你学了就会了**。但想想这又不是废话，因为所有技能只有你学了，才能学会。
+
+直接跟着学习文档敲代码，**敲就完了**，代码写多了自然就会了。工科为什么叫工科，因为只有你动手调试，你才会清楚哪里有问题，只用脑袋想永远是纸上谈兵罢了。
+
+行动起来！
+
+## 基础
+
+市面上有很多C语言的教程，看什么都一样，这里我跟着菜鸟教程开始过一遍，学不会就学两遍。
+
+[菜鸟教程C语言](https://www.runoob.com/cprogramming/c-tutorial.html)
+
+[100道C语言源码](https://zhuanlan.zhihu.com/p/305180250)
+
+C 语言是一种通用的、`面向过程式`的计算机程序设计语言。(把解题思路拆成一串按顺序执行的函数＋数据)
+
+使用 C 的实例：操作系统、语言编译器、汇编器、网络驱动器、语言解释器
+
+下面用一个程序来开始C语言的学习，把 C 语言的运行当成上课的过程举例子
+
+```c
+#include <stdio.h> // 头文件：引入标准输入输出库---就像准备PPT课件，没课件没法上课
+// int main() 程序入口，就相当于上课铃响了
+// 大括号{}里的代码，就像上课过程
+int main () {
+
+printf("Hello\n"); // 输出一句话 Hello， \n相当于讲完一个知识点，翻页了
+
+return 0; // 返回0：表示成功结束，交给操作系统
+}
+```
+
+代码从 **main()** 函数开始执行。
+
+## 基础语法
+
+在 C 语言中，`令牌（Token）`是程序的基本组成单位，编译器通过对源代码进行词法分析，将代码分解成一个个的令牌。
+
+
+- **标识符（Identifiers）**
+- **常量（Constants）**
+- **字符串字面量（String Literals）**
+- **关键字（Keywords）**
+- **运算符（Operators）**
+- **分隔符（Separators）**
+
+> [!tip] 下面只写一些较复杂的，简单的就略过了
+
+**宏定义**
+
+- 宏是通过 `#define` 指令定义的符号常量或代码片段。<mark style="background: #BBFABBA6;">宏在编译前由预处理器替换为其定义的内容</mark>。常用于定义常量或者复杂的代码块。
+- 示例：`#define PI 3.14159`
+
+**分隔符**
+
+分隔符用于分隔语句和表达式，常见的分隔符包括：
+
+- **逗号 ,** ：用于分隔变量声明或函数参数。
+- **分号 ;** ：用于结束语句。
+- **括号**：
+    - 圆括号 `()` 用于分组表达式、函数调用。
+    - 花括号 `{}` 用于定义代码块。
+    - 方括号 `[]` 用于数组下标。
+
+**标识符**
+
+标识符是程序中变量、函数、数组等的名字。标识符由字母（大写或小写）、数字和下划线组成，但第一个字符必须是字母或下划线，不能是数字。
+
+**常量**
+
+常量是<mark style="background: #BBFABBA6;">固定值</mark>，在程序执行期间不会改变。
+
+常量可以是整型常量、浮点型常量、字符常量、枚举常量等。
+
+```c
+const int MAX = 100;  // 整型常量
+const float PI = 3.14;  // 浮点型常量
+const char NEWLINE = '\n';  // 字符常量
+```
+
+**字符串字面量**
+
+字符串字面量是由<mark style="background: #BBFABBA6;">双引号括起来的字符序列</mark>。
+
+字符串末尾会自动添加一个空字符 `\0`。
+
+```c
+char greeting[] = "Hello, World!";
+```
+
+**关键字**
+
+下表列出了 C 中的保留字。这些保留字不能作为常量名、变量名或其他标识符名称。
+
+| 关键字      | 说明                                 |
+| -------- | ---------------------------------- |
+| auto     | 声明自动变量                             |
+| break    | 跳出当前循环                             |
+| case     | 开关语句分支 1，2，3...                    |
+| char     | 声明字符型变量或函数返回值类型                    |
+| const    | 定义常量，如果一个变量被 const 修饰，那么它的值就不能再被改变 |
+| continue | 结束当前循环，开始下一轮循环                     |
+| default  | 开关语句中的"其它"分支                       |
+| do       | 循环语句的循环体                           |
+| double   | 声明双精度浮点型变量或函数返回值类型                 |
+| else     | 条件语句否定分支（与 if 连用）                  |
+| enum     | 声明枚举类型                             |
+| extern   | 声明变量或函数是在其它文件或本文件的其他位置定义           |
+| float    | 声明浮点型变量或函数返回值类型                    |
+| for      | 一种循环语句                             |
+| goto     | 无条件跳转语句                            |
+| if       | 条件语句                               |
+| int      | 声明整型变量或函数                          |
+| long     | 声明长整型变量或函数返回值类型                    |
+| register | 声明寄存器变量                            |
+| return   | 子程序返回语句（可以带参数，也可不带参数）              |
+| short    | 声明短整型变量或函数                         |
+| signed   | 声明有符号类型变量或函数                       |
+| sizeof   | 计算数据类型或变量长度（即所占字节数）                |
+| static   | 声明静态变量                             |
+| struct   | 声明结构体类型                            |
+| switch   | 用于开关语句                             |
+| typedef  | 用以给数据类型取别名                         |
+| unsigned | 声明无符号类型变量或函数                       |
+| union    | 声明共用体类型                            |
+| void     | 声明函数无返回值或无参数，声明无类型指针               |
+| volatile | 说明变量在程序执行中可被隐含地改变                  |
+| while    | 循环语句的循环条件                          |
+
+**C99 新增关键字**
+
+|       |          |            |        |          |
+| ----- | -------- | ---------- | ------ | -------- |
+| _Bool | _Complex | _Imaginary | inline | restrict |
+|       |          |            |        |          |
+
+**C11 新增关键字**
+
+|                |               |         |          |           |
+| -------------- | ------------- | ------- | -------- | --------- |
+| _Alignas       | _Alignof      | _Atomic | _Generic | _Noreturn |
+| _Static_assert | _Thread_local |         |          |           |
+
+## 数据类型
+
+**枚举类型**
+
+**枚举**就是“给整数起绰号”，让代码在语义上更像在单选，而不是在猜数字
+
+<mark style="background: #BBFABBA6;">没给值的部分</mark>永远“在前一个值的基础上 +1”，而第一个如果没写，就默认从 `0` 起算。
+```c
+enum color {RED, GREEN=5, BLUE};   // RED=0, GREEN=5, BLUE=6
+enum color c = RED;                // 等价于 int c = 0;
+```
+
+**整数类型**
+
+下表列出了关于标准整数类型的**存储大小**和**值范围的细节**：
+
+> 注意，各种类型的存储大小与系统位数有关，但目前通用的以64位系统为主。
+
+| 类型             | 存储大小     | 值范围                                               |
+| -------------- | -------- | ------------------------------------------------- |
+| char           | 1 字节     | -128 到 127 或 0 到 255                              |
+| unsigned char  | 1 字节     | 0 到 255                                           |
+| signed char    | 1 字节     | -128 到 127                                        |
+| int            | 2 或 4 字节 | -32,768 到 32,767 或 -2,147,483,648 到 2,147,483,647 |
+| unsigned int   | 2 或 4 字节 | 0 到 65,535 或 0 到 4,294,967,295                    |
+| short          | 2 字节     | -32,768 到 32,767                                  |
+| unsigned short | 2 字节     | 0 到 65,535                                        |
+| long           | 4 字节     | -2,147,483,648 到 2,147,483,647                    |
+| unsigned long  | 4 字节     | 0 到 4,294,967,295                                 |
+
+**浮点类型**
+
+下表列出了关于标准浮点类型的存储大小、值范围和精度的细节：
+
+|类型|存储大小|值范围|精度|
+|---|---|---|---|
+|float|4 字节|1.2E-38 到 3.4E+38|6 位有效位|
+|double|8 字节|2.3E-308 到 1.7E+308|15 位有效位|
+|long double|16 字节|3.4E-4932 到 1.1E+4932|19 位有效位|
+
+**隐式转换**——编译器偷偷帮你倒  
+场景：不同大小的整数混算、整数和浮点混算、给函数传参、赋值……
+
+```c
+double d = 3;     // int 3 被悄悄扩成 double 3.0
+int    a = 3.7;   // double 3.7 被截成 int 3，小数直接消失
+```
+
+**显式转换（强制转换）**——你亲自下令倒
+写法：`(目标类型) 表达式`
+
+```c
+int    x = 10;
+double y = (double)x / 4;   // 把 x 先强转成 double，再做除法得 2.5
+
+void  *p = malloc(16); // 向堆管理器申请 16 字节的连续内存，成功返回首地址
+// 返回类型是 void *，意思是"我手里有一块内存，但还没决定把它当什么类型用"
+int   *q = (int *)p;        // void* → int* 必须显式转（C++ 必需，C 可选）
+// (int *)p 是显式类型转换，把"无类型地址"强制解释成"指向 int 的地址"
+```
+
+**C 中的变量声明**
+
+`extern int i;` 只告诉编译器“**某个地方一定有个叫 i 的 int，你先用着，别急着分配空间**”，所以叫**声明**（declaration）而非**定义**（definition）
+
+**整数常量**
+
+```c
+85         /* 十进制 */
+0213       /* 八进制 */
+0x4b       /* 十六进制 */
+30         /* 整数 */
+30u        /* 无符号整数 */
+30l        /* 长整数 */
+30ul       /* 无符号长整数 */
+```
+
+## 存储类
+
+- **auto 存储类**
+
+**auto** 存储类是所有局部变量默认的存储类。
+
+定义在函数中的变量默认为 auto 存储类，这意味着它们<mark style="background: #BBFABBA6;">在函数开始时被创建，在函数结束时被销毁</mark>。
+
+```c
+{
+   int mount;
+   auto int month;
+}
+```
+
+上面的实例定义了两个带有相同存储类的变量，auto 只能用在函数内，即 <mark style="background: #FF5582A6;">auto 只能修饰局部变量</mark>。
+
+- **register 存储类**
+
+**register** 存储类用于定义存储在寄存器中而不是 RAM 中的局部变量。这意味着<mark style="background: #FFF3A3A6;">变量的最大尺寸等于寄存器的大小</mark>（通常是一个字），且不能对它应用一元的 '&' 运算符（因为它没有内存位置）。
+
+register 存储类定义存储在寄存器，所以变量的<mark style="background: #BBFABBA6;">访问速度更快</mark>，但是它不能直接取地址，因为它不是存储在 RAM 中的。在需要频繁访问的变量上使用 register 存储类可以提高程序的运行速度。
+
+> 可以把寄存器看作 CPU 的“工作台”，RAM 则是“仓库”
+
+```c
+{
+   register int  miles;
+}
+```
+
+寄存器只用于需要快速访问的变量，比如计数器。还应注意的是，定义 'register' 并不意味着变量将被存储在寄存器中，它意味着变量可能存储在寄存器中，这取决于硬件和实现的限制。
+
+- **static 存储类**
+
+**static** 存储类指示编译器在程序的生命周期内<mark style="background: #BBFABBA6;">保持局部变量</mark>的存在，而不需要在每次它进入和离开作用域时进行创建和销毁。因此，使用 static 修饰局部变量可以在函数调用之间保持局部变量的值。
+
+static 修饰符也可以应用于全局变量。当 static <mark style="background: #BBFABBA6;">修饰全局变量</mark>时，会使变量的<mark style="background: #FFF3A3A6;">作用域限制在声明它的文件内</mark>。
+
+全局声明的一个 static 变量或方法可以被任何函数或方法调用，只要这些方法出现在跟 static 变量或方法同一个文件中。
+
+静态变量在程序中只被初始化一次，即使函数被调用多次，该变量的值也不会重置。
+
+- **extern 存储类**
+
+**extern** 存储类用于<mark style="background: #BBFABBA6;">定义在其他文件中声明的全局变量或函数</mark>。当使用 extern 关键字时，不会为变量分配任何存储空间，而只是指示编译器该变量在其他文件中定义。
+
+**extern** 存储类用于提供一个全局变量的引用，全局变量对所有的程序文件都是可见的。当您使用 **extern** 时，对于无法初始化的变量，会把变量名指向一个之前定义过的存储位置。
+
+当您有多个文件且定义了一个可以在其他文件中使用的全局变量或函数时，可以在其他文件中使用 _extern_ 来得到已定义的变量或函数的引用。可以这么理解，_extern_ 是用来在另一个文件中声明一个全局变量或函数。
+
+> 第二个文件中的 _extern_ 关键字用于声明已经在第一个文件 main.c 中定义的 _count_
+
+第一个文件 `main.c`
+```c
+#include <stdio.h>
+ 
+int count ;
+extern void write_extern();
+ 
+int main()
+{
+   count = 5;
+   write_extern();
+}
+```
+
+第二个文件 `support.c`
+```c
+#include <stdio.h>
+ 
+extern int count;
+ 
+void write_extern(void)
+{
+   printf("count is %d\n", count);
+}
+```
+
+## 运算符
+
+**逻辑运算符**
+
+下表显示了 C 语言支持的所有关系逻辑运算符。假设变量 **A** 的值为 1，变量 **B** 的值为 0，则：
+
+|运算符|描述|实例|
+|---|---|---|
+|&&|称为逻辑与运算符。如果两个操作数都非零，则条件为真。|(A && B) 为假。|
+|\||称为逻辑或运算符。如果两个操作数中有任意一个非零，则条件为真。|(A \| B) 为真。|
+|!|称为逻辑非运算符。用来逆转操作数的逻辑状态。如果条件为真则逻辑非运算符将使其为假。|
+
+**位运算符**
+
+位运算符作用于位，并逐位执行操作。&、 | 和 ^ 的真值表如下所示：
+
+|p|q|p & q|p \| q|p ^ q|
+|---|---|---|---|---|
+|0|0|0|0|0|
+|0|1|0|1|1|
+|1|1|1|1|0|
+|1|0|0|1|1|
+
+假设如果 A = 60，且 B = 13，现在以二进制格式表示，它们如下所示：
+
+A = 0011 1100
+B = 0000 1101
+
+A&B = 0000 1100 与
+A|B = 0011 1101 或
+A^B = 0011 0001 异或
+~A  = 1100 0011 非
+
+|     |                                                                                                                                       |                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| <<  | 将操作数的<mark style="background: #BBFABBA6;">所有位向左移动指定的位数</mark>。左移 n 位相当于乘以 2 的 n 次方。<br>二进制左移运算符。将一个运算对象的各二进制位全部左移若干位（左边的二进制位丢弃，右边补0）。 | A << 2 将得到 240，即为 1111 0000 |
+| >>  | 将操作数的<mark style="background: #BBFABBA6;">所有位向右移动指定的位数</mark>。右移n位相当于除以 2 的 n 次方。<br>二进制右移运算符。将一个数的各二进制位全部右移若干位，正数左补 0，负数左补 1，右边丢弃。   | A >> 2 将得到 15，即为 0000 1111  |
+
+**赋值运算符**
+
+|   |   |   |
+|---|---|---|
+|<<=|左移且赋值运算符|C <<= 2 等同于 C = C << 2|
+|>>=|右移且赋值运算符|C >>= 2 等同于 C = C >> 2|
+|&=|按位与且赋值运算符|C &= 2 等同于 C = C & 2|
+|^=|按位异或且赋值运算符|C ^= 2 等同于 C = C ^ 2|
+|\|=|按位或且赋值运算符|C \|= 2 等同于 C = C \| 2|
+**杂项运算符 sizeof & 三元**
+
+下表列出了 C 语言支持的其他一些重要的运算符，包括 **sizeof** 和 **? :**。
+
+```c
+int num;
+(num%2==0)?printf("偶数"):printf("奇数");
+```
+
+| 运算符      | 描述       | 实例                        |
+| -------- | -------- | ------------------------- |
+| sizeof() | 返回变量的大小。 | sizeof(a) 将返回 4，其中 a 是整数。 |
+| &        | 返回变量的地址。 | &a; 将给出变量的实际地址。           |
+| *        | 指向一个变量。  | *a; 将指向一个变量。              |
+| ? :      | 条件表达式    | 如果条件为真 ? 则值为 X : 否则值为 Y   |
+
+
+## 判断
+
+**判断语句**
+
+C 语言提供了以下类型的判断语句。
+
+| 语句           | 描述                                                            |
+| ------------ | ------------------------------------------------------------- |
+| if 语句        | 一个 **if 语句** 由一个布尔表达式后跟一个或多个语句组成。                             |
+| if...else 语句 | 一个 **if 语句** 后可跟一个可选的 **else 语句**，else 语句在布尔表达式为假时执行。         |
+| 嵌套 if 语句     | 您可以在一个 **if** 或 **else if** 语句内使用另一个 **if** 或 **else if** 语句。 |
+| switch 语句    | 一个 **switch** 语句允许测试一个变量等于多个值时的情况。                            |
+| 嵌套 switch 语句 | 您可以在一个 **switch** 语句内使用另一个 **switch** 语句。                     |
+
+## 循环
+
+**while 循环**
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int a = 10;
+   /* while 循环执行 */
+   while( a < 20 )
+   {
+      printf("a 的值： %d\n", a);
+      a++;
+   }
+   return 0;
+}
+```
+
+**for 循环**
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   /* for 循环执行 */
+   for( int a = 10; a < 20; a = a + 1 )
+   {
+      printf("a 的值： %d\n", a);
+   }
+   return 0;
+}
+```
+
+**do...while 循环**
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int a = 10;
+   /* do 循环执行，在条件被测试之前至少执行一次 */
+   do
+   {
+       printf("a 的值： %d\n", a);
+       a = a + 1;
+   }while( a < 20 );
+   return 0;
+}
+```
+
+**嵌套循环**
+
+一个嵌套的 for 循环来查找 2 到 100 中的质数
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int i, j;
+   for(i=2; i<100; i++) {
+      for(j=2; j <= (i/j); j++)
+        if(!(i%j)) break; // 如果找到，则不是质数
+      if(j > (i/j)) printf("%d 是质数\n", i);
+   }
+   return 0;
+}
+```
+
+do-while 嵌套实例
+```c
+#include <stdio.h>
+int main()
+{
+    int i=1,j;
+    do
+    {
+        j=1;
+        do
+        {
+            printf("*");
+            j++;
+        }while(j <= i);
+        i++;
+        printf("\n");
+    }while(i <= 5);
+    return 0;
+}
+```
+
+## 函数
+
+- 函数声明 / 定义为 `void max(...)`（无返回值）
+- 若函数内部有了返回值， `return result;`（试图返回 int 值），所以用 `int max(int num1, int num2);`
+
+```c
+#include <stdio.h>
+ 
+/* 函数声明 */
+int max(int num1, int num2);
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int a = 100;
+   int b = 200;
+   int ret;
+ 
+   /* 调用函数来获取最大值 */
+   ret = max(a, b);
+ 
+   printf( "Max value is : %d\n", ret );
+ 
+   return 0;
+}
+ 
+/* 函数返回两个数中较大的那个数 */
+int max(int num1, int num2) 
+{
+   /* 局部变量声明 */
+   int result;
+ 
+   if (num1 > num2)
+      result = num1;
+   else
+      result = num2;
+ 
+   return result; 
+}
+```
+
+**传值方式调用函数**
+
+函数 **swap()** 定义
+```c
+/* 函数定义 */
+void swap(int x, int y)
+{
+   int temp;
+
+   temp = x; /* 保存 x 的值 */
+   x = y;    /* 把 y 赋值给 x */
+   y = temp; /* 把 temp 赋值给 y */
+  
+   return;
+}
+```
+
+调用函数 **swap()**
+```c
+#include <stdio.h>
+ 
+/* 函数声明 */
+void swap(int x, int y);
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int a = 100;
+   int b = 200;
+   printf("交换前，a 的值： %d\n", a );
+   printf("交换前，b 的值： %d\n", b );
+   /* 调用函数来交换值 */
+   swap(a, b);
+   printf("交换后，a 的值： %d\n", a );
+   printf("交换后，b 的值： %d\n", b );
+   return 0;
+}
+```
+
+**引用方式调用函数**
+
+通过引用传递方式，形参为指向实参地址的指针，当对形参的指向操作时，就相当于对实参本身进行的操作。
+
+传递指针可以让多个函数访问指针所引用的对象，而不用把对象声明为全局可访问。
+
+```c
+/* 函数定义 */
+void swap(int *x, int *y)
+{
+   int temp;
+   temp = *x;    /* 保存地址 x 的值 */
+   *x = *y;      /* 把 y 赋值给 x */
+   *y = temp;    /* 把 temp 赋值给 y */
+  
+   return;
+}
+```
+
+通过引用传值来调用函数 **swap()**
+```c
+#include <stdio.h>
+ 
+/* 函数声明 */
+void swap(int *x, int *y);
+ 
+int main ()
+{
+   /* 局部变量定义 */
+   int a = 100;
+   int b = 200;
+ 
+   printf("交换前，a 的值： %d\n", a );
+   printf("交换前，b 的值： %d\n", b );
+ 
+   /* 调用函数来交换值
+    * &a 表示指向 a 的指针，即变量 a 的地址 
+    * &b 表示指向 b 的指针，即变量 b 的地址 
+   */
+   swap(&a, &b);
+ 
+   printf("交换后，a 的值： %d\n", a );
+   printf("交换后，b 的值： %d\n", b );
+ 
+   return 0;
+}
+```
+## 变量作用域
+
+- 局部变量，只能被该函数或该代码块内部的语句使用
+- 全局变量，在整个程序生命周期内都是有效的，在任意的函数内部能访问全局变量。
+
+```C
+#include <stdio.h>
+ 
+/* 全局变量声明 */
+int g;
+
+int main ()
+{
+  /* 局部变量声明 */
+  int a, b;
+ 
+  /* 实际初始化 */
+  a = 10;
+  b = 20;
+  g = a + b;
+ 
+  printf ("value of a = %d, b = %d and g = %d\n", a, b, g);
+  return 0;
+}
+```
+## 数组
+
+```c
+double balance[] = {1000.0, 2.0, 3.4, 7.0, 50.0};
+```
+
+```c
+balance[4] = 50.0;
+```
+
+| 概念        | 描述                                      |
+| --------- | --------------------------------------- |
+| 多维数组      | C 支持多维数组。多维数组最简单的形式是二维数组。               |
+| 传递数组给函数   | 您可以通过指定不带索引的数组名称来给函数传递一个指向数组的指针。        |
+| 从函数返回数组   | C 允许从函数返回数组。                            |
+| 指向数组的指针   | 您可以通过指定不带索引的数组名称来生成一个指向数组中第一个元素的指针。     |
+| 静态数组与动态数组 | 静态数组在编译时分配内存，大小固定，而动态数组在运行时手动分配内存，大小可变。 |
+## enum(枚举)
+
+```c
+enum　枚举名　{枚举元素1,枚举元素2,……};
+```
+
+```c
+#include <stdio.h>
+ 
+enum DAY
+{
+      MON=1, TUE, WED, THU, FRI, SAT, SUN
+};
+
+int main()
+{
+    enum DAY day;
+    day = WED;
+    printf("%d",day);
+    return 0;
+}
+```
+
+## 指针
+
+* 紧贴变量名（推荐度：高，最符合C语言设计逻辑） 
+```c
+char *img;
+const char *p1, *p2; // ✅ p1、p2都是“指向const char的指针”
+```
+
+|元素|对应比喻|实际值示例|
+|---|---|---|
+|`int num=42`|给 “房间 A” 存入数据 42|房间 A 门牌号：`0x7ffeefbff5ac`，内容：42|
+|`&num`|取 “房间 A” 的门牌号|结果：`0x7ffeefbff5ac`|
+|`ptr = &num`|把 “房间 A” 的门牌号写在纸条`ptr`上|`ptr`里存的是：`0x7ffeefbff5ac`|
+|`*ptr`|拿着纸条`ptr`上的门牌号，去对应的房间取数据|找到`0x7ffeefbff5ac`房间，取出里面的 42|
+
+```c
+#include <stdio.h>
+
+int main() {
+
+    int var = 10;
+
+    int *p = &var;    // p指向var
+
+    int **pp = &p;    // pp指向p（指针的指针）
+
+    printf("var的地址：%p\n", &var);   // var的地址
+
+    printf("p存储的地址：%p\n", p);    // var的地址
+
+    printf("p自身的地址：%p\n", &p);   // p的地址
+
+    printf("pp存储的地址：%p\n", pp);  // p的地址
+
+    printf("pp自身的地址：%p\n", &pp); // pp的地址
+
+    printf("通过pp获取var的值：%d\n", **pp); // 解引用两次，得到10
+
+    return 0;
+
+}
+```
+
+> var的地址：00000000005FFE6C
+> p存储的地址：00000000005FFE6C
+> p自身的地址：00000000005FFE60
+> pp存储的地址：00000000005FFE60
+> pp自身的地址：00000000005FFE58
+> 通过pp获取var的值：10
+
+每一个变量都有一个内存位置，每一个内存位置都定义了可使用 & 运算符访问的地址，它表示了在内存中的一个地址。
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+    int var_runoob = 10;
+    int *p;              // 定义指针变量
+    p = &var_runoob;
+ 
+   printf("var_runoob 变量的地址： %p\n", p);
+   return 0;
+}
+```
+
+> var_runoob 变量的地址： 0x7ffeeaae08d8
+
+指针也就是内存地址，<mark style="background: #BBFABBA6;">指针变量是用来存放内存地址的变量</mark>。就像其他变量或常量一样，您必须在使用指针存储其他变量地址之前，对其进行声明。指针变量声明的一般形式为：
+
+```c
+type *var_name;
+```
+
+在这里，**type** 是指针的基类型，它必须是一个有效的 C 数据类型，**var_name** 是指针变量的名称。用来声明指针的星号 * 与乘法中使用的星号是相同的。但是，在这个语句中，星号是用来指定一个变量是指针。以下是有效的指针声明：
+
+```c
+int    *ip;    /* 一个整型的指针 */
+double *dp;    /* 一个 double 型的指针 */
+float  *fp;    /* 一个浮点型的指针 */
+char   *ch;    /* 一个字符型的指针 */
+```
+
+所有实际数据类型，不管是整型、浮点型、字符型，还是其他的数据类型，对应指针的值的类型都是一样的，都是<mark style="background: #BBFABBA6;">一个代表内存地址的长的十六进制数</mark>。
+
+不同数据类型的指针之间唯一的不同是，指针所指向的变量或常量的数据类型不同。
+
+
+**如何使用指针？**
+
+使用指针时会频繁进行以下几个操作：定义一个指针变量、把变量地址赋值给指针、访问指针变量中可用地址的值。这些是通过使用一元运算符 * 来返回位于操作数所指定地址的变量的值。下面的实例涉及到了这些操作：
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   int  var = 20;   /* 实际变量的声明 */
+   int  *ip;        /* 指针变量的声明 */
+ 
+   ip = &var;  /* 在指针变量中存储 var 的地址 */
+ 
+   printf("var 变量的地址: %p\n", &var  );
+ 
+   /* 在指针变量中存储的地址 */
+   printf("ip 变量存储的地址: %p\n", ip );
+ 
+   /* 使用指针访问值 */
+   printf("*ip 变量的值: %d\n", *ip );
+ 
+   return 0;
+}```
+
+当上面的代码被编译和执行时，它会产生下列结果：
+
+> var 变量的地址: 0x7ffeeef168d8
+> ip 变量存储的地址: 0x7ffeeef168d8
+> *ip 变量的值: 20
+
+**C 中的 NULL 指针**
+
+在变量声明的时候，如果没有确切的地址可以赋值，为指针变量赋一个 NULL 值是一个良好的编程习惯。赋为 NULL 值的指针被称为**空**指针。
+
+NULL 指针是一个定义在标准库中的值为零的常量。请看下面的程序：
+
+```c
+#include <stdio.h>
+ 
+int main ()
+{
+   int  *ptr = NULL;
+ 
+   printf("ptr 的地址是 %p\n", ptr  );
+ 
+   return 0;
+}
+```
+
+当上面的代码被编译和执行时，它会产生下列结果：
+
+> ptr 的地址是 0x0
+
+在大多数的操作系统上，程序不允许访问地址为 0 的内存，因为该内存是操作系统保留的。然而，内存地址 0 有特别重要的意义，它表明该指针不指向一个可访问的内存位置。但按照惯例，如果指针包含空值（零值），则假定它不指向任何东西。
+
+如需检查一个空指针，您可以使用 if 语句，如下所示：
+
+```c
+if(ptr)     /* 如果 p 非空，则完成 */
+if(!ptr)    /* 如果 p 为空，则完成 */
+```
+
+**C 指针详解**
+
+在 C 中，有很多指针相关的概念，这些概念都很简单，但是都很重要。下面列出了 C 程序员必须清楚的一些与指针相关的重要概念：
+
+| 概念      | 描述                           |
+| ------- | ---------------------------- |
+| 指针的算术运算 | 可以对指针进行四种算术运算：++、--、+、-      |
+| 指针数组    | 可以定义用来存储指针的数组。               |
+| 指向指针的指针 | C 允许指向指针的指针。                 |
+| 传递指针给函数 | 通过引用或地址传递参数，使传递的参数在调用函数中被改变。 |
+| 从函数返回指针 | C 允许函数返回指针到局部变量、静态变量和动态内存分配。 |
+
+**函数指针**
+
+函数指针是指向函数的指针变量。
+
+通常我们说的指针变量是指向一个整型、字符型或数组等变量，而函数指针是指向函数。
+
+函数指针可以像一般函数一样，用于调用函数、传递参数。
+
+函数指针类型的声明：
+
+> typedef int (*fun_ptr)(int,int); // 声明一个指向同样参数、返回值的函数指针类型
+
+以下实例声明了函数指针变量 p，指向函数 max：
+
+```c
+#include <stdio.h>
+ 
+int max(int x, int y)
+{
+    return x > y ? x : y;
+}
+ 
+int main(void)
+{
+    /* p 是函数指针 */
+    int (* p)(int, int) = & max; // &可以省略
+    int a, b, c, d;
+ 
+    printf("请输入三个数字:");
+    scanf("%d %d %d", & a, & b, & c);
+ 
+    /* 与直接调用函数等价，d = max(max(a, b), c) */
+    d = p(p(a, b), c); 
+ 
+    printf("最大的数字是: %d\n", d);
+ 
+    return 0;
+}
+```
+
+> 请输入三个数字:1 2 3
+> 最大的数字是: 3
+
+**回调函数**
+
+函数指针作为某个函数的参数
+
+函数指针变量可以作为某个函数的参数来使用的，回调函数就是一个通过函数指针调用的函数。
+
+简单讲：回调函数是由别人的函数执行时调用你实现的函数。
+
+实例中 **populate_array()** 函数定义了三个参数，其中第三个参数是函数的指针，通过该函数来设置数组的值。
+
+实例中我们定义了回调函数 **getNextRandomValue()**，它返回一个随机值，它作为一个函数指针传递给 **populate_array()** 函数。
+
+**populate_array()** 将调用 **10** 次回调函数，并将回调函数的返回值赋值给数组。
+
+```c
+#include <stdlib.h>  
+#include <stdio.h>
+ 
+void populate_array(int *array, size_t arraySize, int (*getNextValue)(void))
+{
+    for (size_t i=0; i<arraySize; i++)
+        array[i] = getNextValue();
+}
+ 
+// 获取随机值
+int getNextRandomValue(void)
+{
+    return rand();
+}
+ 
+int main(void)
+{
+    int myarray[10];
+    /* getNextRandomValue 不能加括号，否则无法编译，因为加上括号之后相当于传入此参数时传入了 int , 而不是函数指针*/
+    populate_array(myarray, 10, getNextRandomValue);
+    for(int i = 0; i < 10; i++) {
+        printf("%d ", myarray[i]);
+    }
+    printf("\n");
+    return 0;
+}
+```
+
+```c
+16807 282475249 1622650073 984943658 1144108930 470211272 101027544 1457850878 1458777923 2007237709 
+```
+
+## 字符串
+
+C 中有大量操作字符串的函数：
+
+|序号|函数 & 目的|
+|---|---|
+|1|**strcpy(s1, s2);**  <br>复制字符串 s2 到字符串 s1。|
+|2|**strcat(s1, s2);**  <br>连接字符串 s2 到字符串 s1 的末尾。|
+|3|**strlen(s1);**  <br>返回字符串 s1 的长度。|
+|4|**strcmp(s1, s2);**  <br>如果 s1 和 s2 是相同的，则返回 0；如果 s1<s2 则返回小于 0；如果 s1>s2 则返回大于 0。|
+|5|**strchr(s1, ch);**  <br>返回一个指针，指向字符串 s1 中字符 ch 的第一次出现的位置。|
+|6|**strstr(s1, s2);**  <br>返回一个指针，指向字符串 s1 中字符串 s2 的第一次出现的位置。|
+
+下面的实例使用了上述的一些函数：
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+int main ()
+{
+   char str1[14] = "runoob";
+   char str2[14] = "google";
+   char str3[14];
+   int  len ;
+ 
+   /* 复制 str1 到 str3 */
+   strcpy(str3, str1);
+   printf("strcpy( str3, str1) :  %s\n", str3 );
+ 
+   /* 连接 str1 和 str2 */
+   strcat( str1, str2);
+   printf("strcat( str1, str2):   %s\n", str1 );
+ 
+   /* 连接后，str1 的总长度 */
+   len = strlen(str1);
+   printf("strlen(str1) :  %d\n", len );
+ 
+   return 0;
+}
+```
+
+## 结构体
+
+结构体定义由关键字 struct 和结构体名组成，结构体名可以根据需要自行定义。
+
+struct 语句定义了一个包含多个成员的新的数据类型，struct 语句的格式如下：
+
+```c
+struct tag { 
+    member-list
+    member-list 
+    member-list  
+    ...
+} variable-list ;
+```
+
+**tag** 是<mark style="background: #BBFABBA6;">结构体标签</mark>。
+
+**member-list** 是标准的变量定义，比如 int i; 或者 float f;，或者其他有效的变量定义。
+
+**variable-list** <mark style="background: #BBFABBA6;">结构变量</mark>，定义在结构的末尾，最后一个分号之前，您可以指定一个或多个结构变量。
+
+```c
+struct Books
+{
+   char  title[50];
+   char  author[50];
+   char  subject[100];
+   int   book_id;
+} book;
+```
+
+**访问结构成员**
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+struct Books
+{
+   char  title[50];
+   char  author[50];
+   char  subject[100];
+   int   book_id;
+};
+ 
+int main( )
+{
+   struct Books Book1;        /* 声明 Book1，类型为 Books */
+   struct Books Book2;        /* 声明 Book2，类型为 Books */
+ 
+   /* Book1 详述 */
+   strcpy( Book1.title, "C Programming");
+   strcpy( Book1.author, "Nuha Ali"); 
+   strcpy( Book1.subject, "C Programming Tutorial");
+   Book1.book_id = 6495407;
+
+   /* Book2 详述 */
+   strcpy( Book2.title, "Telecom Billing");
+   strcpy( Book2.author, "Zara Ali");
+   strcpy( Book2.subject, "Telecom Billing Tutorial");
+   Book2.book_id = 6495700;
+ 
+   /* 输出 Book1 信息 */
+   printf( "Book 1 title : %s\n", Book1.title);
+   printf( "Book 1 author : %s\n", Book1.author);
+   printf( "Book 1 subject : %s\n", Book1.subject);
+   printf( "Book 1 book_id : %d\n", Book1.book_id);
+
+   /* 输出 Book2 信息 */
+   printf( "Book 2 title : %s\n", Book2.title);
+   printf( "Book 2 author : %s\n", Book2.author);
+   printf( "Book 2 subject : %s\n", Book2.subject);
+   printf( "Book 2 book_id : %d\n", Book2.book_id);
+
+   return 0;
+}
+```
+
+**指向结构的指针**
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+struct Books
+{
+   char  title[50];
+   char  author[50];
+   char  subject[100];
+   int   book_id;
+};
+
+/* 函数声明 */
+void printBook( struct Books *book );
+int main( )
+{
+   struct Books Book1;        /* 声明 Book1，类型为 Books */
+   struct Books Book2;        /* 声明 Book2，类型为 Books */
+ 
+   /* Book1 详述 */
+   strcpy( Book1.title, "C Programming");
+   strcpy( Book1.author, "Nuha Ali"); 
+   strcpy( Book1.subject, "C Programming Tutorial");
+   Book1.book_id = 6495407;
+
+   /* Book2 详述 */
+   strcpy( Book2.title, "Telecom Billing");
+   strcpy( Book2.author, "Zara Ali");
+   strcpy( Book2.subject, "Telecom Billing Tutorial");
+   Book2.book_id = 6495700;
+ 
+   /* 通过传 Book1 的地址来输出 Book1 信息 */
+   printBook( &Book1 );
+
+   /* 通过传 Book2 的地址来输出 Book2 信息 */
+   printBook( &Book2 );
+
+   return 0;
+}
+void printBook( struct Books *book )
+{
+   printf( "Book title : %s\n", book->title);
+   printf( "Book author : %s\n", book->author);
+   printf( "Book subject : %s\n", book->subject);
+   printf( "Book book_id : %d\n", book->book_id);
+}
+```
+
+## 共用体
+
+**共用体**是一种特殊的数据类型，允许您<mark style="background: #BBFABBA6;">在相同的内存位置存储不同的数据类型</mark>。您可以定义一个带有多成员的共用体，但是<mark style="background: #FF5582A6;">任何时候只能有一个成员带有值</mark>。共用体提供了一种使用相同的内存位置的有效方式。
+
+必须使用 **union** 语句
+
+```c
+union [union tag]
+{
+   member definition;
+   member definition;
+   ...
+   member definition;
+} [one or more union variables];
+```
+
+**union tag** 是可选的，每个 member definition 是标准的变量定义，比如 int i; 或者 float f; 或者其他有效的变量定义。在共用体定义的末尾，最后一个分号之前，您可以指定一个或多个共用体变量，这是可选的。下面定义一个名为 Data 的共用体类型，有三个成员 i、f 和 str：
+
+```c
+union Data
+{
+   int i;
+   float f;
+   char  str[20];
+} data;
+```
+
+共用体占用的内存应足够存储共用体中最大的成员。
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+union Data
+{
+   int i;
+   float f;
+   char  str[20];
+};
+ 
+int main( )
+{
+   union Data data;        
+ 
+   printf( "Memory size occupied by data : %d\n", sizeof(data));
+ 
+   return 0;
+}
+```
+
+**访问共用体成员**
+
+为了访问共用体的成员，我们使用**成员访问运算符（.）**。成员访问运算符是共用体变量名称和我们要访问的共用体成员之间的一个句号。您可以使用 **union** 关键字来定义共用体类型的变量。下面的实例演示了共用体的用法：
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+union Data
+{
+   int i;
+   float f;
+   char  str[20];
+};
+ 
+int main( )
+{
+   union Data data;        
+ 
+   data.i = 10;
+   data.f = 220.5;
+   strcpy( data.str, "C Programming");
+ 
+   printf( "data.i : %d\n", data.i);
+   printf( "data.f : %f\n", data.f);
+   printf( "data.str : %s\n", data.str);
+ 
+   return 0;
+}
+```
+
+> data.i : 1917853763
+> data.f : 4122360580327794860452759994368.000000
+> data.str : C Programming
+
+在这里，我们可以看到共用体的 **i** 和 **f** 成员的值有损坏，因为最后赋给变量的值占用了内存位置，这也是 **str** 成员能够完好输出的原因。现在让我们再来看一个相同的实例，这次我们<mark style="background: #FF5582A6;">在同一时间只使用一个变量</mark>，这也演示了<mark style="background: #BBFABBA6;">使用共用体的主要目的</mark>：
+
+```c
+#include <stdio.h>
+#include <string.h>
+ 
+union Data
+{
+   int i;
+   float f;
+   char  str[20];
+};
+ 
+int main( )
+{
+   union Data data;        
+ 
+   data.i = 10;
+   printf( "data.i : %d\n", data.i);
+   
+   data.f = 220.5;
+   printf( "data.f : %f\n", data.f);
+   
+   strcpy( data.str, "C Programming");
+   printf( "data.str : %s\n", data.str);
+ 
+   return 0;
+}
+```
+
+> data.i : 10
+> data.f : 220.500000
+> data.str : C Programming
+
+## 位域
+
+位域（bit-field）是一种特殊的结构体成员，允许我们按位对成员进行定义，指定其占用的位数。
+
+位域（bit-field）就是把一个整型成员“按位”切蛋糕，让几个变量挤在同一个字节/字里，<mark style="background: #BBFABBA6;">省内存、映像寄存器</mark>，但<mark style="background: #FF5582A6;">可移植性差、对齐规则绕</mark>
+
+```c
+struct 名字 {
+    类型 成员名 : 位数;
+    ...
+};
+```
+
+类型：只能是 `int/unsigned int/signed int`（C99 起可加 `_Bool` 或显式 `uint32_t` 等，但底层仍当整型处理）。
+    
+位数：1~`sizeof(type)*CHAR_BIT`，写 0 表示“占 0 位，后面从下一单元重新开始”。
+    
+编译器按“分配单元”（allocation unit）打包，单元大小 = 底层整型宽度（通常是 4 字节，也可能是 1 字节，实现自定）。
+
+例 最省内存的“年月日”
+
+```c
+#include <stdio.h>
+typedef struct {
+    unsigned int year : 12;   // 0~4095
+    unsigned int mon  : 4;    // 1~12
+    unsigned int day  : 5;    // 1~31
+} Date;
+
+int main(void){
+    Date d = {2025, 12, 20};
+    printf("size = %zu 字节\n", sizeof(d));     // → 4
+    printf("0x%08X\n", *(unsigned int*)&d);     // → 0x07E94C14
+}
+```
+
+12+4+5=21 位 < 32 位，全部塞进一个分配单元，只占 4 字节。  
+内存排布（小端，位序从低往高）：
+
+```
+bit31~bit0  
+....---- year(12) ----| mon(4) | day(5)
+0x07E94C14 二进制
+0000 0111 1110 1001 0100 1100 0001 0100
+└----year=2025---┘└m┘└-day=20-┘
+```
+
+“位域就是切蛋糕，类型决定大盘子，位数决定小块宽，单元满了换盘子，别跨平台别取址，寄存器映射最舒服。”
+
+## typedef
+
+`typedef` 就是“给类型起外号”，**不产生新类型，只产生新名字**；编译阶段完成后，外号完全消失，剩下的只是原来的类型。
+
+```c
+typedef 原类型 新名字;
+```
+
+原类型可以是任何已有类型：基本类型、指针、数组、函数、结构体、联合体、枚举，甚至另一个 typedef 名。  
+新名字遵守标识符规则，**习惯上**对象类型用小写，函数指针/回调用大写或 `_t` 后缀（`size_t` 这类是标准示范）。
+
+6 个递进例子，一眼看懂
+
+1. 基本型——省键盘  
+```c
+typedef unsigned long long uint64;  // 以后写 uint64 即可
+uint64 a = 123;
+```
+
+2. 结构体——少写 struct  
+```c
+typedef struct Node {          // 同时给匿名结构体起了两个名字
+    int data;
+    struct Node *next;
+} Node, *pNode;                // Node = 结构体本身，pNode = 结构体指针
+Node head;                     // 不用再写 struct Node head;
+pNode p = &head;               // 等价于 struct Node *
+```
+
+3. 数组——把“元素类型”包装成“向量”  
+```c
+typedef double vec3[3];        // vec3 是“含 3 个 double 的数组类型”
+vec3 v1 = {1,2,3};             // 定义数组对象
+sizeof(v1);                    // 24 字节
+```
+
+4. 函数指针——让语法从外星文变成人话  
+```c
+// 原声
+int (*fp)(double, char);       // 声明变量 fp
+// typedef 版
+typedef int (*Func)(double, char);
+Func fp;                       // 同样声明变量 fp
+fp = printf;                   // 合法，因为 printf 原型兼容
+```
+
+5. 组合怪——一次 typedef 解决“指向数组的指针”  
+```c
+typedef int (*ArrayPtr)[5];    // ArrayPtr 是“指向含 5 个 int 的数组”的指针
+int a[5];
+ArrayPtr ap = &a;              // ap 指向整个数组
+```
+
+6. 平台抽象——标准库就是这么干的  
+```c
+typedef unsigned int size_t;   // 32 位平台
+typedef unsigned long size_t;  // 64 位平台
+```
+你的代码里只用 `size_t`，就自动跟随平台宽度变化。
+
+
+三、常见误区对照表
+
+| 错误理解 | 真相 |
+|---|---|
+| `typedef` 创建全新类型 | 只是别名，原类型与新名字**完全兼容**，编译器不区分 |
+| `typedef struct {…} S;` 里的 S 还没定义完就可用 | 结构体标签与 typedef 名作用域不同；在结构体内部只能写 `struct S *next` 不能用 `S *next` |
+| `typedef static int sint;` | 存储类关键字（static、extern、inline）**不能**出现在 typedef 行 |
+| `typedef` 能起“常量”作用 | 它是类型别名，不是只读变量；真常量请用 `const` 或宏/枚举 |
+
+四、与 `#define` 的核心区别
+
+| 场景 | typedef | #define |
+|---|---|---|
+| 类型检查 | 有，编译器知道它是类型 | 无，纯文本替换 |
+| 指针连续性 | `typedef int *intptr; intptr a,b;` → a、b 都是指针 | `#define intptr int *; intptr a,b;` → b 只是 int |
+| 调试信息 | gdb 能显示别名 | 被替换掉，gdb 只看到原名字 |
+| 作用域 | 遵循 C 作用域规则 | 预处理阶段全局有效，无法限制作用域 |
+
+五、<mark style="background: #ABF7F7A6;">一张图秒记</mark>
+
+```
+原类型 --------------------→ 新名字（外号）
+     ↑                            ↓
+编译器内部仍用原类型         源码里你可以写得更短/更易读
+```
+
+
+“typedef 就是起外号，原类型不变样；结构体少写 struct，函数指针变正常；别跟 define 混淆，类型安全它担当。”
+
+## 强制类型转换
+
+> (type_name) expression
+
+```c
+#include <stdio.h>
+ 
+int main()
+{
+   int sum = 17, count = 5;
+   double mean;
+ 
+   mean = (double) sum / count;
+   printf("Value of mean : %f\n", mean );
+ 
+}
+```
+
+> Value of mean : 3.400000
+
+**常用的算术转换**
+
+int-->unsigned int-->long-->unsigned long-->long long-->unsigned long long-->float-->double-->long double
+
+## 文件读写
+
+1. 打开/关闭  
+2. 读/写  
+3. 定位/刷新  
+
+函数：  `fopen` / `fclose` / `fread` / `fwrite` / `fprintf`（或 `fscanf`）。  
+
+- 打开与关闭  
+```c
+#include <stdio.h>
+FILE *fp = fopen("路径", "模式");
+if (!fp) { perror("fopen"); exit(EXIT_FAILURE); }
+...
+fclose(fp);
+```
+
+常用模式字符串  
+"r"   只读，文件必须存在  
+"w"   只写，存在则清零，不存在则创建  
+"a"   追加，写指针放末尾，不存在则创建  
+"r+"  读写，文件必须存在  
+"w+"  读写，存在清零，不存在创建  
+"a+"  读写，读从开头，写自动追加到末尾  
+
+加 `b` 表示二进制（<mark style="background: #FFB86CA6;">Windows 下区分 CRLF</mark>，Linux 无影响）：  
+"rb" / "wb" / "ab" / "r+b" / "w+b" / "a+b"
+
+- 文本方式读写（人类可读）  
+```c
+/* 写 */
+fprintf(fp, "%d %.2f %s\n", 42, 3.14, "hello");
+
+/* 读 */
+int   n;
+float x;
+char  s[32];
+fscanf(fp, "%d%f%s", &n, &x, s);   // 返回值==3 表示成功读到 3 个域
+```
+
+注意：  
+`fscanf` 以空白为分隔，对格式容错差；生产代码常改用“行读+解析”  
+`gets` 已废弃，用 `fgets(buf, size, fp)` 代替
+
+- 二进制方式读写（整块内存映像）  
+```c
+typedef struct { int id; float score; } Rec;
+
+/* 写一条记录 */
+Rec r = {1, 95.5};
+fwrite(&r, sizeof(r), 1, fp);      // 返回 1 表示成功写 1 个对象
+
+/* 读回来 */
+Rec tmp;
+rewind(fp);                        // 回到文件头
+size_t n = fread(&tmp, sizeof(tmp), 1, fp);
+if (n == 1) printf("%d %.1f\n", tmp.id, tmp.score);
+```
+
+速度快，格式紧凑，但文件不具备跨平台字节序/对齐兼容性  
+常用于“瞬时快照”或嵌入式固件升级映像
+
+- 一次读写整个文本文件（常见套路）  
+```c
+/* 把文件全部读进动态缓冲区 */
+FILE *fp = fopen("big.txt", "rb");
+fseek(fp, 0, SEEK_END);
+long sz = ftell(fp);
+rewind(fp);
+char *buf = malloc(sz+1);
+fread(buf, 1, sz, fp);
+buf[sz] = 0;          // 字符串结尾
+fclose(fp);
+/* 现在 buf 就是整个文件内容 */
+```
+
+- 随机访问（定位）  
+```c
+int fseek(FILE *stream, long offset, int whence);
+long ftell(FILE *stream);
+void rewind(FILE *stream);
+```
+`whence`：  
+`SEEK_SET` 文件头  
+`SEEK_CUR` 当前位置  
+`SEEK_END` 文件尾  
+
+示例：把第 3 条固定长度记录覆盖掉  
+```c
+#define RECSZ 32
+fseek(fp, 2*RECSZ, SEEK_SET);
+fwrite(&newRec, RECSZ, 1, fp);
+```
+
+- 错误与刷新  
+```c
+int fflush(FILE *fp);        // 把用户缓冲区刷进内核
+int ferror(FILE *fp);        // 返回非 0 表示之前出现过错误
+void clearerr(FILE *fp);     // 清除错误标志
+```
+每次对写文件操作后 `fflush` 可立即落盘，或 `fclose` 会自动刷。
+
+- 完整示例：把学生记录写入文本，再读出来  
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct { int id; char name[16]; float score; } Stu;
+
+void write_txt(const char *path){
+    FILE *fp = fopen(path, "w");
+    if(!fp) { perror(path); exit(1); }
+    Stu s[3] = {{1,"Tom",90}, {2,"Amy",95}, {3,"Bob",88}};
+    for(int i=0;i<3;++i)
+        fprintf(fp, "%d %s %.1f\n", s[i].id, s[i].name, s[i].score);
+    fclose(fp);
+}
+
+void read_txt(const char *path){
+    FILE *fp = fopen(path, "r");
+    if(!fp) { perror(path); exit(1); }
+    Stu tmp;
+    while(fscanf(fp,"%d%s%f", &tmp.id, tmp.name, &tmp.score)==3)
+        printf("read: %d %s %.1f\n", tmp.id, tmp.name, tmp.score);
+    fclose(fp);
+}
+
+int main(){
+    const char *f = "stu.txt";
+    write_txt(f);
+    read_txt(f);
+    return 0;
+}
+```
+
+“fopen 先开 fclose 关，文本 fprintf 二进制 fwrite，fseek 乱跑要 rewind，缓冲区别忘 fflush，出错记得 perror。”
+
+## 预处理器
+
+预处理器 = **纯文本替换器**，在编译器真正开工之前，把 `.c` 文件当成“字符串”从头到尾扫描一遍，只做**删除、替换、插入**三种动作，产出一个干净的翻译单元交给编译器
+
+## 头文件
+
+|头文件|功能简介|
+|---|---|
+|**<stdio.h>**|标准输入输出库，包含 `printf`、`scanf` 等函数|
+|**<stdlib.h>**|标准库函数，包含内存分配、程序控制等函数|
+|**<string.h>**|字符串操作函数，如 `strlen`、`strcpy` 等|
+|**<math.h>**|数学函数库，如 `sin`、`cos`、`sqrt` 等|
+|**<time.h>**|时间和日期函数，如 `time`、`strftime` 等|
+|**<ctype.h>**|字符处理函数，如 `isalpha`、`isdigit` 等|
+|**<limits.h>**|定义各种类型的限制值，如 `INT_MAX` 等|
+|**<float.h>**|定义浮点类型的限制值，如 `FLT_MAX` 等|
+|**<assert.h>**|断言宏 `assert`，用于调试检查|
+|**<errno.h>**|定义错误码变量 `errno` 及相关宏|
+|**<stddef.h>**|定义通用类型和宏，如 `size_t`、`NULL` 等|
+|**<signal.h>**|处理信号的函数和宏，如 `signal` 等|
+|**<setjmp.h>**|提供非本地跳转功能的宏和函数|
+|**<locale.h>**|地域化相关的函数和宏，如 `setlocale` 等|
+
+## 错误处理
+
+C 语言没有异常机制，错误处理靠“**返回值 + 错误码**”三板斧：
+
+1. 函数返回特殊值（NULL/-1/0）宣告失败；
+    
+2. 全局变量 `errno` 存放具体错误号；
+    
+3. 一组工具把它转成人类可读字符串。
+
+## 未定义行为
+
+在 C 语言中，"undefined behavior"（未定义行为）**是指程序的行为在 C 语言标准中没有明确定义，因此可以表现为任何结果。**
+
+这意味着当程序出现未定义行为时，它可能会产生不可预测的结果，包括程序崩溃、数据损坏、安全漏洞，甚至可能看起来正常运行。
+
+未定义行为是C语言中一个重要的概念，因为它涉及到程序的正确性和安全性。
+
+以下是一些常见的可能导致未定义行为的情况：
+
+**数组越界**
+
+当我们尝试访问数组的越界元素时，即访问数组的第0个元素之前或数组长度之后的元素时，编译器无法确定访问到的内存空间中存储的是什么内容，因此会导致未定义行为。例如：
+
+```c
+int arr[3] = {1, 2, 3};
+printf("%d\n", arr[5]); // 越界访问，结果未定义
+```
+
+**解引用空指针**
+
+当我们尝试对空指针进行解引用操作时，编译器无法确定要访问的内存空间中存储的内容，因此会导致未定义行为。例如：
+
+```c
+int *ptr = NULL;
+printf("%d\n", *ptr); // 解引用空指针，结果未定义
+```
+
+***未初始化的局部变量***
+
+当我们使用未初始化的局部变量时，其值是未定义的，因此会导致未定义行为。例如：
+
+```c
+int x;
+printf("%d\n", x); // x 未初始化，结果未定义
+```
+
+**浮点数除以零**
+
+当我们尝试对浮点数进行除以零的操作时，结果是未定义的。例如：
+
+```c
+float x = 1.0;
+float y = x / 0.0; // 浮点数除以零，结果未定义
+```
+
+**整数除以零**
+
+当我们尝试对整数进行除以零的操作时，结果是未定义的。例如：
+
+```c
+int x = 10;
+int y = x / 0; // 整数除以零，结果未定义
+```
+
+**符号溢出**
+
+当整数运算导致结果超出了整数类型能表示的范围时，结果是未定义的。例如：
+
+```c
+signed char x = 127;
+x = x + 1; // signed char 溢出，结果未定义
+```
+
+**位移操作数太大**
+
+当执行位移操作时，位移的位数大于或等于操作数的位数时，结果是未定义的。例如：
+
+```c
+int x = 1;
+int y = x << 32; // 位移操作数太大，结果未定义
+```
+
+**错误的类型转换**
+
+当我们进行不安全的类型转换时，结果是未定义的。例如：
+
+```c
+int *ptr = (int *)malloc(sizeof(int));
+float *fptr = (float *)ptr; // 错误的类型转换，结果未定义
+```
+
+**内存越界**
+
+当我们向已经释放或未分配的内存写入数据时，结果是未定义的。例如：
+
+```c
+int *ptr = (int *)malloc(sizeof(int));
+free(ptr);
+*ptr = 10; // 内存越界，结果未定义
+```
+
+**未定义的浮点数行为**
+
+比如比较两个 NaN（非数字）值是否相等，这是未定义的行为。例如：
+
+```c
+float x = sqrt(-1);
+float y = sqrt(-1);
+if (x == y) {
+    printf("NaN values are equal\n");
+}
+```
+
+**其他**
+
+还有一些其他未定义的行为：
+
+使用未定义的浮点数特性：依赖于特定硬件或实现的浮点数行为，如浮点数的精度或舍入行为。
+    
+函数参数数量不匹配：调用函数时提供的参数数量与函数定义不匹配，如 printf("%s %d", "Name")。
+    
+修改字符串字面量：尝试修改字符串字面量的内容，如 char *str = "Hello"; str[0] = 'h';。
+    
+使用未定义的程序状态：依赖于未定义的程序状态，如全局变量的初始值。
+    
+违反严格的语法规则：违反 C 语言的严格语法规则，如使用未声明的标识符。
+    
+多线程中的竞态条件：在多线程环境中，未同步的共享资源访问可能导致未定义行为。
+    
+使用未定义的标准库函数行为：某些标准库函数在特定条件下的行为可能是未定义的，如 fscanf() 在未匹配到任何输入时的行为。
+
+这些都是在编程过程中<mark style="background: #BBFABBA6;">需要避免的情况</mark>，因为它们可能导致程序在不同的环境下产生不确定的行为，从而使代码不可移植并可能导致程序出现错误。
+
+
+## 命令行参数
+
+执行程序时，可以从命令行传值给 C 程序。这些值被称为**命令行参数**，它们对程序很重要，特别是当您想<mark style="background: #BBFABBA6;">从外部控制程序</mark>，而不是在代码内对这些值进行硬编码时，就显得尤为重要了。
+
+在 C 语言中，命令行参数是一种从命令行获取输入的方法，可以用于运行程序时传递信息给程序。命令行参数通过 main 函数的参数传递给程序。main 函数的原型可以是如下两种形式之一：
+
+```c
+int main(int argc, char *argv[]);
+```
+
+或者:
+
+```c
+int main(int argc, char **argv);
+```
+
+**`argc` (argument count)**: 表示命令行参数的<mark style="background: #BBFABBA6;">数量</mark>，包括程序名本身。因此，`argc` 至少为 1。
+
+**`argv` (argument vector)**: 是一个<mark style="background: #BBFABBA6;">指向字符串数组的指针</mark>，其中每个字符串是一个命令行参数。数组的第一个元素（即 `argv[0]`）通常是程序的<mark style="background: #FFF3A3A6;">名称</mark>。接下来的元素是传递给程序的<mark style="background: #BBFABBA6;">命令行参数</mark>。
+
+## 安全函数
+
+为了提高代码的安全性，尤其是<mark style="background: #BBFABBA6;">防止缓冲区溢出</mark>等常见的安全问题，C11 标准引入了一些 "安全函数"，也称为 "Annex K" 标准库函数。这些安全函数主要是标准字符串和内存操作函数的增强版本，通过增加参数（如缓冲区大小）来<mark style="background: #FFB86CA6;">提供更好的错误检测和处理</mark>。
+
+
+## 其他
+
+[C语言实例](https://www.runoob.com/cprogramming/c-examples.html)
+
+可以通过 [LeetCode](https://leetcode.cn/problemset/) 刷一些算法

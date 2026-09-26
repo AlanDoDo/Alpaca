@@ -1,0 +1,421 @@
+---
+title: "记账薄项目"
+description: "实现一个基于命令行界面的简单记账软件"
+date: "2023-04-23"
+category: "编程"
+tags: ["C++"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x191.jpg"
+source: "legacy-blog"
+---
+
+## 需求
+
+* 实现一个基于命令行界面的简单记账软件
+
+## 具体功能
+1. 记账功能，用来记录每一笔收入和支出
+2. 查询功能，用来查询当前的所有账目，并统计总收支;可以选择查询全部账目、查询收入和查询支出
+3. 软件采用分级菜单形式;每一级菜单应该有“返回主菜单”功能
+
+## 数据结构设计
+1. 每一条账目数据，都应该包含收支类型、金额、备注三部分，可以构建一个结构体类型 Accountltem 来表示
+2. 保存在文件中的数据，读取之后应该是一个 Accountltem 类型的 vector 容器
+
+## 流程控制设计
+用户不选择退出，程序就不会结束，所以应该用一个`while循环`来处理整个流程;当用户确认退出时，更改一个标志位，用来退出循环每一级菜单做键盘选择后，可以用 `switch 分支语句`来处理不同的功能模块，可以包装成`函数`
+
+## 代码
+
+* common.h
+```c++
+#pragma once
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+
+#define INCOME "收入"
+#define EXPAND "支出"
+#define FILENAME "D:\\data\\AccountBook.txt"
+
+using namespace std;
+
+// 通用功能性函数声明
+// 绘制菜单的函数
+void showMainMenu();
+void showAccountingMenu();
+void showQueryMenu();
+
+
+// 读取键盘输入进行合法性校验的函数
+char readMenuSelection(int options);
+char readQuitConfirm();
+int readAmount();
+```
+
+* account_item.h
+```c++
+#pragma once
+#include "common.h"
+
+// 定义结构体类型
+struct AccountItem {
+	string itemType;
+	int amount;
+	string detail;
+};
+
+// 针对账目数据进行操作的函数声明
+
+// 加载账目数据
+void loadDataFromFile(vector<AccountItem>& items);
+
+// 记账
+void accounting(vector<AccountItem>& items);
+void insertIntoFile(AccountItem& item);
+void income(vector<AccountItem>& items);
+void expand(vector<AccountItem>& items);
+
+// 查询
+void query(const vector<AccountItem>& items);
+void queryItems(const vector<AccountItem>& items);
+void queryItems(const vector<AccountItem>& items, const string itemType);
+void printItem(const AccountItem& items);
+```
+
+* main_account.cpp
+```c++
+#include "common.h"
+#include "account_item.h"
+
+int main() {
+	// 1. 加载文件中的账目数据
+	vector<AccountItem> items;
+	loadDataFromFile(items);
+
+	bool quit = false;
+	while (!quit) {
+		// 2. 显示主菜单
+		showMainMenu();
+
+		// 3. 读取键盘选择，并作合法性校验
+		char key = readMenuSelection(3);
+
+		switch (key) {
+		case '1': // 1 - 记账
+			showAccountingMenu();
+			accounting(items);
+			break;
+		case '2': // 2 - 查询
+			showQueryMenu();
+			query(items);
+			break;
+		case '3': // 3 - 退出
+			cout << "\n确认退出？ （Y/N）:";
+			if (readQuitConfirm() == 'Y')
+				quit = true;
+			break;
+
+		default:
+			break;
+		}
+
+		cout << endl;
+	}
+}
+```
+
+* menus.cpp
+```c++
+#include "common.h"
+
+// 绘制菜单函数
+void showMainMenu() {
+	system("cls");
+
+	cout << "-----------------------------------------" << endl;
+	cout << "|============ 欢迎使用记账薄 ============|" << endl;
+	cout << "|                                       |" << endl;
+	cout << "|***************  1 记账  **************|" << endl;
+	cout << "|***************  2 查询  **************|" << endl;
+	cout << "|***************  3 退出  **************|" << endl;
+	cout << "|---------------------------------------|" << endl;
+
+	cout << "\n请选择(1 - 3):";
+}
+
+void showAccountingMenu() {
+	cout << "-----------------------------------------" << endl;
+	cout << "|============= 选择记账种类 =============|" << endl;
+	cout << "|                                       |" << endl;
+	cout << "|***************  1 收入  **************|" << endl;
+	cout << "|***************  2 支出  **************|" << endl;
+	cout << "|***************  3 返回主菜单  ********|" << endl;
+	cout << "|---------------------------------------|" << endl;
+
+	cout << "\n请选择(1 - 3):";
+}
+
+void showQueryMenu() {
+	cout << "-----------------------------------------" << endl;
+	cout << "|============= 选择查询条件 =============|" << endl;
+	cout << "|                                       |" << endl;
+	cout << "|**********  1 统计所有账目  ************|" << endl;
+	cout << "|**********  2 统计收入  ****************|" << endl;
+	cout << "|**********  3 统计支出  ****************|" << endl;
+	cout << "|**********  4 返回主菜单  **************|" << endl;
+	cout << "|---------------------------------------|" << endl;
+
+	cout << "\n请选择(1 - 4):";
+}
+```
+
+* read_input.cpp
+```c++
+#include "common.h"
+
+// 读取键盘输入的菜单选项，进行合法性校验
+char readMenuSelection(int options) {
+	string str;
+
+	while (true) {
+
+		getline(cin, str);
+
+		// 进行合法性校验
+		if (str.size() != 1 || str[0] - '0' <= 0 || str[0] - '0' > options)
+			cout << "输入错误，请重新选择：";
+		else
+			break;
+	}
+
+	// 输入合法
+	return str[0];
+}
+
+// 读取确认退出信息，并进行合法性校验
+char readQuitConfirm() {
+
+	string str;
+
+	while (true) {
+
+		getline(cin, str);
+
+		// 进行合法性校验
+		if (str.size() != 1 || toupper(str[0]) != 'Y' && toupper(str[0]) != 'N')
+			cout << "输入错误，请重新输入（Y/N）：";
+		else
+			break;
+	}
+
+	// 输入合法
+	return toupper(str[0]);
+}
+
+
+
+// 读取键盘输入的金额数，并做合法性校验
+int readAmount() {
+	int amount;
+	string str;
+
+	while (true) {
+
+		getline(cin, str);
+
+		// 进行合法性校验
+		try {
+			amount = stoi(str);
+			break;
+		}
+		catch (invalid_argument e) {
+			cout << "输入错误，请正确输入数字：";
+		}
+	}
+
+	// 输入合法
+	return amount;
+}
+```
+
+* operations.cpp
+```c++
+#include "common.h"
+#include "account_item.h"
+
+// 读取文件中的账目数据
+void loadDataFromFile(vector<AccountItem>& items) {
+	ifstream input(FILENAME);
+
+	// 逐行读取每一条账目，包装成AccountItem
+	AccountItem item;
+	while (input >> item.itemType >> item.amount >> item.detail) {
+		items.push_back(item);
+	}
+
+	input.close();
+}
+
+//---------------------------1.记账-------------------------------
+// 记账操作
+void accounting(vector<AccountItem>& items) {
+
+	// 读取键盘选择，并作合法性校验
+	char key = readMenuSelection(3);
+
+	switch (key) {
+	case '1': // 1 - 收入
+		income(items);
+		break;
+	case '2': // 2 - 支出
+		expand(items);
+		break;
+
+	default:
+		break;
+	}
+
+	cout << endl;
+}
+
+// 记录一笔收入
+void income(vector<AccountItem>& items) {
+	// 新构建一个AccountItemd对象
+	AccountItem item;
+
+	// 类型已经确认，就是收入
+	item.itemType = INCOME;
+
+	// 与用户交互，键盘输入金额和备注信息
+	cout << "\n本次收入金额：";
+	item.amount = readAmount();
+
+	cout << "\n备注：";
+	getline(cin, item.detail);
+
+	// 添加到vector中
+	items.push_back(item);
+	// 写入文件做持久化保存
+	insertIntoFile(item);
+
+	// 显示成功信息
+	cout << "\n-----------------记账成功！----------------\n" << endl;
+	cout << "\n请按回车键返回主菜单---" << endl;
+
+	string line;
+	getline(cin, line);
+}
+
+// 记录一笔支出
+void expand(vector<AccountItem>& items) {
+	// 新构建一个AccountItemd对象
+	AccountItem item;
+
+	// 类型已经确认，就是收入
+	item.itemType = EXPAND;
+
+	// 与用户交互，键盘输入金额和备注信息
+	cout << "\n本次支出金额：";
+	item.amount = -readAmount();
+
+	cout << "\n备注：";
+	getline(cin, item.detail);
+
+	// 添加到vector中
+	items.push_back(item);
+	// 写入文件做持久化保存
+	insertIntoFile(item);
+
+	// 显示成功信息
+	cout << "\n-----------------记账成功！----------------\n" << endl;
+	cout << "\n请按回车键返回主菜单---" << endl;
+
+	string line;
+	getline(cin, line);
+}
+
+// 将一条账目写入文件中
+void insertIntoFile(AccountItem& item) {
+	// 创建一个ofstream对象,以追加方式进行写入
+	ofstream output(FILENAME, ios::out | ios::app);
+
+	output << item.itemType << "\t" << item.amount << "\t" << item.detail << endl;
+
+	output.close();
+}
+
+// ------------------------- 2. 查询--------------------------
+// 查询操作
+void query(const vector<AccountItem>& items) {
+	// 读取键盘选择，并作合法性校验
+	char key = readMenuSelection(3);
+
+	switch (key) {
+	case '1': // 1 - 查询所有账目，并统计总收支
+		queryItems(items);
+		break;
+	case '2': // 2 - 查询收入，统计总收入
+		queryItems(items, INCOME);
+		break;
+	case '3': // 3 - 查询支出，统计总支出
+		queryItems(items, EXPAND);
+		break;
+	default:
+		break;
+	}
+}
+
+// 查询账目功能函数
+void queryItems(const vector<AccountItem>& items) {
+	cout << "---------------查询结果-----------------" << endl;
+	cout << "\n 类型\t\t金额\t\t备注\n" << endl;
+
+	// 遍历所有账目，统计总收支
+	int total = 0;
+	for (auto item : items) {
+		printItem(item);
+		total += item.amount;
+	}
+
+	// 输出信息
+	cout << "==============================================\n" << endl;
+	cout << "总收支:" << total << endl;
+	cout << "\n请按回车键返回主菜单---" << endl;
+
+	string line;
+	getline(cin, line);
+
+}
+
+// 函数重载
+void queryItems(const vector<AccountItem>& items, const string itemType) {
+	cout << "---------------查询结果-----------------" << endl;
+	cout << "\n 类型\t\t金额\t\t备注\n" << endl;
+
+	// 遍历所有账目，统计总收入或总支出
+	int total = 0;
+	for (auto item : items) {
+		if (item.itemType != itemType)
+			continue;
+		printItem(item);
+		total += item.amount;
+	}
+
+	// 输出信息
+	cout << "==============================================\n" << endl;
+	cout << ((itemType == INCOME) ? "总收入：" : "总支出：") << total << endl;
+	cout << "\n请按回车键返回主菜单---" << endl;
+
+	string line;
+	getline(cin, line);
+
+}
+
+// 打印输出一条账目信息
+void printItem(const AccountItem& item) {
+	cout << item.itemType << "\t\t" << item.amount << "\t\t" << item.detail << endl;
+}
+```

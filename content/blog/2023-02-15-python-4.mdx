@@ -1,0 +1,800 @@
+---
+title: "Python基础学习笔记(四) + SQL基础"
+description: "1. 生活中或是程序中，我们都可以使用设计表格、生产表格、填写表格的形式组织数据"
+date: "2023-02-15"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a36.jpg"
+source: "legacy-blog"
+---
+
+# 第一章
+## 初识对象
+1. 生活中或是程序中，我们都可以使用设计表格、生产表格、填写表格的形式组织数据
+2. 进行对比，在程序中"设计表格"称之为:设计**类** (class),"打印表格"称之为:创建**对象**,"填写表格"称之为:对象属性**赋值**
+
+```py
+# 1.设计一个类(类比生活中: 设计一张登记表)
+class Student:
+    name = None # 记录学生姓名
+    gender = None #记录学生性别
+    nationality = None # 记录学生国籍
+    native_place = None # 记灵学生籍贯
+    age = None # 记录学生年龄
+
+# 2.创建一个对象(类比生活中: 打印一张登记表)
+stu_1 = Student()
+
+# 3.对象属性进行赋值(类比生活中: 填写表单)
+stu_1.name = "林军杰"
+stu_1.gender = "男"
+stu_1.nationality = "中国"
+stu_1.native_place = "山东省"
+stu_1.age = 31
+
+# 4.获取对象中记录的信息
+print(stu_1.name)
+print(stu_1.gender)
+print(stu_1.nationality)
+print(stu_1.native_place)
+print(stu_1.age)
+```
+## 类的成员方法
+class是关键字，表示要定义**类**了
+> 类的属性，即定义在类中的变量(成员变量)
+> 类的行为，即定义在类中的函数(成员方法)
+> self表示类对象本身的意思,创建类对象的语法: 对象 = 类名称()
+
+```py
+# 定义一个带有成员方法的类
+class Student:
+    name = None # 学生的姓名
+    def say_hi(self):
+        print(f"大家好呀，我是{self.name}，欢迎大家多多关照")
+        
+    def say_hi2(self,msg):
+        print(f"大家好，我是: {self.name},{msg}")
+stu = Student()
+stu.name ="周杰轮"
+stu.say_hi2("哎呦不错呦")
+
+stu2 = Student()
+stu2.name ="林俊劫"
+stu2.say_hi2("我看好你")
+```
+
+## 类和对象
+**类**只是一种程序内的“设计图纸”,需要基于图纸生产实体(对象),才能正常工作这种套路，称之为:**面向对象编程**,是使用对象进行编程,即设计类，基于类创建对象，并**使用对象来完成具体的工作**
+```py
+# 设计一个闹钟类
+class Clock:
+    id = None # 序列化
+    price = None # 价格
+    
+    def ring(self):
+        import winsound
+        winsound.Beep(2000,3000)
+# 构建2个闹钟对象并让其工作
+clock1 = Clock()
+clock1.id ="003032"
+clock1.price = 19.99
+print(f"闹钟ID: {clock1.id}，价格: {clock1.price}")
+clock1.ring()
+
+clock2 = Clock()
+clock2.id ="003033"
+clock2.price = 21.99
+print(f"闹钟ID:{clock2.id}，价格: {clock2.price}")
+clock2.ring()
+```
+
+## 构造方法
+> Python类可以使用:`__init__ ()`方法，称之为构造方法
+
+```py
+# 演示使用构造方法对成员变量进行赋值
+# 构造方法的名称:__init__
+
+class Student:
+    name = None
+    age = None
+    tel = None
+    def __init__(self, name, age ,tel):
+        self.name = name
+        self.age = age
+        self.tel = tel
+        print("Student类创建了一个类对象")
+
+stu = Student("周杰轮",31,"18506666")
+print(stu.name)
+print(stu.age)
+print(stu.tel)
+```
+
+> 实现在创建类对象 (构造类)的时候，会自动执行
+> 在创建类对象 (构造类)的时候，将传入参数自动传递给__init__方法使用
+
+## 魔术方法
+上文学习的__init__构造方法，是Python类内置的方法之一。这些内置的类方法，各自有各自特殊的功能，这些内置方法我们称之为: 魔术方法
+
+1. __init__构造方法，可用于创建类对象的时候设置初始化行为
+2. __str__字符串方法,用于实现类对象转字符串的行为
+3. __le__用于2个类对象进行小于或大于比较
+4. __eq__用于2个类对象进行相等比较
+
+```py
+class Student:
+    def __init__(self, name, age):
+        self.name = name # 学生姓名
+        self.age = age # 学生年龄
+
+    # __str__魔术方法
+    def __str__(self):
+        return f"Student类对象, name:{self.name}, age:{self.age}"
+
+    # __lt__魔术方法
+    def __lt__(self, other):
+        return self.age < other.age
+
+    # __le__魔术方法
+    def __le__(self, other):
+        return self.age <= other.age
+    
+    # __eq__魔术方法
+    def __eq__(self,other):
+        return self.age == other.age
+    
+stu1 = Student("周杰轮", 31)
+stu2 = Student("林俊节", 36)
+print(stu1 == stu2)
+```
+
+## 封装/封装案例
+封装的概念:将现实世界事物在类中描述为**属性**和**方法**，即为封装
+现实事物有部分属性和行为是不公开对使用者开放的。同样在类中描述属性和方法的时候也需要达到这个要求，就需要定义**私有成员**了
+如何定义私有成员:成员变量和成员方法的命名均以__(2个下划线)作为开头即可
+```py
+# 定义一个类，内含私有成员变量和私有成员方法
+class Phone:
+    
+    __current_voltage = 0.5 # 当前手机运行电压
+
+    def __keep_single_core(self):
+        print("让CPU以单核模式运行")
+        
+    def call_by_5g(self):
+        if self.__current_voltage >= 1:
+            print("5g通话已开启")
+        else:
+            self.__keep_single_core()
+            print("电量不足,无法使用5g通话,并已设置为单核运行进行省电。")
+
+phone = Phone()
+phone.call_by_5g()
+```
+实际意义:在类中提供仅供内部使用的属性和方法,而不对外开放(类对象无法使用)
+
+* 设计带有私有成员的手机...
+```py
+# 讲解面向对象-封装特性课后练习题
+# 设计带有私有成员的手机
+
+# 设计一个类，用来描述手机
+class Phone:
+    # 提供私有成员变量:__is_5g_enable
+    __is_5g_enable = False # 5g状态
+    
+    # 提供私有成员方法:__check_5g()
+    def __check_5g(self):
+        if self.__is_5g_enable:
+            print("5g开启")
+        else:
+            print("5g关闭,使用4g网络")
+# 提供公开成员方法:calL_by_5g()
+    def call_by_5g(self):
+        self.__check_5g()
+        print("正在通话中")
+        
+phone = Phone()
+phone.call_by_5g()
+```
+
+## 继承的基础语法
+继承就是一个**类**，继承另外一个类的成员变量和成员方法
+pass关键字的作用:**pass是占位语句用来保证函数(方法)或类定义的完整性**，表示无内容，空的意思
+
+```py
+# 演示单继承
+class Phone:
+    IMEI = None # 序列号
+    producer ="IT" # 厂商
+    
+    def call_by_4g(self):
+        print("4g通话")
+    
+class Phone2022(Phone):
+    face_id ="10001" # 面部识别ID
+
+    def call_by_5g(self):
+        print("2022年新功能: 5g通话")
+        
+phone = Phone2022()
+print(phone.producer)
+phone.call_by_4g()
+phone.call_by_5g()
+# 演示多继承
+class NFCReader:
+    nfc_type ="第五代"
+    producer ="HM"
+    
+    def read_card(self):
+        print("NFC读卡")
+    def write_card(self):
+        print("NFC写卡")
+
+class RemoteControl:
+    rc_type="红外遥控"
+    def control(self):
+        print("红外遥控开启了")
+
+class MyPhone(Phone,NFCReader,RemoteControl):
+    pass
+phone = MyPhone()
+phone.call_by_4g()
+phone.read_card()
+phone.write_card()
+phone.control()
+
+# 同名的成员，方法按照顺序优先级最高
+print(phone.producer)
+```
+## 复写和调用父类成员
+
+> 复写表示:对父类的成员属性或成员方法进行重新定义
+> 复写的语法:在子类中重新实现同名成员方法或成员属性即可
+
+注意:只可以在子类内部调用父类的同名成员，子类的实体类对象调用默认是调用子类复写的
+```py
+class Phone:
+    IMEI = None # 序列号
+    producer = "ITCAST" # 厂商
+    
+    def call_by_5g(self):
+        print("使用5g网络进行通话")
+# 定义子类，复写父类成员
+class MyPhone(Phone):
+    producer ="ITHEIMA" # 复写父类的成员属性
+    
+    def call_by_5g(self):
+        print("开启CPU单核模式,确保通话的时候省电")
+        # 方式1
+        # print(f"父类的厂商是: {Phone.producer}")
+        # print("使用5g网络进行通话")
+        #方式2
+        print(f"父类的厂商是: {super().producer}")
+        super().call_by_5g()
+        print("关闭CPU单核模式,确保性能")
+
+phone = MyPhone()
+phone.call_by_5g()
+print(phone.producer)
+```
+
+## 变量的类型注释
+类型注解:在代码中涉及数据交互之时，对数据类型进行显式的说明，可以帮助PyCharm等开发工具对代码做类型推断协助做代码提示,开发者自身做类型的备注
+
+类型注解支持:**变量的类型注解,函数(方法)的形参和返回值的类型注解**
+
+变量的类型注解语法:
+> 语法1: 变量: 类型
+> 语法2:在注释中，# type: 类型
+
+```py
+import random
+
+# 基础数据类型注解
+var_1: int = 10
+var_2: str = "itheima"
+var_3: bool = True
+# 类对象类型注解
+class Student:
+    pass
+stu: Student = Student()
+# 基础容器类型注解
+my_list: list =[1,2,3]
+my_tuple: tuple = (1,2,3)
+my_dict: dict = {"itheima": 666}
+# 器类型详细注解
+my_list: list[int] = [1,2,3]
+my_tuple: tuple[int,str, bool] = (1,"itheima", True)
+my_dict: dict[str,int] = {"itheima": 666}
+# 在注释中进行类型注解
+var_4 = random.randint(1,10)  # type: int
+var_5 = json.loads('{"name": "zhangsan"}') # type: dict[str,str]
+def func():
+    return 10
+var_6 = func() # type: int
+```
+注意事项: 类型注解只是提示性的，并非决定性的。数据类型和注解类型无法对应也不会导致错误
+
+## 函数和方法类型注解
+形参的类型注解|返回值的类型注解
+```py
+# 函数(方法)的类型注解语法
+# 对形参进行类型注解
+def add(x: int,y: int):
+    return x + y
+# 对返回值进行类型注解
+def func(data: list) -> list:
+    return data
+```
+
+## Union联合类型注解
+Union类型:使用Union可以定义联合类型注解
+Union的使用方式导包:`from typing import Union`
+使用: Union[类型,......, 类型]
+```py
+# 使用Union类型，必须先导包
+from typing import Union
+my_list: list[Union[int, str]] = [1,2,"itheima","itcast"]
+def func(data:Union[int,str]) -> Union[int, str]:
+    pass
+func()
+```
+## 多态
+多态指的是，同一个行为，使用不同的对象获得不同的状态。如，定义函数(方法)，通过类型注解声明需要父类对象，实际传入子类对象进行工作，从而获得不同的工作状态
+> 抽象类(接口):包含抽象方法的类，称之为抽象类。
+> 抽象方法是指:没有具体实现的方法(pass)
+> 抽象类的作用：多用于做顶层设计(设计标准)，以便子类做具体实现也是对子类的一种软性约束，要求子类必须复写(实现)父类的一些方法,并配合多态使用，获得不同的工作状态。
+```py
+class Animal:
+    def speak(self):
+        pass
+class Dog(Animal):
+    def speak(self):
+        print("汪汪汪")
+class Cat(Animal):
+    def speak(self):
+        print("喵喵喵")
+def make_noise(animal: Animal):
+    # 制造点噪音，需要传入Animol对象
+    animal.speak()
+
+# 演示多态，使用2个子类对象来调用函数
+dog = Dog()
+cat = Cat()
+
+make_noise(dog)
+make_noise(cat)
+
+# 演示抽象类
+class AC:
+    def cool_wind(self):
+    # 制冷
+        pass
+    def hot_wind(self):
+    #制热
+        pass
+    def swing_l_r(self):
+    # 左右摆风
+        pass
+
+class Midea_AC(AC):
+    def cool_wind(self):
+        print("美的空调制冷")
+    def hot_wind(self):
+        print("美的空调制热")
+    def swing_l_r(self):
+        print("美的空调左右摆风")
+        
+class GREE_AC(AC):
+    def cool_wind(self):
+        print("格力空调制冷")
+    def hot_wind(self):
+        print("格力空调制热")
+    def swing_l_r(self):
+        print("格力空调左右摆风")
+
+def make_cool(ac: AC):
+    ac.cool_wind()
+    
+midea_ac = Midea_AC()
+gree_ac = GREE_AC()
+
+make_cool(midea_ac)
+make_cool(gree_ac)
+```
+
+## 数据分析案例步骤-文件读取/数据计算/可视化开发
+```py
+# main.py
+# 1.设计一个类，可以完成数据的封装
+# 2.设计一个抽象类，定义文件读取的相关功能，并使用子类实现具体功能
+# 3.读取文件，生产数据对象
+# 4.进行数据需求的逻辑计算(计算每一天的销售额)
+# 5.通过PyEcharts进行图形绘制
+
+from file_define import FileReader,TextFileReader,JsonFileReader
+from data_define import Record
+from pyecharts.charts import Bar
+from pyecharts.options import *
+from pyecharts.globals import ThemeType
+
+text_file_reader = TextFileReader("F:/Code/python/数据分析案例/2011年1月销售数据.txt")
+json_file_reader = JsonFileReader("F:/Code/python/数据分析案例/2011年2月销售数据JSON.txt")
+
+jan_data: list[Record] = text_file_reader.read_data()
+feb_data: list[Record] = json_file_reader.read_data()
+# 将2个月份的数据合并为个List来存储
+all_data: list[Record] = jan_data + feb_data
+
+# 开始进行数据计算
+# {"2011-01-01":1534，"2011-01-02": 300，"2011-01-03": 650}
+data_dict = {}
+for record in all_data:
+    if record.date in data_dict.keys():
+        # 当前日期已经有记录了，所以和老记录做累加即可
+        data_dict[record.date] += record.money
+    else:
+        data_dict[record.date] = record.money
+        
+# 可视化图表开发
+bar = Bar(init_opts=InitOpts(theme=ThemeType.LIGHT))
+bar.add_xaxis(list(data_dict.keys())) # 添加x轴的数据
+bar.add_yaxis("销售额", list(data_dict.values()), label_opts=LabelOpts(is_show=False)) # 添加了y轴数据
+bar.set_global_opts(
+    title_opts=TitleOpts(title="每日销售额")
+)
+bar.render("每日销售额柱状图.html")
+```
+
+```py
+# file_define.py
+# 和文件相关的类定义
+import json
+from data_define import Record
+# 先定义一个抽象类用来做顶层设计，确定有哪些功能而要实现
+class FileReader:
+    def read_data(self) -> list[Record]:
+        # 读取文件的数据，读到的每一条数都转换Record对象，将它们都封装ist内返回即可”
+        pass
+    
+class TextFileReader(FileReader):
+    def __init__(self,path):
+        self.path = path # 定义成员变量记录文件的路径
+
+    # 复写(实现抽象方法)父类的方法
+    def read_data(self) -> list[Record]:
+        f = open(self.path,"r",encoding="UTF-8")
+        
+        record_list: list[record] = []
+        for line in f.readlines():
+            line = line.strip() # 消除读取到的每一行数据中的\n
+            data_list = line.split(",")
+            record = Record(data_list[0],data_list[1],int(data_list[2]), data_list[3])
+            record_list.append(record)
+        
+        f.close()    
+        return record_list
+
+class JsonFileReader(FileReader):
+
+    def __init__(self, path):
+        self.path = path # 定义成员变量记录文件的路径
+    
+    def read_data(self) -> list[Record]:
+        f = open(self.path,"r",encoding="UTF-8")
+        
+        record_list: list[record] = []
+        for line in f.readlines():
+            data_dict = json.loads(line)
+            record = Record(data_dict["date"],data_dict["order_id"], int(data_dict["money"]), data_dict["province"])
+            record_list.append(record)
+            
+        f.close()    
+        return record_list
+        
+            
+if __name__ == '__main__':
+    text_file_reader = TextFileReader("F:/Code/python/数据分析案例/2011年1月销售数据.txt")
+    json_file_reader = JsonFileReader("F:/Code/python/数据分析案例/2011年2月销售数据JSON.txt")
+    list1 = text_file_reader.read_data()
+    list2 = json_file_reader.read_data()
+    
+    for l in list1:
+        print(l)
+    for l in list2:
+        print(l)
+```
+
+```py
+# data_define.py
+# 数据定义的类
+
+class Record:
+    def __init__(self, date, order_id, money,province):
+        self.date = date # 订单日期
+        self.order_id = order_id # 订单ID
+        self.money = money # 订单金额
+        self.province = province # 销售省份
+        
+    def __str__(self):
+        return f"{self.date}, {self.order_id}, {self.money}, {self.province}"
+```
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m82.png)
+
+
+# 第二章
+## 数据库介绍
+数据库就是指数据存储的库，作用就是组织数据并存储数据
+数据库按照:库->表->数据三个层级进行组织
+数据库软件就是提供库->表->数据，这种数据组织形式的工具软件，也称之为数据库管理系统
+
+常见的数据库软件有: Oracle、MySQL、SQL Server、PostgreSQL、SQLite
+
+数据库和SQL的关系:数据库(软件)提供数据组织存储的能力,SQL语句则是操作数据、数据库的工具语言
+## MySQL安装
+* 链接：https://pan.baidu.com/s/1n7NXaJu_5rE6aK7oLMIYgA?pwd=2155 
+提取码：2155
+
+## MySQL的入门使用
+
+> `mysql -uroot -p 打开SQL`
+> show databases; 查看有哪些数据库
+> use 数据库名 使用某个数据库
+> show tables 查看数据库内有哪些表
+> exit 退出MySQL的命令行环境
+
+* Dbeaver安装
+链接：https://pan.baidu.com/s/1DXEzG8isB8qa1B48n9wgoQ?pwd=2155 
+提取码：2155
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m83.png)
+
+## SQL基础和DDL
+SQL:结构化查询语言，用于操作数据库，通用于绝大多数的数据库软件
+SQL的特征:大小写不敏感,需以'`;`'号结尾,支持单行(`--`)、多行注释(`#`)
+SQL语言的分类:DDL数据定义,DML数据操作,DCL数据控制,DQL数据查询
+[DDL语法](https://help.aliyun.com/document_detail/133420.html "DDL语法")
+
+## SQL-DML
+[DML语法](https://blog.csdn.net/qq_36756682/article/details/114357928 "DML语法")
+
+> INSERT INTO 表[(列1，列2，......，列N)] VALUES(值1，值2，......，值N)，......，(值1，值2，......，值N)]
+
+```SQL
+DROP TABLE IF EXISTS student;
+CREATE TABLE student(
+	id INT,
+	name VARCHAR(20),
+	age INT
+	);
+
+INSERT INTO student VALUES(10001,'周杰轮',31),(10002,'王力鸿',33),(10003,'林俊节',35),(10004,"张学油",36), (10005,"刘德滑",30);
+
+# 删除name为林俊节的数据
+DELETE FROM student WHERE name = '林俊节'; # 注意，不要忘记''
+
+# 删除 age > 33 的数据
+DELETE FROM student WHERE age > 33;
+
+# 更新数据
+UPDATE student SET name = '张学油' WHERE id = 4;
+
+# 删除全部数据
+DELETE FROM student;
+```
+字符串的值，出现在SQL语句中必须要用**单引号**包围起来
+
+## SQL-DQL-基础查询
+基础查询的语法：SELECT 字段列表|* FROM 表
+过滤查询的语法:SELECT 字段列表|* FROM 表 WHERE 条件判断
+[DQL语法](https://blog.csdn.net/Blue92120/article/details/127245192 "DQL语法")
+## SQL-DQL-分组聚合
+分组聚合的语法:SELECT 字段|聚合函数 FROM 表 [WHERE 条件] GROUP BY 列
+聚合函数有:SUM(列) 求和,AVG(列) 求平均值,MIN(列) 求最小值,MAX(列) 求最大值,COUNT(列|*) 求数量
+分组聚合的注意事项:GROUP BY中出现了哪个列，哪个列才能出现在SELECT中的非聚合中
+## SQL-DML-排序分页
+关键字:WHERE、GROUP BY、ORDER BY、LIMIT均可按需求省略,SELECT和FROM 是必写的
+执行顺序:FROM -> WHERE ->GROUP BY和聚合函数->SELECT -> ORDER BY ->LIMIT
+
+> select * from student where age > 20 order by age desc;
+> select * from student limit 10, 5;
+> select age, count(*) from student where age > 20 group by age
+
+## Python操作MySQL基础使用
+在Python中，使用第三方库: pymysql来完成对MySQL数据库的操作
+安装:`pip install pymysql`
+获取链接对象:
+
+> from pymysqlimport Connection 导包
+> Connection(主机,端口,账户,密码)即可得到链接对象
+> 链接对象.close()关闭和MySQL数据库的连接
+
+执行SQL查询:
+    
+> 通过连接对象调用cursor()方法，得到游标对象
+> 游标对象.execute()执行SQL语句
+> 游标对象.fetchall()得到全部的查询结果封装入元组内
+
+```py
+# 演示Python pymysql库的基础操作
+from pymysql import Connection
+# 构建到MYSQL数据库的链接
+conn = Connection(
+    host="localhost", # 主机名(IP)
+    port=3306, # 端口
+    user="root", # 账户
+    password="你的密码" # 密码
+)
+
+# print(conn.get_server_info())
+# 执行非查询性质SQL
+cursor = conn.cursor() # 获取到游标对象
+# 选择数据库
+conn.select_db("world")
+#执行SQL
+# cursor.execute("create table test_pymysql(id int);")
+cursor.execute("select * from student")
+results = cursor.fetchall()
+
+for r in results:
+    print(r)
+# 关闭到数据库的链接
+conn.close()
+```
+
+## Python操作MySQL数据插入
+pymysql库在执行对数据库有修改操作的行为时，是需要通过链接对象的commit成员方法来进行确认的。只有确认的修改，才能生效
+```py
+# 演示Python pymysql库的基础操作
+from pymysql import Connection
+# 构建到MYSQL数据库的链接
+conn = Connection(
+    host="localhost", # 主机名(IP)
+    port=3306, # 端口
+    user="root", # 账户
+    password="你的密码", # 密码
+    autocommit=True # 自动提交(确认)
+)
+
+# print(conn.get_server_info())
+# 执行非查询性质SQL
+cursor = conn.cursor() # 获取到游标对象
+# 选择数据库
+conn.select_db("world")
+#执行SQL
+# cursor.execute("create table test_pymysql(id int);")
+cursor.execute("insert into student values(10001, '周杰轮', 31,'男')")
+# # 通过commit提交
+# conn.commit()
+
+# 关闭到数据库的链接
+conn.close()
+```
+
+## 综合案例
+```sql
+create database py_sql charset utf8;
+
+use py_sql;
+
+create table orders(
+	order_date date,
+	order_id varchar(255),
+	money int,
+	province varchar(10)
+);
+```
+```py
+# main.py
+# SQL 综合案例，读取文件，写入MySQL数据库中
+
+from file_define import TextFileReader,JsonFileReader
+from data_define import Record
+from pymysql import Connection
+
+text_file_reader = TextFileReader("F:/Code/python/数据分析案例/2011年1月销售数据.txt")
+json_file_reader = JsonFileReader("F:/Code/python/数据分析案例/2011年2月销售数据JSON.txt")
+
+jan_data: list[Record] = text_file_reader.read_data()
+feb_data: list[Record] = json_file_reader.read_data()
+#将2个月份的数据合并为1个List来存储
+all_data: list[Record] = jan_data + feb_data
+print(all_data)
+# 构建MySQL链接对象
+conn = Connection(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="_Shi200202AlanDoDo",
+    autocommit=True
+)
+# 获得游标对象
+cursor = conn.cursor()
+# 选择数据库
+conn.select_db("py_sql")
+# 组织SQL语句
+for record in all_data:
+    sql = f"insert into orders(order_date, order_id, money, province)" \
+        f"values('{record.date}','{record.order_id}', {record.money},'{record.province}')"
+# 执行SQL语句
+    cursor.execute(sql)
+# 关闭MySQL链接对象
+conn.close()
+```
+```py
+# data_define.py
+# 数据定义的类
+
+class Record:
+    def __init__(self, date, order_id, money, province):
+        self.date = date # 订单日期
+        self.order_id = order_id # 订单ID
+        self.money = money # 订单金额
+        self.province = province # 销售省份
+        
+    def __str__(self):
+        return f"{self.date}, {self.order_id}, {self.money}, {self.province}"
+```
+```py
+# file_define.py
+# 和文件相关的类定义
+import json
+from data_define import Record
+
+# 先定义一个抽象类用来做顶层设计，确定有哪些功能而要实现
+class FileReader:
+    def read_data(self) -> list[Record]:
+        # 读取文件的数据，读到的每一条数都转换Record对象，将它们都封装ist内返回即可”
+        pass
+    
+class TextFileReader(FileReader):
+    def __init__(self,path):
+        self.path = path # 定义成员变量记录文件的路径
+
+    # 复写(实现抽象方法)父类的方法
+    def read_data(self) -> list[Record]:
+        f = open(self.path,"r",encoding="UTF-8")
+        
+        record_list: list[record] = []
+        for line in f.readlines():
+            line = line.strip() # 消除读取到的每一行数据中的\n
+            data_list = line.split(",")
+            record = Record(data_list[0],data_list[1],int(data_list[2]), data_list[3])
+            record_list.append(record)
+        
+        f.close()    
+        return record_list
+
+class JsonFileReader(FileReader):
+
+    def __init__(self, path):
+        self.path = path # 定义成员变量记录文件的路径
+    
+    def read_data(self) -> list[Record]:
+        f = open(self.path,"r",encoding="UTF-8")
+        
+        record_list: list[record] = []
+        for line in f.readlines():
+            data_dict = json.loads(line)
+            record = Record(data_dict["date"],data_dict["order_id"], int(data_dict["money"]), data_dict["province"])
+            record_list.append(record)
+            
+        f.close()    
+        return record_list
+        
+            
+if __name__ == '__main__':
+    text_file_reader = TextFileReader("F:/Code/python/数据分析案例/2011年1月销售数据.txt")
+    json_file_reader = JsonFileReader("F:/Code/python/数据分析案例/2011年2月销售数据JSON.txt")
+    list1 = text_file_reader.read_data()
+    list2 = json_file_reader.read_data()
+    
+    for l in list1:
+        print(l)
+    for l in list2:
+        print(l)
+```
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m84.png)

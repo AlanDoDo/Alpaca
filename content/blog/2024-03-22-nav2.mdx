@@ -1,0 +1,1292 @@
+---
+title: "Nav2导航篇"
+description: "要解决机器人自主导航问题就需要有感知（建图和定位）参与，通过感知输出机器人当前环境的地图信息和位置。"
+date: "2024-03-22"
+category: "机器人"
+tags: ["SLAM"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x385.jpg"
+source: "legacy-blog"
+---
+
+## SLAM建图
+
+### SLAM前世今生
+
+要解决机器人自主导航问题就需要有感知（建图和定位）参与，通过感知输出机器人当前环境的地图信息和位置。
+
+#### SLAM是什么
+
+SLAM是同步定位与地图构建(Simultaneous Localization And Mapping)的缩写。
+
+#### SLAM如何解决建图定位问题
+
+机器人通过自身传感器数据处理进行位置估计，同时通过不断移动完成对整个未知环境的地图构建。这就是SLAM解决的问题。
+
+那又是如何解决的呢？SLAM实现的方案很多，但是几个比较关键的技术如下：
+
+1. **传感器感知** 通过各类传感器实现对环境的感知，比如通过激光雷达获取环境的深度信息。同时可以通过传感器融合来提高位置估计的精度，比如融合轮式里程计、IMU、雷达、深度相机数据等。
+
+2. **视觉/激光里程计** 基本原理是通过前后数据之间对比得出机器人位置的变化。
+
+3. **回环检测** 判断机器人是否到达之前到过的位置，可以解决位置估计误差问题，建图时可以纠正地图误差。
+
+经典视觉SLAM结构
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x386.jpg)
+
+#### SLAM算法分类
+
+从算法的对数据的处理方式上看，目前常用的SLAM开源算法可以分为两类
+
+1. **基于滤波**，比如扩展卡尔曼滤波（EKF: Extended Kalman Filter）、粒子滤波(PF: Particle Filter)等。
+
+ROS中的gmapping、hector_slam算法都是基于滤波实现的。
+
+2. **基于图优化**，先通过传感器进行构图，然后对图进行优化。
+
+目前比较主流的是**图优化**的方法，Cartographer就是基于图优化实现的。图优化相对于滤波，不用实时的进行计算，效率更高，消耗的资源更少，所以在实际场景中使用的更多。
+
+#### SLAM开源库
+
+##### Cartographer
+
+github地址：https://github.com/cartographer-project/cartographer
+
+Cartographer是一个可跨多个平台和传感器配置以2D和3D形式提供实时同时定位和建图（SLAM）的系统。
+
+##### ORB_SLAM2(纯视觉)
+
+github地址：https://github.com/raulmur/ORB_SLAM2
+
+ORB-SLAM2是用于单目，双目和RGB-D相机的实时SLAM库，用于计算相机轨迹和稀疏3D重建
+
+##### VINS
+
+github地址：https://github.com/HKUST-Aerial-Robotics/VINS-Mono
+
+VINS-Mono是单目视觉惯性系统的实时SLAM框架。它使用基于优化的滑动窗口配方来提供高精度的视觉惯性测距。
+
+#### 总结
+
+本节课我们简单介绍了下感知部分的技术担当SLAM，并对常用的开源库进行介绍，下一节我们就对其中的Cartograpger开源库进行介绍和安装。
+
+参考文章：
+
+https://blog.csdn.net/heyijia0327/article/details/47686523
+
+### Cartographer介绍与安装
+
+#### Cartographer介绍
+
+Cartographer是Google开源的一个可跨多个平台和传感器配置以2D和3D形式提供实时同时定位和建图（SLAM）的系统。
+
+github地址：https://github.com/cartographer-project/cartographer 
+
+文档地址：https://google-cartographer.readthedocs.io/en/latest
+
+> Cartographer系统架构概述（简单看看即可，如果大家后面确定研究方向是SLAM可以深入学习）：
+
+> 简单的可以看到左边的可选的输入有深度信息、里程计信息、IMU数据、固定Frame姿态。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x387.jpg)
+
+#### Carttographer安装
+
+##### apt安装
+
+安装**carotgrapher**
+
+```
+sudo apt install ros-humble-cartographer
+```
+
+需要注意我们不是直接使用**cartographer**，而是通过**cartographer-ros**功能包进行相关操作，所以我们还需要安装下**cartographer-ros**
+
+```
+sudo apt install ros-humble-cartographer-ros
+```
+
+##### 源码安装
+
+将下面的源码克隆到fishbot_ws的src目录下：
+
+```
+git clone https://ghproxy.com/https://github.com/ros2/cartographer.git -b ros2
+git clone https://ghproxy.com/https://github.com/ros2/cartographer_ros.git -b ros2
+```
+
+**安装依赖**
+
+这里我们使用rosdepc进行依赖的安装，rosdepc指令找不到可以先运行下面的一键安装命令，选择一键配置rosdep即可。
+
+```
+wget http://fishros.com/install -O fishros && . fishros
+```
+
+接着在fishbot_ws下运行下面这个命令进行依赖的安装。
+
+> rosdepc 是小鱼制作的国内版rosdep，是一个用于安装依赖的工具。该工具的安装可以采用一键安装进行，选项编号为3。安装完成后运行一次rodepc update即可使用。
+
+```
+rosdepc install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
+```
+
+**编译**
+
+> 这里有一个新的命令--packages-up-to，意思是其所有依赖后再编译该包
+
+```
+colcon build --packages-up-to cartographer_ros
+```
+
+##### 测试是否安装成功
+
+如果是源码编译请先source下工作空间后再使用下面指令查看是否安装成功；
+
+```
+ros2 pkg list | grep cartographer
+```
+
+能看到下面的结果即可
+
+```
+cartographer_ros
+cartographer_ros_msgs
+```
+
+> 可能你会好奇为什么没有cartographer，因为cartographer包的编译类型原因造成的，不过没关系，cartographer_ros依赖于cartographer，所以有cartographer_ros一定有cartographer。
+
+#### Cartographer参数配置
+
+作为一个优秀的开源库，Cartographer提供了很多可以配置的参数，虽然灵活性提高了，但同时也提高了使用难度（需要对参数进行调节配置），所以有必要在正式使用前对参数进行基本的介绍。
+
+因为我们主要使用其进行2D的建图定位，所以我们只需要关注2D相关的参数。
+
+Cartographer参数是使用lua文件来描述的，不会lua也没关系，我们只是改改参数而已。
+
+> 提示：lua中的注释采用 -- 开头
+
+##### 前端参数
+
+**文件：trajectory_builder_2d**
+
+**src/cartographer/configuration_files/trajectory_builder_2d.lua**
+
+请你打开这个文件自行浏览，小鱼对其中我们可能会在初次建图配置的参数进行介绍。
+
+```
+  -- 是否使用IMU数据
+  use_imu_data = true, 
+  -- 深度数据最小范围
+  min_range = 0.,
+  -- 深度数据最大范围
+  max_range = 30.,
+  -- 传感器数据超出有效范围最大值时，按此值来处理
+  missing_data_ray_length = 5.,
+  -- 是否使用实时回环检测来进行前端的扫描匹配
+  use_online_correlative_scan_matching = true
+  -- 运动过滤，检测运动变化，避免机器人静止时插入数据
+  motion_filter.max_angle_radians
+```
+
+##### 后端参数
+
+**文件：pose_graph.lua-后端参数配置项**
+
+路径**src/cartographer/configuration_files/pose_graph.lua**
+
+该文件主要和地图构建
+
+```
+--Fast csm的最低分数，高于此分数才进行优化。
+constraint_builder.min_score = 0.65
+--全局定位最小分数，低于此分数则认为目前全局定位不准确
+constraint_builder.global_localization_min_score = 0.7
+```
+
+##### Carotgrapher_ROS参数配置
+
+该部分参数主要是用于和ROS2进行通信和数据收发的配置，比如配置从哪个话题读取里程记数据，从哪个话题来获取深度信息（雷达）。
+
+**文件：backpack_2d.lua**
+
+路径：**src/cartographer_ros/cartographer_ros/configuration_files/backpack_2d.lua**
+
+```
+include "map_builder.lua"
+include "trajectory_builder.lua"
+
+options = {
+  map_builder = MAP_BUILDER,
+  trajectory_builder = TRAJECTORY_BUILDER,
+  -- 用来发布子地图的ROS坐标系ID，位姿的父坐标系，通常是map。
+  map_frame = "map",
+  -- SLAM算法跟随的坐标系ID
+  tracking_frame = "base_link",
+  -- 将发布map到published_frame之间的tf
+  published_frame = "base_link",
+  -- 位于“published_frame ”和“map_frame”之间，用来发布本地SLAM结果（非闭环），通常是“odom”
+  odom_frame = "odom",
+  -- 是否提供里程计
+  provide_odom_frame = true,
+  -- 只发布二维位姿态（不包含俯仰角）
+  publish_frame_projected_to_2d = false,
+  -- 是否使用里程计数据
+  use_odometry = false,
+  -- 是否使用GPS定位
+  use_nav_sat = false,
+  -- 是否使用路标
+  use_landmarks = false,
+  -- 订阅的laser scan topics的个数
+  num_laser_scans = 0,
+  -- 订阅多回波技术laser scan topics的个数
+  num_multi_echo_laser_scans = 1,
+  -- 分割雷达数据的个数
+  num_subdivisions_per_laser_scan = 10,
+  -- 订阅的点云topics的个数
+  num_point_clouds = 0,
+  -- 使用tf2查找变换的超时秒数
+  lookup_transform_timeout_sec = 0.2,
+  -- 发布submap的周期间隔
+  submap_publish_period_sec = 0.3,
+  -- 发布姿态的周期间隔
+  pose_publish_period_sec = 5e-3,
+  -- 轨迹发布周期间隔
+  trajectory_publish_period_sec = 30e-3,
+  -- 测距仪的采样率
+  rangefinder_sampling_ratio = 1.,
+  --里程记数据采样率
+  odometry_sampling_ratio = 1.,
+  -- 固定的frame位姿采样率
+  fixed_frame_pose_sampling_ratio = 1.,
+  -- IMU数据采样率
+  imu_sampling_ratio = 1.,
+  -- 路标采样率
+  landmarks_sampling_ratio = 1.,
+}
+```
+
+#### 总结
+
+参考文章：
+
+https://google-cartographer.readthedocs.io/en/latest/configuration.html
+
+### 配置Fishbot进行建图
+
+上一节我们安装好了cartographer，这节课我们就开始配置cartographer进行建图。
+
+我们需要创建一个功能包，将参数文件和**Cartographer**启动文件放到一起然后启动。
+
+#### 创建fishbot_cartographer
+
+在src目录下，使用创建功能包指令，创建功能包
+
+```
+cd src
+ros2 pkg create fishbot_cartographer
+```
+
+接着创建配置文件夹、launch文件夹和rviz配置文件夹。
+
+```
+cd fishbot_cartographer
+mkdir config
+mkdir launch
+mkdir rviz
+```
+
+创建完成的功能包结构
+
+```
+.
+├── CMakeLists.txt
+├── config
+├── launch
+├── src
+├── package.xml
+└── rviz
+```
+
+#### 添加cartographer配置文件
+
+在**fishbot/config**目录下创建**fishbot_2d.lua**文件。
+
+接着我们来写一下配置文件，相较于默认的配置文件，主要修改以下内容（见注释）
+
+```
+include "map_builder.lua"
+include "trajectory_builder.lua"
+
+options = {
+  map_builder = MAP_BUILDER,
+  trajectory_builder = TRAJECTORY_BUILDER,
+  map_frame = "map",
+  tracking_frame = "base_link",
+  -- base_link改为odom,发布map到odom之间的位姿态
+  published_frame = "odom",
+  odom_frame = "odom",
+  -- true改为false，不用提供里程计数据
+  provide_odom_frame = false,
+  -- false改为true，仅发布2D位资
+  publish_frame_projected_to_2d = true,
+  -- false改为true，使用里程计数据
+  use_odometry = true,
+  use_nav_sat = false,
+  use_landmarks = false,
+  -- 0改为1,使用一个雷达
+  num_laser_scans = 1,
+  -- 1改为0，不使用多波雷达
+  num_multi_echo_laser_scans = 0,
+  -- 10改为1，1/1=1等于不分割
+  num_subdivisions_per_laser_scan = 1,
+  num_point_clouds = 0,
+  lookup_transform_timeout_sec = 0.2,
+  submap_publish_period_sec = 0.3,
+  pose_publish_period_sec = 5e-3,
+  trajectory_publish_period_sec = 30e-3,
+  rangefinder_sampling_ratio = 1.,
+  odometry_sampling_ratio = 1.,
+  fixed_frame_pose_sampling_ratio = 1.,
+  imu_sampling_ratio = 1.,
+  landmarks_sampling_ratio = 1.,
+}
+
+
+-- false改为true，启动2D SLAM
+MAP_BUILDER.use_trajectory_builder_2d = true
+
+-- 0改成0.10,比机器人半径小的都忽略
+TRAJECTORY_BUILDER_2D.min_range = 0.10
+-- 30改成3.5,限制在雷达最大扫描范围内，越小一般越精确些
+TRAJECTORY_BUILDER_2D.max_range = 3.5
+-- 5改成3,传感器数据超出有效范围最大值
+TRAJECTORY_BUILDER_2D.missing_data_ray_length = 3.
+-- true改成false,不使用IMU数据，大家可以开启，然后对比下效果
+TRAJECTORY_BUILDER_2D.use_imu_data = false
+-- false改成true,使用实时回环检测来进行前端的扫描匹配
+TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true 
+-- 1.0改成0.1,提高对运动的敏感度
+TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.1)
+
+-- 0.55改成0.65,Fast csm的最低分数，高于此分数才进行优化。
+POSE_GRAPH.constraint_builder.min_score = 0.65
+--0.6改成0.7,全局定位最小分数，低于此分数则认为目前全局定位不准确
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
+
+-- 设置0可关闭全局SLAM
+-- POSE_GRAPH.optimize_every_n_nodes = 0
+
+return options
+```
+
+### 添加launch文件
+
+#### launch需要包含的节点
+
+要完成使用Cartographer进行建图，需要两个节点的参与，整个过程的计算流图如下：
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x389.jpg)
+
+**/cartographer_node节点:**
+
+该节点从/scan和/odom话题接收数据进行计算，输出/submap_list数据.
+
+该节点需要接收一个参数配置文件（第二部分写的那个）参数。
+
+**/occupancy_grid_node节点：**
+
+该节点接收/submap_list子图列表，然后将其拼接成map并发布
+
+该节点需要配置地图分辨率和更新周期两个参数。
+
+#### 编写launch文件
+
+在路径**src/fishbot_cartographer/launch/**下新建**cartographer.launch.py**文件，接着我们将上面两个节点加入到这个launch文件中。
+
+我们在第二部分写的配置文件就是给cartographer_node节点的，可以通过这个节点启动参数**configuration_directory**和**configuration_basename**进行传递。
+
+```
+import os
+from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def generate_launch_description():
+    # 定位到功能包的地址
+    pkg_share = FindPackageShare(package='fishbot_cartographer').find('fishbot_cartographer')
+    
+    #=====================运行节点需要的配置=======================================================================
+    # 是否使用仿真时间，我们用gazebo，这里设置成true
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    # 地图的分辨率
+    resolution = LaunchConfiguration('resolution', default='0.05')
+    # 地图的发布周期
+    publish_period_sec = LaunchConfiguration('publish_period_sec', default='1.0')
+    # 配置文件夹路径
+    configuration_directory = LaunchConfiguration('configuration_directory',default= os.path.join(pkg_share, 'config') )
+    # 配置文件
+    configuration_basename = LaunchConfiguration('configuration_basename', default='fishbot_2d.lua')
+    rviz_config_dir = os.path.join(pkg_share, 'config')+"/cartographer.rviz"
+    print(f"rviz config in {rviz_config_dir}")
+
+    
+    #=====================声明三个节点，cartographer/occupancy_grid_node/rviz_node=================================
+    cartographer_node = Node(
+        package='cartographer_ros',
+        executable='cartographer_node',
+        name='cartographer_node',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['-configuration_directory', configuration_directory,
+                   '-configuration_basename', configuration_basename])
+
+    cartographer_occupancy_grid_node = Node(
+        package='cartographer_ros',
+        executable='cartographer_occupancy_grid_node',
+        name='cartographer_occupancy_grid_node',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['-resolution', resolution, '-publish_period_sec', publish_period_sec])
+
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', rviz_config_dir],
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen')
+
+    #===============================================定义启动文件========================================================
+    ld = LaunchDescription()
+    ld.add_action(cartographer_node)
+    ld.add_action(cartographer_occupancy_grid_node)
+    ld.add_action(rviz_node)
+
+    return ld
+```
+
+### 添加安装指令
+
+做完上面的操作，我们还需要添加安装指令。
+
+打开CmakeLists.txt，添加下面一条指令，将三个目录安装到install目录。
+
+```
+install(
+  DIRECTORY config launch rviz
+  DESTINATION share/${PROJECT_NAME}
+)
+```
+
+### 开始建图
+
+#### 编译启动
+
+```
+colcon build --packages-select fishbot_cartographer 
+```
+
+启动建图前，需要先启动gazebo仿真环境，因为我们的建图程序依赖于Gazebo提供雷达和里程计等数据。
+
+```
+source install/setup.bash
+ros2 launch fishbot_description gazebo.launch.py
+```
+
+source,启动建图
+
+```
+source install/setup.bash
+ros2 launch fishbot_cartographer cartographer.launch.py 
+```
+
+#### 修改配置
+
+如果一切正常，你应该看到的是一个空空如也的RVIZ界面
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x390.jpg)
+
+不用担心，此时地图其实已经有了，我们需要添加一下地图相关的插件即可。
+
+通过**Add** -> **By Topic**添加组件。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x391.jpg)
+
+最后通过左边的插件你应该可以看到图和机器人了。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x392.jpg)
+
+#### 开始建图
+
+打开我们机器人遥控节点，降低速度，控制机器人走一圈，看看地图的变化。
+
+```
+ros2 run teleop_twist_keyboard teleop_twist_keyboard 
+```
+
+### 保存地图
+
+走完一圈，没有黑影部分，我们就可以保存地图为一个本地文件了。我们需要使用一个叫做**nav2_map_server**的工具。
+
+#### 安装nav2_map_server
+
+```
+sudo apt install ros-humble-nav2-map-server
+```
+
+#### 保存地图
+
+```
+ros2 run nav2_map_server map_saver_cli --help
+```
+
+可以看到有下面的用法
+
+```
+Usage:
+  map_saver_cli [arguments] [--ros-args ROS remapping args]
+
+Arguments:
+  -h/--help
+  -t <map_topic>
+  -f <mapname>
+  --occ <threshold_occupied>
+  --free <threshold_free>
+  --fmt <image_format>
+  --mode trinary(default)/scale/raw
+
+NOTE: --ros-args should be passed at the end of command line
+```
+
+我们的地图话题为map，文件名字我们用fishbot_map,所以有下面这个这样写的命令行。
+
+```
+# 先将地图保存到src/fishbot_cartographer/map目录下
+cd src/fishbot_cartographer/ && mkdir map && cd map
+ros2 run nav2_map_server map_saver_cli -t map -f fishbot_map
+```
+
+接着我们就可以得到下面的两个文件
+
+```
+.
+├── fishbot_map.pgm
+└── fishbot_map.yaml
+
+0 directories, 2 files
+```
+
+这两个文件就是对当前地图保存下来的文件，其中.pgm是地图的数据文件，.yaml后缀的是地图的描述文件。
+
+下面的导航过程中我们将要使用到地图文件进行路径的搜索和规划。
+
+## Nav2导航
+
+### Nav2导航框架介绍与安装
+
+#### Nav2是什么
+
+Nav2项目继承并发扬ROS导航栈的精神。该项目力求以安全的方式让移动机器人从A点移动到B点。Nav2也可以应用于其他应用，包括机器人导航，如下动态点跟踪，在这个过程中需要完成动态路径规划、计算电机的速度、避免障碍、恢复行为。
+
+#### Nav2如何做到的
+
+Nav2使用行为树调用模块化服务器来完成一个动作。动作可以是计算路径、控制力、恢复或任何其他与导航相关的操作。这些都是通过ROS Action服务器与行为树 (BT) 通信的独立节点。下图可以让你对Nav2的架构有一个很好的初步了解。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x393.jpg)
+
+##### 四个服务
+
+**一大：**
+
+**BT Navigator Server** 导航行为树服务，通过这个大的服务来进行下面三个小服务组织和调用。
+
+**三小：**
+
+**Planner Server**，规划服务器，其任务是计算完成一些目标函数的路径。根据所选的命名法和算法，该路径也可以称为路线。说白了就是在地图上找路。
+
+**Controller Server**，控制服务器，在ROS 1中也被称为局部规划器，是我们跟随全局计算路径或完成局部任务的方法。说白了就是根据找的路控制机器人走路。
+
+**Recovery Server**，恢复服务器，恢复器是容错系统的支柱。恢复器的目标是处理系统的未知状况或故障状况并自主处理这些状况。说白了就是机器人可能出现意外的时候想办法让其正常，比如走着走着掉坑如何爬出来。
+
+通过**规划路径**、**控制机器人沿着路径运动**、**遇到问题自主恢复**三者进行不断切换完成机器人的自主导航（在这个过程还需要很多节点和数据的辅助，详建下面的组建部分）。
+
+##### 两大代价（成本）地图
+
+在机器人导航的时候，仅仅靠一张SLAM建立的原始地图是不够的，机器人在运动过程中可能会出现新的障碍物，也有可能发现原始地图中某一块的障碍物消失了，所以在机器人导航过程中维护的地图是一个动态的地图，根据更新频率方式和用途不同，可以分为下面两种。
+
+> 注意：不论是全局代价地图还是局部代价地图都是有很多个图层共同叠加而成的，你也可以自己定义图层。
+
+###### 全局代价地图 （Global Costmap）
+
+全局代价地图主要用于全局的路径规划器。从上面结构图中其在可以看到在Planner Server中。
+
+通常包含的图层有：
+
+* Static Map Layer：静态地图层，通常都是SLAM建立完成的静态地图。
+* Obstacle Map Layer：障碍地图层，用于动态的记录传感器感知到的障碍物信息。
+* Inflation Layer：膨胀层，在以上两层地图上进行膨胀（向外扩张），以避免机器人的外壳会撞上障碍物。
+
+###### 局部代价地图（Local Costmap）
+
+局部代价地图主要用于局部的路径规划器。从上面结构图中其在可以看到在Controller Server中。
+
+通常包含的图层有：
+
+* Obstacle Map Layer：障碍地图层，用于动态的记录传感器感知到的障碍物信息。
+* Inflation Layer：膨胀层，在障碍地图层上进行膨胀（向外扩张），以避免机器人的外壳会撞上障碍物。
+
+#### Nav2导航相关概念
+
+##### 动作服务器（Action Server）
+
+Nav2框架中大量的才用了这种通信方式，并将起分装成了行为树（关于行为树下面会介绍）的基础节点进行调用。
+
+通过动作服务器通信，来计算路径规划、控制机器人运动和恢复。每个动作服务器都有自己独特的 **nav2_msgs** 格式的 **.action** 类型，用于与服务器进行交互。
+
+##### 生命周期节点和绑定
+
+生命周期 (或被管理的，更正确的) 节点是ROS 2独有的。它们是包含状态机转换的用于加载和卸载ROS 2服务器的节点。这有助于确定ROS系统启动和关闭的状态是否正常。
+
+**生命周期节点框架在整个项目中被广泛使用，所有服务器都使用它。如果可能的话，所有ROS系统最好使用生命周期节点。**
+
+上一节我们通过命令行来配置和激活map_server节点就是因为map_server节点采用了生命周期节点进行管理。
+
+##### 行为树
+
+行为树 (BT) 在复杂的机器人任务中变得越来越普遍。它们是待完成任务的树形结构。行为树为定义多步或多状态应用程序创建了一个更具可扩展性和人类可理解性的框架。这与有限状态机 (FSM) 相反，后者可能有几十个状态和数百个状态过渡。
+
+> 一个例子就是踢足球机器人。将足球比赛的逻辑嵌入FSM将具有挑战性，且容易出错因为有许多可能的状态和规则。此外，像从左侧、右侧或中间射门这样的建模选择尤其不清楚。使用行为树则可以为许多行为创建和重用基本原语，像 "kick" "walk" "go to ball" 。更多信息可以在 这本书 找到。强烈建议阅读第1-3章，以更好地理解术语和工作流程。大约需要30分钟。
+
+Nav2项目使用 **BehaviorTree CPP V3** 作为行为树库。在 **BT Navigator** 中，创建了可以构建为行为树的节点插件。将节点插件加载到BT中，并且在解析该行为树的XML文件时，将关联注册的名称。此时，我们可以通过该行为树进行导航。
+
+> 使用此库的一个原因是它能够加载子树。这意味着可以将Nav2行为树可以进行套娃操作。举个例子是在足球比赛中，使用Nav2行为树作为 "go to ball" 节点，将足球检测作为更大任务的一部分。此外，为BT提供了一个 **NavigateToPoseAction** 插件，因此可以从客户端应用程序通过通常的动作接口调用Nav2软件导航栈。
+
+##### 导航服务器
+
+规划器和控制器是导航任务的核心。恢复器用于使机器人摆脱不良状态或尝试处理各种形式的问题，以使系统具有容错能力。在本节中，将分析有关它们的一般概念及其在Nav2项目中的用途。
+
+###### 规划器，控制器和恢复服务器
+
+该项目中的三个Action Server是规划器、恢复器和控制器服务器。这些Action Server用于托管一个地图算法插件，以完成各种任务。它们还托管由该算法插件使用的环境表达，以计算其输出。
+
+**规划器（Planners）**
+
+规划器的任务是计算完成一些目标函数的路径。根据所选的命名法和算法，该路径也可以称为路线。两个典型示例是计算一个到达目标位姿的规划（例如从当前位置到达一个目标位姿）或者完全覆盖（例如覆盖所有空闲空间的规划）。规划器可以访问全局环境表达和缓存在其中的传感器数据。规划器可以被编写为具有以下功能的工具：
+
+* 计算最短路径
+* 计算完整覆盖路径
+* 沿稀疏或预定义路线计算路径
+
+> Nav2中规划器的一般任务是计算从当前位置到达目标位姿的一个有效且可能是最佳的路径。
+
+**控制器 （Controllers）**
+
+控制器，在ROS 1中也被称为局部规划器，是我们跟随全局计算路径或完成局部任务的方法。控制器有权访问局部环境表达，以尝试计算要跟随的基准路径的可行控制工作。许多控制器会将机器人向前投射到空间中，并在每次更新迭代时计算局部可行路径。控制器可以被编写为具有以下功能的工具：
+
+* 跟随路径
+* 使用里程计坐标系中的检测器与充电站（桩）对接
+* 登上电梯
+* 与某个工具的接口
+
+在Nav2中，控制器的一般任务是计算一个有效的控制工作以跟随全局规划路径。然而，有多个控制器类和局部规划器类。Nav2项目的目标就是所有控制器算法都可以作为此服务器中的插件，以用于一般研究和产业任务中。
+
+**恢复器 （Recovery）**
+
+恢复器是容错系统的支柱。恢复器的目标是处理系统的未知状况或故障状况并自主处理这些状况。例子包括感知系统中会导致环境表达充满假障碍物的故障。这样就会触发清除成本地图恢复以允许机器人移动。
+
+另一个例子就是机器人由于动态障碍物或控制不佳而卡住。在允许的情况下，倒退或原地旋转会允许机器人从卡住的位置移动到可以成功进行导航的自由空间中。
+
+最后，在完全故障的情况下，可以实施恢复以引起操作员的注意以寻求帮助。这可以通过电子邮件、短信、Slack、Matrix等来完成。
+
+##### 航点跟随
+
+航点跟随是导航系统的基本功能之一。它会告知系统如何使用导航程序到达多个目的地。
+
+**nav2_waypoint_follower** 软件包含一个航路点跟踪程序，该程序具有特定任务执行程序的插件接口。如果需要让机器人前往给定位姿并完成像拍照、捡起盒子或等待用户输入之类的特定任务，这会非常有用。
+
+> 关于机器人队管理器/调度器有两种思想流派：哑机器人+智能集中式调度器；智能机器人+哑集中式调度器。
+
+> 在第一种思想中， **nav2_waypoint_follower** 软件包足以创造一个产品级的机器人解决方案。由于自主系统/调度器在分配任务时会考虑机器人的姿势、电池电量、当前任务等因素，机器人上的应用程序只需要关心手头的任务，而不用关心完成系统要求任务的其他复杂因素。在这种情况下，应该将发送至航点跟随者的请求视为1个工作单元（例如，仓库中的1次拣货、1个安全巡逻循环、1个过道等）来执行任务，然后返回给调度器以进行下一个任务或者要求充电。在这种思想流派中，航点跟随应用程序只是导航软件堆栈之上和系统自主应用程序之下的一个步骤。
+
+> 在第二种思想中， **nav2_waypoint_follower** 软件包是一个不错的示例应用程序/概念证明，但确实需要机器人上的航点跟踪/自主系统来承担更多任务以制定健壮的解决方案。在这种情况下，应该使用 **nav2_behavior_tree** 软件包创建自定义应用程序级别的行为树，以使用导航来完成任务。这可以包含子树，例如在任务中检查充电状态以返回停泊坞，或者在更复杂的任务中处理1个以上的工作单元。很快，将会有一个 **nav2_bt_waypoint_follower** (名称有待调整)，它将允许用户更容易地创建此应用程序。在这个思想流派中，航点跟随应用程序与自主系统的联系更加紧密，或者在很多情况下，航点跟随应用程序就是自主系统本身。
+
+这两种思想流派并不能简单地说谁比谁更好，谁更好很大程度上取决于机器人正在完成何种任务、处于何种类型的环境中以及有何种可用的云资源。通常，对于既定的业务案例，这种区别非常明显。
+
+#### 状态估计（重要组件）
+
+> Nav2中，默认进行状态估计的组件是AMCL (Adaptive Monte Carlo Localization)自适应蒙特卡洛定位。nav2中对应的功能包是nav2_amcl。
+
+根据ROS社区标准，在导航项目中，需要提供两个主要的坐标转换。 **map** 到 **odom** 的坐标变换由定位系统 (定位，建图，SLAM)提供， **odom** 到 **base_link** 的坐标转换由里程计系统提供。
+
+注解：无需在机器人上使用LIDAR即可使用导航系统。不需要使用基于激光雷达的防撞、定位或SLAM系统。但是，Nav2确实可以提供说明和支持使用激光雷达对这些系统进行尝试和真实实现。使用基于视觉或深度传感器的定位系统和使用其他传感器来避免碰撞可以同样成功。唯一的要求就是在选择具体实现方式时遵循REP-105标准。
+
+> REP-105标准
+
+> REP 105 定义了导航和更大的ROS生态系统所需的框架和约定。应始终遵循这些约定，以利用社区中丰富的定位、里程计和SLAM项目。
+
+> 简而言之，REP-105至少必须为机器人构造一个包含map -> odom -> base_link -> [sensorframes] 的完整 的TF树。TF2是 ROS 2中的时变坐标变换库，Nav2使用TF2来表达和获取时间同步的坐标变换。全球定位系统 (GPS、SLAM、动作捕捉Motion Capture) 的工作是至少要提供 map-> odom 的坐标转换。然后，里程计系统的作用是提供 odom -> base_link 的坐标转化。关于 base_link 的其余坐标转换应该是静态的，并应在 URDF 中定义。
+
+##### 全局定位: 定位与SLAM
+
+全局定位系统 (GPS、SLAM、运动捕捉) 的工作是至少提供 **map** -> **odom** 的坐标转换。Nav2项目提供的 **amcl** 是一种基于粒子过滤器的自适应蒙特卡罗定位技术，用于静态地图的定位。Nav2还提供用于定位和生成静态映射的SLAM工具箱作为默认的SLAM算法。
+
+这些方法还可能产生其他输出，包括位置话题、地图或其他元数据，但它们必须提供该转换才能有效。使用机器人定位可以将多种定位方法融合在一起，下面将详细讨论。
+
+##### 里程计（Odometry）
+
+里程计系统的作用是提供 **odom** -> **base_link** 的坐标转换。里程计可以来自许多数据源，包括激光雷达、车轮编码器、VIO和IMU。里程计的目标是提供基于机器人运动的平滑和连续的局部坐标系。全局定位系统会相对全局坐标的坐标变换进行更新，以解决里程计的漂移问题。
+
+这个 **Robot Localization** 通常用于这种融合。它将采用各种类型的 N 个传感器，并为TF和话题提供连续平滑的里程计。一个典型的移动机器人装置可能有来自车轮编码器或IMU的里程计以及融合在这个工作区内的视觉。
+
+这样平滑输出就可用于精确运动的航行位置推算和在全局位置更新之间准确地更新机器人的位置。
+
+##### 环境表达（建模）
+
+环境表征是机器人感知环境的方式。它还充当各种算法和数据源的中心定位工具，以将它们的信息组合到一个空间中。这样，控制器、规划器和恢复器就可以使用该空间来安全有效地计算它们的任务。
+
+**成本地图和图层**
+
+当前的环境表达是一个成本地图。成本地图是包含来自未知、空闲、占用或膨胀成本的单元格的规则2D单元格网格。然后搜索该成本地图以计算全局计划或采样以计算局部控制工作。
+
+各种成本地图图层被实现为pluginlib插件，以将信息缓冲到成本地图中。这包括来自LIDAR、RADAR、声纳、深度传感器、图像传感器等的信息。最好在传感器数据输入到层本地图之前进行处理，但这取决于开发人员。
+
+可以使用相机或深度传感器创建代价地图层来检测和跟踪场景中的障碍物，以避免碰撞。此外，可以创建层来基于一些规则或启发式算法来改变基础成本图。最后，它们可用于将实时数据缓冲到2D或3D世界中，以进行障碍物的二值化标记。
+
+**成本地图过滤器**
+
+想象一下，您正在注释地图文件 (或任何图像文件)，以便根据注释地图中的位置执行特定操作。
+
+通过使用成本地图过滤器可以实现以下功能：
+
+* 机器人永远不会进入的禁区/安全区。
+* 限速区，机器人进入这些区域的最大速度将受到限制。
+* 机器人在工业环境和仓库中移动的首选通道。
+
+**其他形式的环境表示**
+
+存在各种其他形式的环境表征。包括:
+
+* 梯度图，类似于成本地图，但梯度图会表达表面梯度以检查可穿越性
+* 3D成本图，以3D形式表示空间，但这样就也需要3D规划和碰撞检测
+* 网格图，类似于梯度图，但具有多个角度的表面网格
+* Vector space ，接收传感器信息并使用机器学习算法来检测要跟踪的单个物品和位置，而不是对离散点进行缓冲区计算
+
+#### Nav2下载安装
+
+Nav2的安装有两种方式，一种是通过二进制直接安装，另外一种是通过源码的方式进行安装，这里小鱼依然推荐源码的方式，毕竟我们还是要看一看Nav2的源码的。
+
+##### apt安装
+
+安装**nav2**
+
+```
+sudo apt install ros-foxy-nav2-*
+```
+
+##### 源码安装
+
+将下面的源码克隆到fishbot_ws的src目录下：
+
+```
+git clone https://ghproxy.com/https://github.com/ros-planning/navigation2.git -b foxy-devel
+```
+
+安装依赖
+这里我们使用rosdepc进行依赖的安装，rosdepc指令找不到可以先运行下面的一键安装命令，选择一键配置rosdep即可。
+
+```
+wget http://fishros.com/install -O fishros && . fishros
+```
+
+接着在fishbot_ws下运行下面这个命令进行依赖的安装。
+
+```
+rosdepc install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
+```
+
+编译
+> 这里有一个新的命令--packages-up-to，意思是其所有依赖后再编译该包
+
+```
+colcon build --packages-up-to navigation2
+```
+
+##### 测试是否安装成功
+
+如果是源码编译**请先source下工作空间后再使用下面指令查看**是否安装成功；
+
+```
+ros2 pkg list | grep navigation2
+```
+
+能看到下面的结果即可
+
+```
+navigation2
+```
+
+#### 源码功能包拆解
+
+包含代码的功能包及其功能见下面列表
+```
+#==============控制器及其实现相关功能包======================#
+nav2_controller　｜　控制器
+nav2_dwb_controller | DWB控制器，Nav2控制器的一个实现
+nav2_regulated_pure_pursuit_controller | 纯追踪控制器，Nav2控制器的一个实现
+
+#==============规划器及其实现相关功能包======================#
+nav2_planner | Nav2规划器
+nav2_navfn_planner　｜　navfn规划器，Nav2规划器的一个实现
+smac_planner | smac规划器，Nav2规划器的一个实现
+
+#=====================恢复器==============================#
+nav2_recoveries | Nav2恢复器
+
+#=====================行为树节点及其定义====================#
+nav2_bt_navigator |　导航行为树
+nav2_behavior_tree | 行为树节点插件定义
+
+#=====================地图和定位===========================#
+nav2_map_server　｜　地图服务器
+nav2_costmap_2d　｜　2D代价地图
+nav2_voxel_grid | 体素栅格
+nav2_amcl | 自适应蒙特卡洛定位。　　状态估计，输入地图、激光、里程计数据，输出机器人map和odom之间的位资关系。
+
+#=====================通用插件系统管理等====================#
+nav2_bringup | 启动入口
+nav2_common　｜　公共功能包
+nav2_msgs　｜　通信相关消息定义
+nav2_util | 常用工具
+nav2_lifecycle_manager |节点生命周期管理器　
+nav2_rviz_plugins | RVIZ插件
+
+#=====================核心定义============================#
+nav2_core　｜　Nav2核心包
+navigation2 | nav2导航汇总配置
+
+#=====================应用================================#
+nav2_waypoint_follower | 路点跟踪
+
+#=====================测试=================================#
+nav2_system_tests | 系统测试
+```
+
+上面的每个节点都有自己的参数可以配置，下一节我们就对个个节点的配置进行介绍并进行适配
+
+### 为FishBot配置Nav2
+
+安装好了Nav2，我们开始针对我们的fishbot改变一些参数进行导航相关的参数配置。Nav2可配置的参数比起Cartographer更多，但是不要害怕，因为大多数参数我们可能不会改变。
+
+> 有关Nav2的更多参数介绍和详细的配置意义，可以参考Nav2中文网配置指南一节。
+
+本节主要准备两个文件给launch节点使用，第一个是地图文件，第二个是nav2参数文件。
+
+#### 创建fishbot_navigation2
+
+##### 创建功能包
+
+和前面在Cartographer中一样，我们需要创建一个文件夹放置配置文件、launch文件、rviz配置和地图等。
+
+进入到src目录下，使用下面指令创建功能包：
+
+```
+ros2 pkg create fishbot_navigation2 --dependencies nav2_bringup
+```
+
+这里我们添加了一个依赖**nav2_bringup**，后面写launch文件要用到，这里提前添加一下依赖。
+
+创建完成后的目录结构：
+
+```
+.
+├── CMakeLists.txt
+├── include
+│   └── fishbot_navigation2
+├── package.xml
+└── src
+
+3 directories, 2 files
+```
+
+##### 添加maps文件夹
+
+```
+cd src/fishbot_navigation2
+mkdir launch config maps param rviz
+```
+
+##### 复制地图文件
+
+将上一节的地图文件复制到map文件夹下。
+
+复制完成后**fishbot_navigation2**的文件结构如下
+
+```
+.
+├── CMakeLists.txt
+├── config
+├── launch
+├── maps
+│   ├── fishbot_map.png
+│   ├── fishbot_map.pgm
+│   ├── fishbot_map.yaml
+├── package.xml
+├── param
+└── rviz
+
+5 directories, 5 files
+```
+
+#### 添加Nav2配置文件
+
+##### 创建参数文件
+
+我们需要配置的文件是Nav2的参数文件，同样的，贴心的Nav2已经为我们准备好了参数模板
+
+```
+src/navigation2/nav2_bringup/bringup/params/nav2_params.yaml
+```
+
+在**src/fishbot_navigation2/param/**目录下创建**fishbot_nav2.yaml**
+
+```
+cd src/fishbot_navigation2/param/
+touch fishbot_nav2.yaml
+```
+
+##### 复制参数
+
+然后将**src/navigation2/nav2_bringup/bringup/params/nav2_params.yaml**的内容复制粘贴到**fishbot_nav2.yaml**文件中。
+
+> 参数文件中的参数是谁的？
+
+> 在5.1.4章节保存参数中，我们曾用ros2 param dump <node_name>指令将某个节点的参数保存为一个.yaml格式的文件。fishbot_nav2.yaml文件就是保存Nav2相关节点参数的文件。
+
+#### 配置参数
+
+其实参数不配置也是可以将Nav2跑起来的，但是后期想要更改运行的效果就需要对参数进行修改，所以有必要大概了解下参数的配置项和含义查询方法和修改方法。
+
+##### 参数列表
+
+| 编号 | 配置项         | 用途                                                | 对应模块与参数详解                                                                                            |
+| ---- | ----------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1    | amcl              | 机器人定位                                       | [nav2_amcl](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-bt-xml.html)                            |
+| 2    | bt_navigator      | 导航行为树（用于加载行为树节点并根据xml配置进行调度） | [nav2_bt_navigator,nav2_behavior_tree](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-bt-xml.html) |
+| 3    | controller_server | 控制器服务器                                    | [nav2_controller,nav2_dwb_controller,nav2_regulated_pure_pursuit_controller](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-dwb-controller.html)                            |
+| 4    | planner_server    | 规划服务器                                       | [nav2_planner,nav2_navfn_planner,smac_planner](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-planner-server.html)                            |
+| 5    | recoveries_server | 恢复服务器                                       | [nav2_recoveries](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-recovery-server.html)                            |
+| 6    | local_costmap     | 局部代价地图                                    | [nav2_costmap_2d,static_layer,inflation_layer](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-costmaps.html)                            |
+| 7    | global_costmap    | 全局代价地图                                    | [nav2_costmap_2d,nav2_map_server](http://dev.nav2.fishros.com/doc/configuration/packages/configuring-costmaps.html)                            |
+
+##### 配置机器人半径和碰撞半径
+
+在全局代价地图和局部代价地图配置用，默认的机器人半径是0.22，而我们fishbot的半径是0.12，所以需要修改机器人的半径为0.12。
+
+```
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      robot_radius: 0.12
+      
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      robot_radius: 0.12
+```
+
+为了防止机器人发生碰撞，一般我们会给代价地图添加一个碰撞层（inflation_layer），在**local_costmap**和**global_costmap**配置中，你可以看到下面关于代价地图相关的配置：
+
+```
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+```
+
+打开参数配置中的[inflation_layer](http://dev.nav2.fishros.com/doc/configuration/packages/costmap-plugins/inflation.html)，我们来看看其配置项和含义。
+
+此处截图
+
+可以看到**inflation_radius**默认0.55对fishbot来说可能有些大了，我们改小些。
+
+```
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.35
+```
+
+**以上就是以代价地图碰撞半径为例的配置方法，nav2可以配置的参数非常多，假如你在导航过程中遇到问题，根据问题的表现推断下是哪个模块中造成的，接着修改其对应参数，大概率就可以解决问题，解决不了的可以看源码详细分析。**
+
+##### 配置frame_id和话题
+
+这里也不用配置，因为我们的fishbot话题名称和tf名称都是遵循着默认的话题的。
+
+如果你的机器人不是，或者你改变了话题，这里就需要重新配置。
+
+* 默认全局的坐标系：map
+* 默认里程计坐标系：odom
+* 默认雷达话题：scan
+* 默认机器人基坐标系：base_link
+* 默认地图话题：map
+
+
+### 使用FishBot进行自主导航
+
+#### 编写launch文件
+
+我们将地图、配置文件传递给nav2为我们提供好的launch文件中即可。
+
+> 再一个launch文件中包裹另一个功能包中的luanch文件采用的是**IncludeLaunchDescription**和**PythonLaunchDescriptionSource**
+
+```py
+'''
+作者: 小鱼
+公众号: 鱼香ROS
+QQ交流群: 2642868461
+描述: Nav2 launch启动文件
+'''
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+
+def generate_launch_description():
+    #=============================1.定位到包的地址=============================================================
+    fishbot_navigation2_dir = get_package_share_directory('fishbot_navigation2')
+    nav2_bringup_dir = get_package_share_directory('nav2_bringup')
+    
+    
+    #=============================2.声明参数，获取配置文件路径===================================================
+    # use_sim_time 这里要设置成true,因为gazebo是仿真环境，其时间是通过/clock话题获取，而不是系统时间
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true') 
+    map_yaml_path = LaunchConfiguration('map',default=os.path.join(fishbot_navigation2_dir,'maps','fishbot_map.yaml'))
+    nav2_param_path = LaunchConfiguration('params_file',default=os.path.join(fishbot_navigation2_dir,'param','fishbot_nav2.yaml'))
+    rviz_config_dir = os.path.join(nav2_bringup_dir,'rviz','nav2_default_view.rviz')
+
+    #=============================3.声明启动launch文件，传入：地图路径、是否使用仿真时间以及nav2参数文件==============
+    nav2_bringup_launch = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([nav2_bringup_dir,'/launch','/bringup_launch.py']),
+            launch_arguments={
+                'map': map_yaml_path,
+                'use_sim_time': use_sim_time,
+                'params_file': nav2_param_path}.items(),
+        )
+    rviz_node =  Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config_dir],
+            parameters=[{'use_sim_time': use_sim_time}],
+            output='screen')
+    
+    return LaunchDescription([nav2_bringup_launch,rviz_node])
+```
+
+#### 安装并添加依赖
+
+##### 修改CMakeLists.txt
+
+添加install指令，将文件拷贝到install目录
+
+```
+cmake_minimum_required(VERSION 3.5)
+project(fishbot_navigation2)
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+install(
+  DIRECTORY launch param maps
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_package()
+```
+
+##### 添加依赖
+主要是添加这行 **<exec_depend>nav2_bringup</exec_depend>**
+
+```xml
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>fishbot_navigation2</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="sangxin2014@sina.com">root</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+```
+
+#### 构建运行
+
+##### 构建
+
+```
+colcon build --packages-up-to  fishbot_navigation2
+```
+
+#### 运行
+
+###### 运行仿真
+
+```
+source install/setup.bash
+ros2 launch fishbot_description gazebo.launch.py
+```
+
+###### 运行Nav2
+
+```
+source install/setup.bash
+ros2 launch fishbot_navigation2 navigation2.launch.py
+```
+
+#### 初始化位置
+
+启动后正常你应该在RVIZ2和终端看到一个错误，这是因为没有给定初始化位置（告诉机器人它在地图的大概位置）导致的。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x394.jpg)
+
+```
+[planner_server-5] [INFO] [1652973621.731976741] [global_costmap.global_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[rviz2-10] [INFO] [1652973621.760971376] [rviz2]: Message Filter dropping message: frame 'odom' at time 0.000 for reason 'Unknown'
+[rviz2-10] [INFO] [1652973621.856298950] [rviz2]: Message Filter dropping message: frame 'laser_link' at time 4392.881 for reason 'Unknown'
+[rviz2-10] [INFO] [1652973621.951345246] [rviz2]: Message Filter dropping message: frame 'laser_link' at time 4392.981 for reason 'Unknown'
+[rviz2-10] [INFO] [1652973621.951468235] [rviz2]: Message Filter dropping message: frame 'odom' at time 0.000 for reason 'Unknown'
+[rviz2-10] [INFO] [1652973622.047860791] [rviz2]: Message Filter dropping message: frame 'laser_link' at time 4393.081 for reason 'Unknown'
+```
+
+通过RVIZ2的工具栏上的 **2D Pose Estimate** 可以给迷茫的fishbot指明“机生方向”。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x395.jpg)
+
+点击 **2D Pose Estimate** ，进行姿态初始化（选中机器人在Gazebo位置差不多的点，左键点击不要松开，移动鼠标给定方向），初始化完后，左边的Global Status 就正常了。
+
+#### 单点导航
+
+点击RVIZ2工具栏上的 就可以给fishbot安排一个目标点了，点击按钮，到地图上任意一点击鼠标左键，注意不要松开，移动鼠标给定一个方向。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x399.jpg)
+
+#### 多点（路点）导航
+
+观察左下角，有一个Nav2的Rviz2小插件，可以进行启动停止和导航模式的切换，点击 切换到路点模式。
+
+接着你可以使用工具栏的 按钮，给FishBot指定多个要移动的点，接着点击左下角的启动，就可以看到FishBot依次到达这些目标点。
+
+#### 查看机器人当前在地图中的位置
+
+在机器人导航过程中我们如何实时查看机器人在地图中的位置呢？我们可以通过tf进行查看。
+
+打开终端，输入指令：
+
+```
+ros2 run tf2_ros  tf2_echo map base_link
+```
+
+接着就可以看到下面的信息，旋转和变换位资数据了
+
+```
+[INFO] [1653215686.225862749] [tf2_echo]: Waiting for transform map ->  base_link: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+At time 4873.528000000
+- Translation: [-0.009, -0.016, 0.076]
+- Rotation: in Quaternion [0.000, -0.000, -0.000, 1.000]
+At time 4874.514000000
+- Translation: [-0.009, -0.016, 0.076]
+- Rotation: in Quaternion [0.000, -0.000, -0.000, 1.000]
+```
+
+### 通过Nav2API进行导航
+
+Nav2的API其实是Nav2提供的一个Python库，通过该库你可以事先调用你的机器人进行简单的控制（比如导航到点）。
+
+#### 导入nav2_simple_commander
+
+```
+from nav2_simple_commander.robot_navigator import BasicNavigator
+import rclpy
+from copy import deepcopy
+```
+
+初始化BasicNavigator
+
+```
+rclpy.init()
+nav = BasicNavigator()
+navigator.waitUntilNav2Active()
+```
+
+#### 初始化位置
+
+```
+# ======================初始化位置，代替rviz2的2D Pose Estimate===============================
+initial_pose = PoseStamped()
+initial_pose.header.frame_id = 'map'
+initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+initial_pose.pose.position.x = 0.0
+initial_pose.pose.position.y = 0.0
+initial_pose.pose.orientation.w = 1.0
+navigator.setInitialPose(initial_pose)
+```
+
+#### 导航到点
+
+```
+#========================导航到目标点1===========================================
+goal_pose1 = deepcopy(initial_pose)
+goal_pose1.pose.position.x = 1.5
+nav.goToPose(goal_pose1)
+while not nav.isNavComplete():
+  feedback = nav.getFeedback()
+  #检查是否超时，超时则停止导航到点   
+  if feedback.navigation_duration > 600:
+    nav.cancelNav()
+
+
+#================================导航到目标点2==================================
+goal_pose2 = deepcopy(initial_pose)
+goal_pose2.pose.position.x = -1.5
+
+nav.goToPose(goal_pose2)
+while not nav.isNavComplete():
+  feedback = nav.getFeedback()
+  #检查是否超时，超时则停止导航到点   
+  if feedback.navigation_duration > 600:
+    nav.cancelNav()
+
+#===============================查看返回结果=====================================
+result = nav.getResult()
+if result == NavigationResult.SUCCEEDED:
+    print('Goal succeeded!')
+elif result == NavigationResult.CANCELED:
+    print('Goal was canceled!')
+elif result == NavigationResult.FAILED:
+    print('Goal failed!')
+```

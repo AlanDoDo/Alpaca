@@ -1,0 +1,150 @@
+---
+title: "Node.js如何进行版本管理？"
+description: "在工作中，我们可能同时在进行2个或者多个不同的项目开发，每个项目的需求不同，进而不同项目必须依赖不同版本的NodeJS运行环境，这种情况下，对于维护多个版本的node将会是一件非常麻烦的事情，nvm就是为解决这个问题而产生的，他可以方便的在同一台设备上进行多个node版本之间切换。"
+date: "2024-02-08"
+category: "编程"
+tags: ["nvm"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/290.jpg"
+source: "legacy-blog"
+---
+
+## NVM
+
+在工作中，我们可能同时在进行2个或者多个不同的项目开发，每个项目的需求不同，进而不同项目必须依赖不同版本的NodeJS运行环境，这种情况下，对于维护多个版本的node将会是一件非常麻烦的事情，**nvm**就是为解决这个问题而产生的，他可以**方便的在同一台设备上进行多个node版本之间切换**。
+
+## nvm介绍
+
+Node Version Manager（NVM） 是一种用于**管理多个主动节点.js版本**的工具。
+
+Node.js 平台，Node.js 工具社区和 Node.js 库是快速移动的目标 - 在一个 Node.js 版本下可能有效的方法不能保证适用于另一个版本的 Node.js 。因此，用户需要一些方法在 Node 的多个版本之间切换 .js
+
+NVM 允许用户：
+
+* 使用简单的命令在本地下载任何远程长期支持 （LTS） 版本的 Node.js。
+* 直接从命令行在 Node.js 的多个版本之间轻松切换。
+* 设置别名以轻松在不同下载版本的 Node.js之间切换。
+
+## 下载
+
+> https://github.com/coreybutler/nvm-windows/releases
+
+
+## 安装：
+
+如果电脑上之前已经单独安装了node，先卸载（可以在控制面板里面卸载），然后再安装nvm
+
+傻瓜式一直点击下一步即可安装。
+
+安装完成后，可以打开 cmd 命令行窗口。执行
+
+```
+nvm -v
+```
+
+就可以看见nvm的版本号啦！ 
+
+## 配置
+
+配置环境变量
+
+配置淘宝镜像: 我们先找到nvm所在文件位置，点开setting里面的配置。原本只有2行代码。我们只需要在最后面追加2行代码即可：
+
+> node_mirror: https://npm.taobao.org/mirrors/node/
+> npm_mirror: https://npm.taobao.org/mirrors/npm/
+
+## 使用
+
+打开cmd
+
+执行以下命令：
+```
+nvm ls                      // 看安装的所有node.js的版本
+nvm list available          // 查显示可以安装的所有node.js的版本
+```
+
+可以在可选列表里。选择任意版本安装，比如安装16.15.0, 执行：
+
+```
+nvm install 16.15.0
+```
+
+安装好了之后。可以执行：
+
+```
+nvm ls
+```
+
+可以在列表里看到这个版本：
+
+
+如果想使用 16.15.0 这个版本的话。就执行：
+```
+nvm use 16.15.0
+```
+然后执行：
+```
+node -v
+```
+就可以看到当前版本已经是 16.15.0 了
+
+常用命令：
+
+```
+nvm off                     // 禁用node.js版本管理(不卸载任何东西)
+nvm on                      // 启用node.js版本管理
+nvm install <version>       // 安装node.js的命名 version是版本号 例如：nvm install 8.12.0
+nvm uninstall <version>     // 卸载node.js是的命令，卸载指定版本的nodejs，当安装失败时卸载使用
+nvm ls                      // 显示所有安装的node.js版本
+nvm list available          // 显示可以安装的所有node.js的版本
+nvm use <version>           // 切换到使用指定的nodejs版本
+nvm v                       // 显示nvm版本
+nvm install stable          // 安装最新稳定版
+```
+
+
+nvm 命令行操作命令
+```
+nvm nvm list 是查找本电脑上所有的node版本
+ 
+- nvm list 查看已经安装的版本
+- nvm list installed 查看已经安装的版本
+- nvm list available 查看网络可以安装的版本
+ 
+nvm install 安装最新版本nvm
+ 
+nvm use <version> ## 切换使用指定的版本node
+
+nvm ls 列出所有版本
+ 
+nvm current显示当前版本
+
+nvm alias <name> <version> ## 给不同的版本号添加别名
+
+nvm unalias <name> ## 删除已定义的别名
+
+nvm reinstall-packages <version> ## 在当前版本node环境下，重新全局安装指定版本号的npm包
+ 
+nvm on 打开nodejs控制
+ 
+nvm off 关闭nodejs控制
+ 
+nvm proxy 查看设置与代理
+ 
+nvm node_mirror [url] 设置或者查看setting.txt中的node_mirror，如果不设置的默认是 https://nodejs.org/dist/
+
+nvm npm_mirror [url] 设置或者查看setting.txt中的npm_mirror,如果不设置的话默认的是： https://github.com/npm/npm/archive/.
+ 
+nvm uninstall <version> 卸载制定的版本
+ 
+nvm use [version] [arch] 切换制定的node版本和位数
+ 
+nvm root [path] 设置和查看root路径
+ 
+nvm version 查看当前的版本
+```
+
+在做项目的时候。不同的项目使用的nodejs版本可能不一样。我们可以在配置文件里看见：
+
+由于nodejs版本和npm版本的不同。导致项目无法运行。所以我们就需要用到nvm这个工具了！

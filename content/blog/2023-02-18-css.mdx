@@ -1,0 +1,1393 @@
+---
+title: "Web前端CSS3进阶+项目"
+description: "特性:不同选择器具有不同的优先级，优先级高的选择器样式会覆盖优先级低选择器样式"
+date: "2023-02-18"
+category: "编程"
+tags: ["CSS"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a37.jpg"
+source: "legacy-blog"
+---
+
+## CSS盒子模型-优先级-基本测试
+* 特性:不同选择器具有不同的优先级，优先级高的选择器样式会覆盖优先级低选择器样式
+* 优先级公式:继承<通配符选择器<标签选择器<类选择器< id选择器<行内样式<!mportant
+1. `!important`写在属性值的后面，分号的前面
+2. `!important`不能提升继承的优先级，只要是继承优先级最低
+3. 实际开发中不建议使用`!important`
+
+```html
+    <style>
+        #box {
+            color: orange;
+        }
+        .box {
+            color: blue;
+        }
+        div {
+            color: green !important; /*color: green !important;*/
+        }
+        body {
+            color: red;
+        }
+        /*!important不要给继承的添加，自己有样式无法继承父级样式*/
+    </style>
+<body>
+    <!-- 意义:当一个标签使用了多个选择器，样式冲突的时候，到底谁生效 -->
+    <div class="box" id="box" style="color:pink;">测试优先级</div>
+</body>
+```
+## 优先级-叠加计算
+场景: 如果是复合选择器，此时需要通过权重叠加计算方法，判断最终哪个选择器优先级最高会生效权重叠加计算公式:  (每一级之间不存在进位)
+
+复合选择器中:行内样式的个数-id选择器的个数-类选择器的个数-标签选择器的个数
+
+**注意点**: !important如果不是继承，则权重最高
+```html
+    <style>
+        /* (行内，id，类，标签)*/
+        /* (0，1，0，1) */
+        div #one {
+            color:orange;
+        }
+        /* (0,0，2,0) */
+        .father .son {
+            color:skyblue;
+        }
+        /* 0，0，1，1 */
+        .father p {
+            color:purple;
+        }
+        /* 0,0,0,2 */
+        div p {
+            color:pink
+        }
+    </style>
+<body>
+    <div class="father">
+        <p class="son" id="one">我是一个标签</p>
+        </div>
+</body>
+```
+
+## 组成/效果
+盒子的概念：
+1. 页面中的每一个标签，都可看做是一个“盒子”，通过盒子的视角更方便的进行布局
+2. 浏览器在染(显示)网页时，会将网页中的元素看做是一个个的矩形区域，我们也形象的称之为 盒子
+
+3. 盒子模型：
+
+CSS中规定每个盒子分别由:内容区域(content)、内边距区域(padding)、边框区域(border)、外边距区域(margin)构成，这就是盒子模型
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+            /* 纸箱子，填充泡沫 */
+        div {
+            width: 300px;
+            height: 300px;
+            background-color:pink;
+            /* 边框线 == 纸箱子 */
+            border: 1px solid #000;
+            /*内边距 == 填充泡沫 : 出现在内容和盒子边缘之间 */
+            padding: 20px;
+
+            /* 外边距 : 出现在两个盒子之间，出现在盒子的外面*/
+            margin: 50px;
+        }
+    </style>
+</head>
+<body>      
+    <div>内容电脑</div>
+    <div>内容电脑</div>
+</body>
+</html>
+```
+## 内容width,height和boder
+boder属性值:单个取值的连写，取值之间以空格隔开,如: border:10px solid red;
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div {
+        width: 200px;
+        height: 200px;
+        background-color:pink;
+        /*border:粗细 线条样式颜色 -- 不分先后顺序 */
+        /* solid : 实线 */
+        /* border: 1px solid #000;*/
+
+        /* dashed: 虚线 */
+        /* border: 5px dashed #000; */
+
+        /* dotted : 点线 */
+        /* border: 5px dotted #000; */
+        border-left: 5px dotted #000;
+        border-right: 5px dotted #000;
+        }
+    </style>
+</head>
+<body>
+    <div>内容</div>
+</body>
+</html>
+```
+## 尺寸计算-border
+```html
+    <style>
+        div {
+            /* border 撑大盒子尺寸 */
+            /* 盒子尺寸 = width / height + 边框线*/
+            /* 如果400 *400 尺寸*/
+            width: 380px;
+            height: 380px;
+            background-color:green;
+            border: 10px solid #000;
+        }
+    </style>
+```
+## padding(内边距)-多值
+```html
+    <style>
+        div {
+            width: 300px;
+            height: 300px;
+            background-color: pink;
+            /* 添加了4个方向的内边距 */
+            padding: 50px;
+
+            /* padding 属性可以当做复合属性使用，表示单独设置某个方向的内边距 */
+            /* padding 最多取4个值 */
+
+            /* 四值:上 右 下 左 */
+            /* padding: 10px 20px 40px 80px; */
+
+            /* 三值 :上 左 右 下*/
+            /* padding: 10px 40px 80px; */
+
+            /* 两值 : 上下 左右*/
+            padding: 10px 80px;
+        }
+        /* 多值写法，永远都是从上开始顺时针转一圈，如果数不够，看对面 */
+    </style>
+```
+需求:盒子尺寸300*300，背景粉色，边框10px实线黑色，上下左右20px的内边距，如何完成?
+```html
+
+    <style>
+        div {
+        /* 撑大盒子的都有啥? border + padding */
+        width: 240px;
+        height: 240px;
+        background-color:pink;
+        border: 10px solid #000;
+        padding: 20px;
+        }
+    </style>
+```
+## 新浪导航-布局div/内容a/padding优化
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            height: 40px;
+            border-top: 3px solid #ff8500;
+            border-bottom: 1px solid #edeef0;
+        }
+        /* 后代：box里面的a*/
+        .box a {
+            padding: 0 16px;
+            /* width: 80px; */
+            height: 40px;
+            /*推荐先加上:清楚的看到文字在什么位置 */
+            /* background-color: rgb(255, 255, 255); */
+            display: inline-block;
+            text-align: center;
+            line-height: 40px;
+            font-size: 12px;
+            color: rgb(78, 83, 83);
+            text-decoration: none;
+        }
+
+        .box a:hover {
+            background-color: #edeef0;
+            color: #ff8500;
+        }
+    </style>
+    <!-- 从外到内 : 先宽高背景色，放内容，调节内容的位置;控制文字细节 -->
+</head>
+<body>
+    <div class="box">
+        <a href="#">新浪导航</a>
+        <a href="#">新浪导航</a>
+        <a href="#">新浪导航</a>
+        <a href="#">新浪导航</a>
+    </div>
+</body>
+</html>
+
+```
+## 内减模式(盒子边距控制)
+```html
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+            border: 10px solid #000;
+            padding: 20px;
+
+            /*内减模式*/
+            /* 变成CSS3的盒子模型，好处: 加了border和padding不需要手动计算边距 */
+            box-sizing: border-box;
+        }
+    </style>
+```
+## 外边距
+```html
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            background-color:pink;
+            margin: 50px;
+            margin-left: 100px;
+        }
+    </style>
+```
+## 清楚默认样式
+场景:浏览器会默认给部分标签设置默认的margin和padding，但一般在项目开始前需要先清除这些标签默认的margin和padding，后续自己设置
+
+> 比如:body标签默认有margin: 8px
+> 比如:p标签默认有上下的margin
+> 比如:ul标签默认由上下的margin和padding-left...
+```html
+    <style>
+        * {
+        margin: 0;
+        padding: 0;
+        }
+    </style>
+```
+## 版心居中
+```html
+    <style>
+        div {
+        width:1000px;
+        height: 300px;
+        background-color: pink;
+        margin: 0 auto;
+        }
+    </style>
+```
+## 综合案例-新闻列表-div布局/标题/内容
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            /* 所有的标签都可能添加内边距或border，都内减模式 */
+            box-sizing: border-box;
+        }
+        .news {
+            width: 500px;
+            height: 400px;
+            border: 1px solid #ccc;
+            margin: 50px auto;
+            padding: 42px 30px 0;
+        }
+        .news h2 {
+        border-bottom: 1px solid #ccc;
+        font-size: 30px;
+
+            /*行高是1倍，就是字号的大小 */
+            line-height: 1;
+            padding-bottom: 9px;
+        }
+
+        /* 去掉列表的符号 */
+        ul {
+            list-style: none;
+        }
+
+        /* li{} */
+        .news li {
+            height: 50px;
+            border-bottom: 1px dashed #ccc;
+            padding-left: 28px;
+            line-height: 50px;
+        }
+
+        .news a {
+            text-decoration: none;
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 从外到内 -->
+    <div class="news">
+        <h2>最新文章/New Articles</h2>
+        <ul>
+            <li><a href="#">北京招聘网页设计，平面设计，php</a></li>
+            <li><a href="#">体验javascript</a></li>
+            <li><a href="#">jquery世界来临</a></li>
+            <li><a href="#">网页设计师的梦想</a></li>
+            <li><a href="#">jQuery中的链式编程是什么</a></li>
+        </ul>
+    </div>
+</body>
+</html>
+```
+## 外边距-问题
+外边距折叠现象-1.合并现象
+
+场景:垂直布局的块级元素，上下的margin会合并,最终两者距离为margin的**最大值**
+
+解决方法:避免就好,只给其中一个盒子设置margin即可
+```html
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+
+        .one {
+            /* margin-bottom: 50px; 谁大取谁*/
+            margin-bottom: 60px;
+        }
+
+        .two {
+            margin-top: 50px;
+        }
+    </style>
+```
+外边距折叠现象-2.塌陷现象
+
+场景:互相嵌套的块级元素,子元素的margin-top会作用在父元素上,导致父元素一起往下移动
+
+解决方法:
+1. 给父元素设置border-top 或者 padding-top (分隔父子元素的margin-top)
+2. 给父元素设置overflow: hidden
+3. 转换成行内块元素
+4. 设置浮动
+
+```html
+    <style>
+        .father {
+            width: 300px;
+            height: 300px;
+            background-color: pink;
+            /*1. padding-top: 50px;*/
+            /* 如果设计稿没有border，不能使用这个解决办法 */
+            /*2.border: 1px solid #000; */
+            overflow: hidden;
+        }
+        .son {
+            width: 100px;
+            height: 100px;
+            background-color: skyblue;
+
+            margin-top: 50px;
+        }
+    </style>
+```
+## 行内元素的垂直内外边距
+```html
+    <style>
+        span {
+        /* margin: 100px; */
+        /* padding: 100px;*/
+        line-height: 100px;
+        }
+        </style>
+<body>
+    <!-- 行内元素内外边距margin padding -->
+
+    <!-- 如果想要通过margin或padding改变行内标签的垂直位置，无法生效 -->
+    <!-- 行内标签的margin-top和bottom 不生效 -->
+    <!-- 行内标签的padding-top或botttom 不生效 -->
+    <span>span</span>
+    <span>span</span>
+</body>
+```
+## CSS浮动-结构伪类-基本用法
+目标:能够使用结构伪类选择器在HTML中定位元素
+作用与优势：
+
+1. 作用根据元素在HTML中的结构关系查找元素
+2. 优势:减少对于HTML中类的依赖，有利于保持代码整洁
+3. 场景:常用于查找某父级选择器中的子元素
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /*选中第一个 */
+        /* li:first-child {
+            background-color: green;
+        }*/
+
+        /* 最后一个 */
+        /* li:last-child {
+            background-color: green;
+        }*/
+
+        /*任意一个*/
+        /* li:nth-child(5) {
+            background-color: green;
+        }*/
+        /*倒数第xx个 */
+        li:nth-last-child(2) {
+            background-color: blue;
+        }
+    </style>
+</head>
+<body>
+     <!-- ul>li{这是第$个li}*8  -->
+    <ul>
+        <li>这是第1个li</li>
+        <li>这是第2个li</li>
+        <li>这是第3个li</li>
+        <li>这是第4个li</li>
+        <li>这是第5个li</li>
+        <li>这是第6个li</li>
+        <li>这是第7个li</li>
+        <li>这是第8个li</li>
+    </ul>
+</body>
+</html>
+```
+* 选择器通过n可以组成常见公式
+偶数:2n、4n、even
+奇数:2n+1、2n-1、odd
+找到前5个:-n+5
+找到从第5个往后:n+5
+
+## 伪元素
+伪元素: 一般页面中的非主体内容可以使用伪元素
+1. 元素:HTML设置的标签
+2. 伪元素:由CSS模拟出的标签效果
+
+种类:伪元素::before|::after
+作用:在父元素内容的最前添加一个伪元素|在父元素内容的最后添加一个伪元素
+
+1. **必须设置content属性才能生效**
+2. 伪元素默认是行内元素
+
+```html
+    <style>
+        /*单伪元素清除浮动 和 额外标签法原理是一样的*/
+        .clearfix::after {
+            content:'';
+        /* 伪元素添加的标签是行内，要求块 */
+        display: block;
+        clear: both;
+        /* 为了兼容性 */
+        height: 0;
+        visibility: hidden;
+        }
+    </style>
+<body>
+    <!-- 父子级标签，子级浮动，父级没有高度，后面的标准流盒子会受影响 -->
+<div class="top clearfix"></div>
+</body>
+```
+* 标准流:标签默认的排列方式
+* 体验行内块问题:浏览器解析行内块或行内标签的时候，如果标签换行书写，会产生一个空格的距离
+
+## 浮动-作用(完美在一起排列)
+```html
+    <style>
+        /*img {
+            float: left;
+        }*/
+        div {
+            width: 100px;
+            height: 100px;
+        }
+        .one {
+            background-color:pink;
+            float: left;
+        }
+        .two {
+            background-color: skyblue;
+            /* flr */
+            /* float: right;*/
+            float: left;
+        }
+    </style>
+<body>
+    <!-- 网页布局: 块在一行排列 -->
+<div class="one">one</div>
+<div class="two">two</div>
+</body>
+```
+## 特点
+1. 浮动元素脱离标准流(简称:脱标),在标准流中不占位置
+2. 浮动元素比标准流高半个级别，可以覆盖标准流中的元素
+3. 浮动找浮动，下一个浮动元素会在上一个浮动元素后面左右浮动
+4. 浮动元素有特殊的显示效果,一行可以显示多个,可以设置宽高
+注意点:浮动的元素不能通过text-align:center或者margin:0 auto
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 浮动的标签 顶对齐 */
+        /* 浮动: 在一行排列，宽高生效 -- 浮动后的标签具备行内块特点 */
+        .one {
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+            float: left;
+            margin-top: 50px;
+        }
+        .two {
+            width: 200px;
+            height: 200px;
+            background-color:skyblue;
+            float: left;
+            /* 因为有浮动，不能生效 - 盒子无法水平居中*/
+            /* margin: 0 auto; */
+        }
+        .three {
+            width: 300px;
+            height: 300px;
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="one">one</div>
+    <div class="two">two</div>
+    <div class="three">three</div>
+</body>
+```
+## 综合案例-小米布局
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .top {
+        /* 宽度高度背景色 */
+            height: 40px;
+            background-color: #333;
+        }
+        .header {
+            width: 1226px;
+            height: 100px;
+            background-color: #ffcecb;
+            margin: 0 auto;
+        }
+        .content {
+            width: 1226px;
+            height: 460px;
+            background-color: #fff;
+            margin: 0 auto;
+        }
+        .left {
+            float: left;
+            width: 234px;
+            height: 460px;
+            background-color: #ffa500;
+
+        }
+        .right {
+            float: left;
+            width: 992px;
+            height: 460px;
+            background-color: #87ceeb;
+
+        }
+        /* CSS书写顺序: 浏览器执行效率更高
+        1.浮动 / display
+        2.盒子模型: margin border padding 宽度高度背景色
+        3。文字样式 */
+    </style>
+</head>
+<body>
+    <!-- 通栏的盒子:宽度和浏览器宽度一样大 -->
+    <div class="top"></div>
+    <div class="header">头部</div>
+    <div class="content">
+        <div class="left">left</div>
+        <div class="right">right</div>
+    </div>
+</body>
+</html>
+```
+## 小米案例-左右结构/小米产品-li
+需求:使用浮动，完成设计图中布局效果
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .box {
+            margin: 0 auto;
+            width: 1226px;
+            height: 614px;
+            /*background-color:pink;*/
+        }
+        .left {
+            float: left;
+            width: 234px;
+            height: 614px;
+            background-color: #800080;
+        }
+        .right {
+            float: right;
+            width: 978px;
+            height: 614px;
+            /*background-color: green;*/
+    }
+        ul {
+            /* 去掉列表的符号 */
+            list-style: none;
+        }
+        .right li {
+            float: left;
+            margin-right: 14px;
+            margin-bottom: 14px;
+            width: 234px;
+            height: 300px;
+            background-color: #87ceeb;
+        }
+
+        /* 如果父级的宽度不够，子级会自动换行 */
+        /* 第四个li和第八个li右侧间距清除 */
+        .right li:nth-child(4n) {
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="left"></div>
+        <div class="right">
+            <ul>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+
+    </div>
+</body>
+</html>
+```
+## 综合案例-导航
+需求:使用浮动，完成设计图中布局效果
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .nav {
+            margin: 50px auto;
+            width: 640px;
+            height: 50px;
+            background-color: #ffc0cb;
+        }
+        ul {
+            list-style: none;
+        }
+        .nav li {
+            float:left;
+        }
+        .nav li a {
+            /* display: inline-block; */
+            display: block;
+            width: 80px;
+            height: 50px;
+            /* background-color: green; */
+
+            /* 文字样式 */
+            text-align: center;
+            line-height: 50px;
+            color: white;
+            text-decoration: none;
+        }
+        .nav li a:hover {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航 -->
+    <div class="nav">
+        <ul>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+            <li><a href="#">新闻</a></li>
+        </ul>
+    </div>
+</body>
+</html>
+```
+
+## 清除浮动-场景搭建
+1. 清除浮动的影响:如果子元素浮动了，此时子元素不能撑开标准流的块级父元素
+2. 原因:子元素浮动后脱标一不占位置
+3. 目的:需要父元素有高度，从而不影响其他网页元素的布局
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .top {
+            margin: 0 auto;
+            width: 1000px;
+            /* 注释掉height: 300px;则受浮动影响，加上是为了规避该影响*/
+            background-color:pink;
+        }
+        .bottom {
+            height: 100px;
+            background-color: green;
+        }
+        .left {
+            float: left;
+            width: 200px;
+            height: 300px;
+            background-color: #ccc;
+        }
+        .right {
+            float: right;
+            width: 790px;
+            height: 300px;
+            background-color: skyblue;
+        }
+    </style>
+</head>
+<body>
+    <!-- 父子级标签，子级浮动，父级没有高度，后面的标准流盒子会受影响，显示到上面的位置 -->
+    <div class="top">
+        <div class="left"></div>
+        <div class="right"></div>
+    </div>
+    <div class="bottom"></div>
+</body>
+</html>
+```
+
+## 清除浮动-额外标签
+1. 在父元素内容的最后添加一个块级元素
+2. 给添加的块级元素设置 clear:both
+缺点:会在页面中添加额外的标签，会让页面的HTML结构变得复杂
+```html
+    <style>
+        .clearfix {
+            /* 清楚左右两侧浮动的影响 */
+            clear: both;
+        }
+    </style>
+<body>
+    <!-- 父子级标签，子级浮动，父级没有高度，后面的标准流盒子会受影响，显示到上面的位置 -->
+    <div class="top">
+        <div class="left"></div>
+        <div class="right"></div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="bottom"></div>
+</body>
+```
+
+## 清除浮动-单伪元素
+操作:用伪元素替代了额外标签
+优点:项目中使用，直接给标签加类即可清除浮动
+```html
+    <style>
+        /*单伪元素清除浮动 和 额外标签法原理是一样的 */
+        .clearfix::after {
+            content:'';
+
+        /*伪元素添加的标签是行内，要求块 */
+        display: block;
+        clear: both;
+        /* 为了兼容性(IE) */
+        height: 0;
+        visibility: hidden;
+        }
+    </style>
+<body>
+    <!-- 父子级标签，子级浮动，父级没有高度，后面的标准流盒子会受影响，显示到上面的位置 -->
+    <div class="top">
+        <div class="left"></div>
+        <div class="right"></div>
+        <!-- 通过css添加标签 -->
+    </div>
+    <div class="bottom"></div>
+</body>
+```
+
+## 清除浮动-双伪元素
+优点:项目中使用，直接给标签加类即可清除浮动
+```html
+    <style>
+        /* .clearfix::before作用：解决外边距塌陷问题
+            外边距塌陷：父子标签，都是块级，子级加margin会影响父级的位置 */
+        /* 清除浮动 */
+        .clearfix::before,
+        .clearfix::after {
+            content: "";
+            display: table;
+        }
+        /* 真正清除浮动的标签 */
+        .clearfix::after {
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+    <!-- 父子级标签，子级浮动，父级没有高度，后面的标准流盒子会受影响，显示到上面的位置 -->
+    <div class="top clearfix">
+        <div class="left"></div>
+        <div class="right"></div>
+        <!-- 通过css添加标签 -->
+    </div>
+    <div class="bottom"></div>
+</body>
+```
+## 清除浮动-overflow
+操作:直接给父元素设置 overflow: hidden
+优点:方便
+```html
+    <style>
+        .top {
+            margin: 0 auto;
+            width: 1000px;
+            /* height: 300px; overflow: hidden; */
+            background-color: pink;  
+            overflow: hidden;
+        }
+    </style>
+```
+## CSS定位装饰-定位-作用和使用步骤
+网页常见布局方式
+1. 标准流
+1.块级元素独占一行一垂直布局
+2.行内元素/行内块元素一行显示多个一水平布局
+2. 浮动，可以让原本垂直布局的 块级元素变成水平布局
+3. 定位
+1.可以让元素自由的摆放在网页的任意位置
+2.一般用于 盒子 之间的层叠情况
+4. 定位的常见应用场景
+1.可以解决盒子与盒子之间的层叠问题,定位之后的元素层级最高，可以层叠在其他盒子上面
+2.可以让盒子始终固定在屏幕中的某个位置
+属性名: position
+
+| 定位方式 | 属性值 |
+| -------- | -------- |
+| 静态定位 | static   |
+| 相对定位 | relative |
+| 绝对定位 | absolute |
+| 固定定位 | fixed    |
+设置偏移值:偏移值设置分为两个方向，水平和垂直方向各选一个使用即可选取的原则一般是就近原则 (离哪边近用哪个)
+
+| 方向 | 属性名 | 属性值 | 含义         |
+| ---- | ------ | ------- | -------------- |
+| 水平 | left   | 数字+px | 距离左边的距离 |
+| 水平 | right  | 数字+px | 距离右边的距离 |
+| 垂直 | top    | 数字+px | 距离上边的距离 |
+| 垂直 | bottom | 数字+px | 距离下边的距离 |
+
+## CSS定位装饰-定位-相对relative
+介绍:自恋型定位，相对于自己之前的位置进行移动
+代码: position: relative;
+特点:
+1. 需要配合方位属性实现移动
+2. 相对于自己原来位置进行移动
+3. 在页面中占位置 --> 没有脱标
+
+应用场景:
+1. 配合绝对定位组CP(子绝父相)
+2. 用于小范围的移动
+
+注意:
+1. 占有原来的位置
+2. 仍然具体标签原有的显示模式特点
+3. 改变位置参照自己原来的位置
+如果left和right都有，以left为准; top和bottom都有以top为准
+
+## CSS定位装饰-定位-绝对absolute-参照浏览器
+介绍:拼爹型定位，相对于非静态定位的父元素进行定位移动
+代码: position: absolute;
+
+特点:
+1. 需要配合方位属性实现移动
+2. 默认相对于浏览器可视区域进行移动
+3. 在页面中不占位置 --> 已经脱标
+应用场景:   配合绝对定位组CP(子绝父相)
+
+## 学成在线项目
+链接：https://pan.baidu.com/s/1WazGMdJtSunVDXnH66KyLw?pwd=2155 
+提取码：2155
+## CSS定位装饰-定位-居中/位移居中
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		.box {
+			/* 1.绝对定位的盒子不能使用左右margin auto居中 */
+			position: absolute;
+			/* margin: @ auto; */
+			left: 50%;
+			margin-left: -150px;
+
+			top: 50%;
+			margin-top: -150px;
+
+            /* 位移:自己宽度高度的一半 */
+            /* transform: translate(-50%， -50%); */
+
+			width: 300px;
+			height: 300px;
+			background-color:pink;
+		}
+	</style>
+</head>
+<body>
+	<div class="box"></div>
+</body>
+</html>
+```
+## CSS定位装饰-案例-banner
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		.banner {
+			position: relative;
+			margin: 0 auto;
+			width: 1226px;
+			height: 600px;
+		}
+		.mask {
+			position: absolute;
+			left: 0;
+			bottom: 0;
+		
+		/*绝对定位的盒子显示模式具备行内块特点: 加宽度高度生效，如果没有宽度也没有内容，盒子的宽度尺寸就是@*/
+		/* width: 1226px; */
+		/* 如果子级和父级的宽度相同 */
+		width: 100%;
+		height: 150px;
+		background-color: rgba(0,0,0,.5);
+		}
+	</style>
+</head>
+<body>
+	<div class="banner">
+		<img src="./images/bg.jpg" alt="">
+		<!-- 遮罩 -->
+		<div class="mask">111</div>
+		</div>
+</body>
+</html>
+```
+## CSS定位装饰-定位-固定
+介绍:死心眼型定位，相对于浏览器进行定位移动
+代码:position:fixed
+
+特点:
+1. 需要配合方位属性实现移动
+2. 相对于浏览器可视区域进行移动
+3. 在页面中不占位置 --> 已经脱标
+
+应用场景:让盒子固定在屏幕中的某个位置
+```html
+	<style>
+		/* css书写: 1.定位 / 浮动 / display; 2.盒子模型；3.文字属性 */
+		.box {
+		position: fixed;
+		left: 0;
+		top: 0;
+
+		/* 1，脱标-不占位置
+		2.改变位置参考浏览器窗口
+		3.具备行内块特点 */
+
+		width: 200px;
+		height: 200px;
+		background-color:pink;
+		}
+	</style>
+```
+## CSS定位装饰-定位-显示层级
+元素层级问题,不同布局方式元素的层级关系:
+标准流 < 浮动 < 定位
+
+不同定位之间的层级关系:
+相对、绝对、固定默认层级相同
+此时HTML中写在下面的元素层级更高，会覆盖上面的元素,后来者居上
+```html
+	<style>
+		div {
+			width: 200px;
+			height: 200px;
+		}
+		.one {
+			position: absolute;
+			left: 20px;
+			top: 50px;
+
+			z-index: 1;
+
+			background-color: pink;
+		}
+		
+		.two {
+			position: absolute;
+			left: 50px;
+			top: 100px;
+
+			background-color: skyblue;
+		}
+
+		/* 默认情况下，定位的盒子 后来者居上 ，
+		z-index:整数; 取值越大，显示顺序越靠上，z-index的默认值是e */
+	</style>
+```
+## CSS定位装饰-vertical-align-01
+基线:文字类至浏览器元素排版中存在用于对齐的基线(baseline)
+垂直对齐方式
+属性名: `vertical-align`
+
+| 属性值 | 效果         |
+| -------- | -------------- |
+| baseline | 默认，基线对齐 |
+| top      | 顶部对齐   |
+| middle   | 中部对齐   |
+| bottom   | 底部对齐   |
+
+## CSS定位装饰-光标类型
+属性名: cursor
+
+| 属性值 | 效果                       |
+| ------- | ---------------------------- |
+| default | 默认值，通常是箭头  |
+| pointer | 小手效果，提示用户可以点击 |
+| text    | 工字型，提示用户可以选择文字 |
+| move    | 十字光标，提示用户可以移动 |
+
+## CSS定位装饰-圆角边框-基本使用
+场景:让盒子四个角变得圆润，增加页面细节，提升用户体验
+属性名: `border-radius`
+常见取值: 数字+px、百分比
+赋值规则:从左上角开始赋值，然后顺时针赋值，没有赋值的看对角!
+```html
+	<style>
+		.box {
+			margin: 50px auto;
+			width: 200px;
+			height: 200px;
+			background-color: pink;
+			/*一个值:表示4个角是相同的 */
+			border-radius: 10px;
+			/* 4值: 左上 右上右下左下 - 从左上顺时针转一圈*/
+			/* border-radius: 10px 20px 40px 80px; */
+			/* border-radius: 10px 40px 80px; */
+
+			/* border-radius: 10px 80px;*/
+        }
+	</style>
+```
+
+## CSS定位装饰-圆角边框-工作场景
+画一个正圆:
+1. 盒子必须是正方形
+2. 设置边框圆角为盒子宽高的一半 一 border-radius:50%
+胶囊按钮:盒子要求是方形
+3. 设置 一 border-radius: 盒子高度的一半
+
+```html
+	<style>
+		.one {
+			width: 200px;
+			height: 200px;
+			background-color: pink;
+
+			/* border-radius: 100px;*/
+			/* 50% : 取盒子尺寸的一半*/
+			border-radius: 50%;
+		}
+			/* 胶囊状:长方形，border-radius取值是高度的一半*/
+			two {
+			width: 400px;
+			height: 200px;
+			background-color:skyblue;
+			border-radius: 100px;
+			}
+	</style>
+```
+
+## CSS定位装饰-溢出显示效果-overflow
+溢出部分:指的是盒子 内容部分 所超出盒子范围的区域
+场景:控制内容溢出部分的显示效果，如:显示、隐藏、滚动条......
+属性名: `overflow`
+
+| 属性值 | 效果                             |
+| ------- | ---------------------------------- |
+| visible | 默认值，溢出部分可见     |
+| hidden  | 溢出部分隐藏                 |
+| scroll  | 无论是否溢出，都显示滚动条 |
+| auto    | 根据是否溢出，自动显示或隐藏滚动条 |
+
+## 显示隐藏-基本使用
+场景:让某元素本身在屏幕中不可见。如: 鼠标:hover之后元素隐藏
+常见属性:
+1. `visibility: hidden`
+2. `display: none`
+
+## CSS定位装饰-透明属性opacitty
+(拓展)元素整体透明度
+场景:让某元素整体(包括内容)一起变透明
+属性名:`opacity`
+
+> 属性值:0~1之间的数字
+> 1:表示完全不透明
+> 0:表示完全透明
+
+注意点:opacity会让元素整体诱明包括里面的内容，如:文字、子元素等...
+
+## 精灵图的介绍
+场景:项目中将多张小图片，合并成一张大图片，这张大图片称之为精灵图
+优点:减少服务器发送次数，减轻服务器的压力，提高页面加载速度
+精灵图的使用步骤:
+1. 创建一个盒子设置盒子的尺寸和小图尺寸相同
+2. 将精灵图设置为盒子的背景图片
+3. 修改背景图位置,通过PxCook测量小图片左上角坐标，分别取**负值**设置给盒子的`background-position: x y`
+
+## 背景图片大小
+作用:设置背景图片的大小
+语法: background-size:宽度 高度
+
+| 取值  | 场景                                                   |
+| ------- | -------------------------------------------------------- |
+| 数字+px | 简单方便，常用                                    |
+| 百分比 | 相对于当前盒子自身的宽高百分比            |
+| contain | 包含，将背景图片等比例缩放，直到不会超出盒子的最大 |
+| cover   | 覆盖，将背景图片等比例缩放，直到刚好填满整个盒子没有空白 |
+
+background连写拓展
+完整连写:`background: color image repeat position/size;`
+注意点:`background-size`和`background`连写同时设置时，需要注意覆盖问题
+
+解决:
+1. 要么单独的样式写连写的下面
+2. 要么单独的样式写在连写的里面
+
+```html
+	<style>
+		.box {
+			width: 400px;
+			height:300px;
+			background-color:pink;
+			background-image: ur1(./images/1.jpg);
+
+			background-repeat: no-repeat;
+			/* background-size: 30epx; */
+			/* background-size: 50%; */
+
+			/*如果图的宽或高与盒子的尺寸相同了，另一个方向停止缩放 */
+			background-size: contain;
+			/* 保证宽或高和盒子尺寸完全相同 ，导致图片显示不全 */
+			/* background-size: cover; */
+
+			/* 工作中，图的比例和盒子的比例都是相同的，contain和cover效果完全相同;*/
+		}
+	</style>
+```
+## 盒子阴影
+作用:给盒子添加阴影效果吸引用户注意，体现页面的制作细节
+属性名:box-shadow
+
+| 参数   | 作用                     |
+| -------- | -------------------------- |
+| h-shadow | 必须，水平偏移量。允许负值 |
+| v-shadow | 必须，垂直偏移量。允许负值 |
+| blur     | 可选，模糊度         |
+| spread   | 可选，阴影扩大      |
+| color    | 可选，阴影颜色      |
+| inset    | 可选，将阴影改为内部阴影 |
+
+```html
+	<style>
+		.box {
+			width: 200px;
+			height: 200px;
+			background-color: pink;
+
+			/*注意:外阴影outset，不能添加outset，添加了会导致属性报错 */
+			box-shadow: 5px 10px 20px 10px green;
+		}
+	</style>
+```
+## 过渡
+作用:让元素的样式慢慢的变化,常配合hover使用,增强网页交互体验
+属性名:transition
+
+| 参数     | 取值                                                         |
+| ---------- | -------------------------------------------------------------- |
+| 过渡的属性 | a11:所有能过渡的属性都过渡,具体属性名如: width:只有width有过渡 |
+| 过渡的时长 | 数字+ s (秒)                                                |
+
+注意点:
+1. 过渡需要:默认状态和 hover状态样式不同，才能有过渡效果
+2. transition属性给需要过渡的元素本身加
+3. transition属性设置在不同状态中，效果不同的
+(1)给默认状态设置，鼠标移入移出都有过渡效果
+(2)给hover状态设置，鼠标移入有过渡效果，移出没有过渡效果
+```css
+	<style>
+		/* 过渡配合hover使用，谁变化谁加过渡属性 */
+		.box {
+			width: 200px;
+			height: 200px;
+			background-color:pink;
+			/* 宽度200，悬停的时候宽度600，花费1秒钟 */
+			/* transition: width 1s, background-color 2s; */
+
+			/*如果变化的属性多，直接写al1,表示所有 */
+			transition: all 1s;
+		}
+		.box:hover {
+			width: 600px;
+			background-color:red;
+		}
+	</style>
+```
+## 骨架标签
+
+`<!DOCTYPE html>文档类型声明，告诉浏览器该网页的 HTML版本`
+`<html lang="en"标识网页使用的 语言>`
+
+作用: 搜索引擎归类 + 浏览器翻译
+常见语言: zh-CN 简体中文/en 英文
+
+`<meta charset="UTF-8"> 标识网页使用的字符编码`
+
+作用:保存和打开的字符编码需要统一设置，否则可能会出现 乱码
+常见字符编码: UTF-8:万国码,国际化的字符编码，收录了全球语言的文字
+GB2312:6000+ 汉字
+GBK: 20000+ 汉字
+    注意点:开发中 **统一使用 UTF-8 字符编码** 即可
+## SEO
+SEO(Search Engine Optimization):搜索引擎优化
+作用:让网站在搜索引擎上的排名靠前
+
+提升SEO的常见方法:
+1. 竞价排名
+2. 将网页制作成html后缀
+3. 标签语义化(在合适的地方使用合适的标签)...
+
+title :网页标题标签
+description:网页描述标签
+keywords:网页关键词标签
+
+## favicon-标题图标
+ico图标设置
+场景:显示在标签页标题左侧的小图标，习惯使用.ico格式的图标
+常见代码:
+
+`<link rel="shortcut icon" href="ico图标路径" type="image/x-icon">`
+
+## 文件和目录准备
+1. 新建项目文件夹 xtx-pc-client，在VScode中打开
+在实际开发中，项目文件夹不建议使用中文
+所有项目相关文件都保存在xtx-pc-client目录中
+2. 复制 favicon.ico 到 xtx-pc-client 目录,一般习惯将ico图标放在项目根目录
+3. 复制 images 和 uploads 目录到 xtx-pc-client 目录中
+images:存放网站 固定使用 的图片素材，如: logo、样式修饰图片...等
+uploads:存放网站 非固定使用 的图片素材，如:商品图片、宣传图片...等
+4. 新建index.html在根目录
+5. 新建 css 文件夹保存网站的样式，并新建以下CSS文件:
+base.css: 基础公共样式
+common.css: 该网站中多个网页相同模块的重复样式，如:头部、底部
+index.css: 首页样式
+## 小兔鲜儿项目
+链接：https://pan.baidu.com/s/11hhQsw3nlGNew6XLrk0V5w?pwd=2155 
+提取码：2155

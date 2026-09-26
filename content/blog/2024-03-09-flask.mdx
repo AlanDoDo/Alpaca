@@ -1,0 +1,506 @@
+---
+title: "Flask框架从入门到精通"
+description: "from flask import Flask,jsonify"
+date: "2024-03-09"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x311.jpg"
+source: "legacy-blog"
+---
+
+## Flaks完整框架流程图解
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x309.jpg)
+
+## Flask请求响应
+
+```py
+# 导入模块
+from flask import Flask,jsonify
+from flask import views
+ 
+from flask import Flask
+from flask import request
+from flask import render_template
+from flask import redirect
+from flask import make_response
+app = Flask(__name__)
+app.debug=True
+
+
+@app.route('/login.html', methods=['GET', "POST"])
+def login():
+
+```
+
+### 请求相关信息
+
+```py
+request.method  				# 提交的方法
+print(request.args.get('name'))   # get请求提交的数据---GET
+print(request.form)               # post请求提交数据----POST
+print(request.values)             # get和post的汇总
+print(request.query_string)       # b'name=lqz&age=19'
+ 
+request.args  # get请求提及的数据
+request.form   # post请求提交的数据
+request.values  # post和get提交的数据总和
+request.cookies  # 客户端所带的cookie
+request.headers  # 请求头
+request.path     # 不带域名，请求路径
+request.full_path  # 不带域名，带参数的请求路径
+request.url           # 带域名带参数的请求路径
+request.base_url		# 带域名请求路径
+request.url_root      # 域名
+request.host_url		# 域名
+request.host			# 127.0.0.1:500
+request.files          # 获取文件对象
+obj = request.files['the_file_name']  # .files获取文件对象
+obj.save('/var/www/uploads/' + secure_filename(f.filename))
+```
+
+### flask新手四件套
+
+```py
+return "字符串"
+return render_template('html模板路径',**{})
+return redirect('/index.html')
+return jsonify({'k1':'v1'})  # 返回json格式
+```
+
+### 响应相关信息(响应response增加数据返回)
+
+```py
+# 将render_template('index.html')生成对象，写到make_response对象内
+response = make_response(render_template('index.html'))  
+response = make_response('hello')
+# response是flask.wrappers.Response类型
+response.delete_cookie('session')
+response.set_cookie('name', 'lqz')
+response.headers['X-Something'] = 'A value'
+return response
+# return "内容"
+ 
+if __name__ == '__main__':
+    app.run(port=8888)
+```
+
+## session
+
+### session与cookie简介
+
+1. cookie:存放在客户端的键值对
+2. session：存放在客户端的键值对
+3. token:存放在客户端，通过算法来校验
+
+### 在使用session之前必须现在设置一下密钥
+
+```py
+app.secret_key="asdas" #值随便
+```
+
+### dajngo中session与Flask的session差别
+
+
+1. 在django中发什么三件事:
+1 生成一个随机的字符串 2 往数据库存 3 写入cookie返回浏览器
+ 
+2. 在flask中没有数据库，但session是怎样实现的？
+生成一个密钥写入这个cookie,然后下次请求的时候，通过这个cookie解密，然后赋值给session
+
+
+### session使用
+
+```py
+-增：session['name']=lqz
+-查:session.get('name')
+-删:session.pop('name')
+```
+
+### set_cookie其他参数
+
+```py
+key, 键
+value='', 值
+max_age=None, 超时时间 cookie需要延续的时间(以秒为单位)如果参数是\ None`` ，这个cookie会延续到浏览器关闭为止
+expires=None, 超时时间(IE requires expires, so set it if hasn't been already.)
+path='/', Cookie生效的路径，/ 表示根路径，特殊的：根路径的cookie可以被任何url的页面访问，浏览器只会把cookie回传给带有该路径的页面，这样可以避免将cookie传给站点中的其他的应用。
+domain=None, Cookie生效的域名 你可用这个参数来构造一个跨站cookie。如， domain=".example.com"所构造的cookie对下面这些站点都是可读的：www.example.com 、 www2.example.com 和an.other.sub.domain.example.com 。如果该参数设置为 None ，cookie只能由设置它的站点读取
+secure=False, 浏览器将通过HTTPS来回传cookie
+httponly=False 只能http协议传输，无法被JavaScript获取(不是绝对，底层抓包可以获取到也可以被覆盖)
+```
+
+### 整体代码
+
+```py
+from flask import Flask,jsonify
+from flask import views
+ 
+from flask import Flask,session
+from flask import request
+from flask import render_template
+from flask import redirect
+from flask import make_response
+app = Flask(__name__)
+app.debug=True
+app.secret_key='sdfsdfsadfasdf'
+ 
+app.session_interface
+ 
+@app.route('/login.html', methods=['GET', "POST"])
+def login():
+    session['name']='lqz'
+    response=make_response('hello')
+    # response.set_cookie('name', 'lqz')
+    return response
+ 
+ 
+@app.route('/index', methods=['GET', "POST"])
+def index():
+    print(session.get('name'))
+    return '我是首页'
+if __name__ == '__main__':
+    app.run(port=8080)
+```
+
+
+## 源码分析SecureCookieSessionInterface
+
+### flask框架session源码分析
+```py
+app.session_interface
+```
+
+### 分析SecureCookieSessionInterface
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x310.jpg)
+
+### 分析save_seesion响应与open_session请求来的时候
+
+```py
+1.save_seesion
+	-响应的时候，把session中的值加密序列化放大到了cookie中，返回到浏览器中  
+    
+# save_session    
+"""
+# 将session设置成字典类型序列化转换成json字符串
+val = self.get_signing_serializer(app).dumps(dict(session))
+ # 1.响应对象内设置session
+response.set_cookie(
+	# 2.session的id	
+    app.session_cookie_name,
+    # 3.session的value
+    val,
+    expires=expires,
+)   
+"""
+ 
+    
+2.open_session
+	-请求来了，从cookie中取出值，反解，生成session对象，以后再视图函数中直接用sessoin就可以了。
+ 
+# open_session
+"""
+# 1.取出request.cookies中的value值
+val = request.cookies.get(app.session_cookie_name)
+# 2.将session的value值取出来反序列化
+data = s.loads(val, max_age=max_age)
+# 3.返回session(data)
+return self.session_class(data)
+"""
+``` 
+
+### 整体代码
+
+```py
+from flask import Flask,jsonify
+from flask import views
+ 
+from flask import Flask,session
+from flask import request
+from flask import render_template
+from flask import redirect
+from flask import make_response
+app = Flask(__name__)
+app.debug=True
+app.secret_key='sdfsdfsadfasdf'
+ 
+app.session_interface
+ 
+@app.route('/login.html', methods=['GET', "POST"])
+def login():
+    session['name']='lqz'
+    response=make_response('hello')
+    # response.set_cookie('name', 'lqz')
+    return response
+ 
+ 
+@app.route('/index', methods=['GET', "POST"])
+def index():
+    print(session.get('name'))
+    return '我是首页'
+if __name__ == '__main__':
+    app.run(port=8080)
+```
+
+## 闪现
+
+- 设置:flash('aaa')
+- 取值：get_flashed_message()
+- 假设在a页面操作出错，跳转到b页面，在b页面显示a页面的错误信息
+
+* 示例
+
+```py
+from flask import Flask,flash,get_flashed_messages,request,redirect
+ 
+app = Flask(__name__)
+app.secret_key = 'asdfasdf'
+ 
+ 
+@app.route('/user', methods=['GET', "POST"])
+def login():
+    try:
+        a=[1,2,3]
+        print(a[9])
+    except Exception as e:
+        print(e)
+    # 闪现普通使用(放在某个位置)
+    flash(str(e))
+    # 高级使用(闪现分类)
+    flash('超时错误', category="x1")
+    flash('xx错误', category="x3")
+    return response
+ 
+ 
+@app.route('/error', methods=['GET', "POST"])
+def error():
+    # 1.取出闪现(错误信息)
+    errors=get_flashed_messages()
+	# 2.取出闪现(高级使用分类)
+    errors=get_flashed_messages(category_filter=['x1'])
+    return render_template('error.html',errors=errors)
+ 
+if __name__ == '__main__':
+    app.run()
+```
+
+## 请求扩展
+
+### before_request
+
+```py
+# 请求来了会先走before_request
+1.类比django中间件中的process_request,写多个执行顺序是从上往下
+```
+
+```py
+#基于它做用户登录认证
+@app.before_request
+def process_request(*args,**kwargs):
+    if request.path == '/login':
+        return None
+    user = session.get('user_info')
+    if user:
+        return None
+    return redirect('/login')
+```
+
+### after_request
+
+```py
+# 从下往上，执行完了，响应走的时候执行
+1.类比django中间件中的process_response，每一个请求之后绑定一个函数，如果请求没有异常
+```
+
+
+```py
+@app.after_request
+def process_response1(response):
+    print('process_response1 走了')
+    return response
+```
+
+### before_first_request
+
+```py
+# 只会执行一次，程序启动以后，第一个访问的会触发，以后再也不会了
+1.第一次请求时,跟浏览器无关
+```
+
+```py
+@app.before_first_request
+def first():
+    pass
+```
+
+### teardown_request
+
+```py
+# 不管当次请求是否出异常，都会执行，出了异常，e就是异常对象，debug=False模式下,必须在上线模式下，False
+1.每一个请求之后绑定一个函数，即使遇到了异常
+ 
+# 作用:日志记录，
+```
+
+```py
+@app.teardown_request 
+def ter(e):
+    pass
+```
+
+### errorhandler
+
+```py
+# 只要是404错误，都会走它
+1.路径不存在时404，服务器内部错误500
+```
+
+```py
+@app.errorhandler(404)
+def error_404(arg):
+    return "404错误了"
+```
+
+### template_global
+
+**自定义标签**
+
+```py
+@app.template_global()
+def sb(a1, a2):
+    return a1 + a2
+#{{sb(1,2)}}
+```
+
+### template_filter
+
+**自定义过滤器**
+
+```py
+@app.template_filter()
+def db(a1, a2, a3):
+    return a1 + a2 + a3
+#{{ 1|db(2,3)}}
+```
+
+### 总结
+
+
+1. 重点掌握before_request和after_request，
+ 
+2. 注意有多个的情况，执行顺序
+ 
+3. before_request请求拦截后(也就是有return值)，response所有都执行
+
+## 中间件(了解)
+
+```py
+from flask import Flask
+ 
+app = Flask(__name__)
+ 
+@app.route('/')
+def index():
+    return 'Hello World!'
+# 模拟中间件
+class Md(object):
+    def __init__(self,old_wsgi_app):
+        self.old_wsgi_app = old_wsgi_app
+ 
+    def __call__(self,  environ, start_response):
+        print('开始之前')
+        ret = self.old_wsgi_app(environ, start_response)
+        print('结束之后')
+        return ret
+ 
+if __name__ == '__main__':
+    #1我们发现当执行app.run方法的时候，最终执行run_simple，最后执行app(),也就是在执行app.__call__方法	
+    #2 在__call__里面，执行的是self.wsgi_app().那我们希望在执行他本身的wsgi之前做点事情。
+    #3 所以我们先用Md类中__init__，保存之前的wsgi,然后我们用将app.wsgi转化成Md的对象。
+    #4 那执行新的的app.wsgi_app，就是执行Md的__call__方法。
+    #把原来的wsgi_app替换为自定义的，
+    
+    app.wsgi_app = Md(app.wsgi_app)
+    app.run()
+```
+
+**请求所有的流程**
+
+```py
+ctx = self.request_context(environ)
+        error = None
+        try:
+            try:
+                ctx.push()
+                #根据路径去执行视图函数，视图类
+                response = self.full_dispatch_request()
+            except Exception as e:
+                error = e
+                response = self.handle_exception(e)
+            except:  # noqa: B001
+                error = sys.exc_info()[1]
+                raise
+            return response(environ, start_response)
+        finally:
+            #不管出不出异常，都会走这里
+            if self.should_ignore_error(error):
+                error = None
+            ctx.auto_pop(error)
+```
+
+### 蓝图
+
+对程序进行**目录结构**划分
+
+1. 使用步骤
+
+    1.实例化得到一个蓝图对象(可以指定直接的静态文件和模板路径)
+    2.在app中注册蓝图(可以指定前缀)
+    3.以后再写路由装饰器，使用蓝图对象的.route
+
+2. 不使用蓝图，自己分文件
+
+目录结构：
+
+    -templates
+    -views
+        -__init__.py
+        -user.py
+        -order.py
+    -app.py
+
+app.py
+```py
+from views import app
+if __name__ == '__main__':
+    app.run()
+```
+
+init.py
+```py
+from flask import Flask,request
+app = Flask(__name__)
+#不导入这个不行
+from . import account
+from . import order
+from . import user
+```
+
+user.py
+```py
+from . import app
+@app.route('/user')
+def user():
+    return 'user'
+```
+
+order.py
+```py
+from . import app
+@app.route('/order')
+def order():
+    return 'order'
+```

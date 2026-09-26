@@ -1,0 +1,1990 @@
+---
+title: "BOM"
+description: "BOM (Browser ObjectModel)即浏览器对象模型，它提供了独立于内容而与浏览器窗口进行交互的对象，其核心对象是window。"
+date: "2023-07-10"
+category: "编程"
+tags: ["BOM"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x33.jpg"
+source: "legacy-blog"
+---
+
+## BOM导读
+BOM (Browser ObjectModel)即浏览器对象模型，它`提供了独立于内容而与浏览器窗口进行交互的对象`，其核心对象是window。
+BOM 由一系列相关的对象构成，并且每个对象都提供了很多方法与属性
+BOM 缺乏标准，JavaScript语法的标准化组织是ECMA，DOM 的标准化组织是 W3C，BOM最初是Netscape浏览器标准的一部分。
+
+| DOM                                 | BOM                                             |
+| ----------------------------------- | ----------------------------------------------- |
+| 文档对象模型                  | 浏览器对象模型                           |
+| DOM就是把[文档]当做一个[对象]来看待 | 把[浏览器]当做一个[对象]来看待     |
+| DOM的顶级对象是 document      | BOM的顶级对象是window                     |
+| DOM主要学习的是操作页面元素 | BOM学习的是浏览器窗口交互的一些对象 |
+| DOMW3C标准规范                  | BOM是浏览器厂商在各自浏览器上定义的，兼容性较差 |
+
+window 对象是浏览器的顶级对象，它具有双重角色
+1. 它是JS 访问浏览器窗口的一个接口。
+2. 它是一个全局对象。定义在全局作用域中的变量、函数都会变成window对象的属性和方法在调用的时候可以省略window，前面学习的对话框都属于window 对象方法，如 alert()、prompt()等.
+
+## 页面加载事件
+window.onload 是窗口(页面)加载事件,当文档内容完全加载完成会触发该事件(包括图像、脚本文件、CSS文件等),就调用的处理函数。
+注意 :
+1. 有了window.onload就可以把JS代码写到页面元素的上方，因为onload是等页面内容全部加载完毕再去执行处理函数。
+2. window.onload传统注册事件方式只能写一次，如果有多个，会以最后一window.onload为准
+3. 如果使用 addEventlistener 则没有限制
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        // window.onload = function() {
+        //     var btn = document.querySelector('button');
+        //     btn.addEventListener('click', function() {
+        //         alert('点击我');
+        //     })
+        // }
+        // window.onload = function() {
+        //     alert(22);
+        // }
+        window.addEventListener('load', function() {
+            var btn = document.querySelector('button');
+            btn.addEventListener('click', function() {
+                alert('点击我');
+            })
+        })
+        window.addEventListener('load', function() {
+
+            alert(22);
+        })
+        document.addEventListener('DOMContentLoaded', function() {
+                alert(33);
+            })
+            // load 等页面内容全部加载完毕，包含页面dom元素 图片 flash  css 等等
+            // DOMContentLoaded 是DOM 加载完毕，不包含图片 falsh css 等就可以执行 加载速度比 load更快一些
+    </script>
+</head>
+
+<body>
+
+    <button>点击</button>
+
+</body>
+
+</html>
+```
+
+## 调整窗口大小事件
+window.onresize 是调整窗口大小加载事件当触发时就调用的处理函数
+注意
+1. 只要窗口大小发生像素变化，就会触发这个事件。
+2. 我们经常利用这个事件完成响应式布局。 windowinnerWidth 当前屏幕的宽度
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            width: 200px;
+            height: 200px;
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        window.addEventListener('load', function() {
+            var div = document.querySelector('div');
+            window.addEventListener('resize', function() {
+                console.log(window.innerWidth);
+
+                console.log('变化了');
+                if (window.innerWidth <= 800) {
+                    div.style.display = 'none';
+                } else {
+                    div.style.display = 'block';
+                }
+
+            })
+        })
+    </script>
+    <div></div>
+</body>
+
+</html>
+```
+## 定时器之setTimeout
+window对象给我们提供了2个非常好用的方法-定时器
+`setTimeout()方法`用于设置一个定时器，该定时器在定时器到期后执行调用函数
+```html
+<body>
+    <script>
+        // 1. setTimeout 
+        // 语法规范：  window.setTimeout(调用函数, 延时时间);
+        // 1. 这个window在调用的时候可以省略
+        // 2. 这个延时时间单位是毫秒 但是可以省略，如果省略默认的是0
+        // 3. 这个调用函数可以直接写函数 还可以写 函数名 还有一个写法 '函数名()'
+        // 4. 页面中可能有很多的定时器，我们经常给定时器加标识符 （名字)
+        // setTimeout(function() {
+        //     console.log('时间到了');
+
+        // }, 2000);
+        function callback() {
+            console.log('爆炸了');
+
+        }
+        var timer1 = setTimeout(callback, 3000);
+        var timer2 = setTimeout(callback, 5000);
+        // setTimeout('callback()', 3000); // 我们不提倡这个写法
+    </script>
+</body>
+```
+## 回调函数以及5秒之后自动关闭广告
+```html
+<body>
+    <img src="images/ad.jpg" alt="" class="ad">
+    <script>
+        var ad = document.querySelector('.ad');
+        setTimeout(function() {
+            ad.style.display = 'none';
+        }, 5000);
+    </script>
+</body>
+```
+## 清除定时器clearTimeout
+```html
+<body>
+    <button>点击停止定时器</button>
+    <script>
+        var btn = document.querySelector('button');
+        var timer = setTimeout(function() {
+            console.log('爆炸了');
+
+        }, 5000);
+        btn.addEventListener('click', function() {
+            clearTimeout(timer);
+        })
+    </script>
+</body>
+```
+## 定时器之setInterval
+```html
+<body>
+    <script>
+        // 1. setInterval 
+        // 语法规范：  window.setInterval(调用函数, 延时时间);
+        setInterval(function() {
+            console.log('继续输出');
+
+        }, 1000);
+        // 2. setTimeout  延时时间到了，就去调用这个回调函数，只调用一次 就结束了这个定时器
+        // 3. setInterval  每隔这个延时时间，就去调用这个回调函数，会调用很多次，重复调用这个函数
+    </script>
+</body>
+```
+## 倒计时效果
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            margin: 200px;
+        }
+        
+        span {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            line-height: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <span class="hour">1</span>
+        <span class="minute">2</span>
+        <span class="second">3</span>
+    </div>
+    <script>
+        // 1. 获取元素 
+        var hour = document.querySelector('.hour'); // 小时的黑色盒子
+        var minute = document.querySelector('.minute'); // 分钟的黑色盒子
+        var second = document.querySelector('.second'); // 秒数的黑色盒子
+        var inputTime = +new Date('2023-5-1 18:00:00'); // 返回的是用户输入时间总的毫秒数
+        countDown(); // 我们先调用一次这个函数，防止第一次刷新页面有空白 
+        // 2. 开启定时器
+        setInterval(countDown, 1000);
+
+        function countDown() {
+            var nowTime = +new Date(); // 返回的是当前时间总的毫秒数
+            var times = (inputTime - nowTime) / 1000; // times是剩余时间总的秒数 
+            var h = parseInt(times / 60 / 60 % 24); //时
+            h = h < 10 ? '0' + h : h;
+            hour.innerHTML = h; // 把剩余的小时给 小时黑色盒子
+            var m = parseInt(times / 60 % 60); // 分
+            m = m < 10 ? '0' + m : m;
+            minute.innerHTML = m;
+            var s = parseInt(times % 60); // 当前的秒
+            s = s < 10 ? '0' + s : s;
+            second.innerHTML = s;
+        }
+    </script>
+</body>
+
+</html
+```
+## 清除定时器clearInterval
+```html
+<body>
+    <button class="begin">开启定时器</button>
+    <button class="stop">停止定时器</button>
+    <script>
+        var begin = document.querySelector('.begin');
+        var stop = document.querySelector('.stop');
+        var timer = null; // 全局变量  null是一个空对象
+        begin.addEventListener('click', function() {
+            timer = setInterval(function() {
+                console.log('ni hao ma');
+
+            }, 1000);
+        })
+        stop.addEventListener('click', function() {
+            clearInterval(timer);
+        })
+    </script>
+</body>
+```
+## 发送短信案例
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    手机号码： <input type="number"> <button>发送</button>
+    <script>
+        // 按钮点击之后，会禁用 disabled 为true 
+        // 同时按钮里面的内容会变化， 注意 button 里面的内容通过 innerHTML修改
+        // 里面秒数是有变化的，因此需要用到定时器
+        // 定义一个变量，在定时器里面，不断递减
+        // 如果变量为0 说明到了时间，我们需要停止定时器，并且复原按钮初始状态
+        var btn = document.querySelector('button');
+        var time = 3; // 定义剩下的秒数
+        btn.addEventListener('click', function() {
+            btn.disabled = true;
+            var timer = setInterval(function() {
+                if (time == 0) {
+                    // 清除定时器和复原按钮
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.innerHTML = '发送';
+                } else {
+                    btn.innerHTML = '还剩下' + time + '秒';
+                    time--;
+                }
+            }, 1000);
+
+        })
+    </script>
+</body>
+
+</html>
+```
+## this指向问题
+```html
+<body>
+    <button>点击</button>
+    <script>
+        // this 指向问题 一般情况下this的最终指向的是那个调用它的对象
+
+        // 1. 全局作用域或者普通函数中this指向全局对象window（ 注意定时器里面的this指向window）
+        console.log(this);
+
+        function fn() {
+            console.log(this);
+
+        }
+        window.fn();
+        window.setTimeout(function() {
+            console.log(this);
+
+        }, 1000);
+        // 2. 方法调用中谁调用this指向谁
+        var o = {
+            sayHi: function() {
+                console.log(this); // this指向的是 o 这个对象
+
+            }
+        }
+        o.sayHi();
+        var btn = document.querySelector('button');
+        // btn.onclick = function() {
+        //     console.log(this); // this指向的是btn这个按钮对象
+
+        // }
+        btn.addEventListener('click', function() {
+                console.log(this); // this指向的是btn这个按钮对象
+
+            })
+            // 3. 构造函数中this指向构造函数的实例
+        function Fun() {
+            console.log(this); // this 指向的是fun 实例对象
+
+        }
+        var fun = new Fun();
+    </script>
+</body>
+```
+## JS同步和异步
+同步:`前一个任务结束后再执行后一个任务`，程序的执行顺序与任务的排列顺序是一致的、同步的。
+## 同步任务和异步任务执行过程
+
+1. 先执行执行栈中的同步任务
+2. 异步任务(回调函数)放入任务队列中。
+3. 一旦执行栈中的所有同步任务执行完毕，系统就会按次序读取任务队列中的异步任务，于是被读取的异步任务结束等待状态，进入执行栈，开始执行。
+
+## js执行机制
+由于主线程不断的重复获得任务、执行任务、再获取任务、再执行，所以这种机制被称为`事件循环(eventloop)`。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x35.jpg)
+
+## location对象常见属性
+window对象给我们提供了一个`location 属性`用于获取或设置窗体的URL，并且可以用于解析URL。因为这个属性返回的是一个对象，所以我们将这个属性也称 location 对象
+
+URL:`统一资源定位符(Uniform Resource Locator, URL)`是联网上标准资源的地址互联网上的每个文件都有一个唯一的URL，它包含的信息指出文件的位置以及浏览器应该怎么处理它
+
+| protocol | 通信协议 常用的http,ftp,maito等                                    |
+| -------- | -------------------------------------------------------------------------- |
+| host     | 主机 (域名) www.alandodo.cn                                            |
+| port     | 端口号可选，省略时使用方案的默认端口 如http的默认端口为80 |
+| path     | 路径由 零或多个’/‘符号隔开的字符串，一般用来表示主机上的一个目录或文件地址 |
+| query    | 参数 以键值对的形式,通过&符号分隔开来                     |
+| fragment | 片段 #后面内容 常见于链接 锚点                                |
+
+location对象的属性：
+| location对象属性 | 返回值                          |
+| ----------------- | ---------------------------------- |
+| location.href     | 获取或者设置 整个URL       |
+| location. host    | 返回主机 (域名) www.alandodo.cn |
+| location.port     | 返回端口号 如果未写返回 空字符串 |
+| location.pathname | 返回路径                       |
+| location. search  | 返回参数                       |
+| location. hash    | 返回片段 #后面内容 常见于链接 锚点 |
+
+## 5秒之后跳转页面
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <button>点击</button>
+    <div></div>
+    <script>
+        var btn = document.querySelector('button');
+        var div = document.querySelector('div');
+        btn.addEventListener('click', function() {
+            // console.log(location.href);
+            location.href = 'http://www.alandodo.cn';
+        })
+        var timer = 5;
+        setInterval(function() {
+            if (timer == 0) {
+                location.href = 'http://www.alandodo.cn';
+            } else {
+                div.innerHTML = '您将在' + timer + '秒钟之后跳转到首页';
+                timer--;
+            }
+
+        }, 1000);
+    </script>
+</body>
+
+</html>
+```
+## 获取URL参数
+```html
+<body>
+    <form action="index.html">
+        用户名： <input type="text" name="uname">
+        <input type="submit" value="登录">
+    </form>
+</body>
+```
+```js
+<body>
+    <div></div>
+    <script>
+        console.log(location.search); // ?uname=andy
+        // 1.先去掉？  substr('起始的位置'，截取几个字符);
+        var params = location.search.substr(1); // uname=andy
+        console.log(params);
+        // 2. 利用=把字符串分割为数组 split('=');
+        var arr = params.split('=');
+        console.log(arr); // ["uname", "ANDY"]
+        var div = document.querySelector('div');
+        // 3.把数据写入div中
+        div.innerHTML = arr[1] + '欢迎您';
+    </script>
+</body>
+```
+## location常见方法
+```html
+<body>
+    <button>点击</button>
+    <script>
+        var btn = document.querySelector('button');
+        btn.addEventListener('click', function() {
+            // 记录浏览历史，所以可以实现后退功能
+            // location.assign('http://www.itcast.cn');
+            // 不记录浏览历史，所以不可以实现后退功能
+            // location.replace('http://www.itcast.cn');
+            location.reload(true);
+        })
+    </script>
+</body>
+```
+## navigator对象
+```html
+  <script>
+    if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+        window.location.href = "../H5/index.html"; //手机
+    } else {
+      window.location.href = ""; // 电脑
+    }
+</script>
+```
+## history对象
+
+| history对象方法 | 作用                                                     |
+| --------------- | ---------------------------------------------------------- |
+| back()          | 可以后退功能                                         |
+| forward()       | 前进功能                                               |
+| go(参数)      | 前进后退功能 参数如果是 1 前进1个页面 如果是-1 后退1个页面 |
+
+```html
+<body>
+    <a href="list.html">点击我去往列表页</a>
+    <button>前进</button>
+    <script>
+        var btn = document.querySelector('button');
+        btn.addEventListener('click', function() {
+            // history.forward();
+            history.go(1);
+        })
+    </script>
+</body>
+```
+```html
+<body>
+    <a href="index.html">点击我去往首页</a>
+    <button>后退</button>
+    <script>
+        var btn = document.querySelector('button');
+        btn.addEventListener('click', function() {
+            // history.back();
+            history.go(-1);
+        })
+    </script>
+</body>
+```
+## offsetLeft和offsetTop获取元素偏移
+offset 翻译过来就是偏移量，我们使用 offset 系列相关属性可以动态的得到该元素的位置(偏移)、大小等.
+
+> 获得元素距离带有定位父元素的位置
+> 获得元素自身的大小(宽度高度)
+> 注意:返回的数值都不带单位
+
+| offset系列属性   | 作用                                                        |
+| -------------------- | ------------------------------------------------------------- |
+| element.offsetParent | 返回作为该元素带有定位的父级元素 如果父级都没有定位则返回body |
+| element.offsetTop    | 返回元素相对带有定位父元素上方的偏移        |
+| element.offsetLeft   | 返回元素相对带有定位父元素左边框的偏移     |
+| element.offsetWidth  | 返回自身包括padding、 边框、内容区的宽度，返回数值不带单位 |
+| element.offsetHeight | 返回自身包括padding、边框、内容区的高度，返回数值不带单位 |
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .father {
+            /* position: relative; */
+            width: 200px;
+            height: 200px;
+            background-color: pink;
+            margin: 150px;
+        }
+        
+        .son {
+            width: 100px;
+            height: 100px;
+            background-color: purple;
+            margin-left: 45px;
+        }
+        
+        .w {
+            height: 200px;
+            background-color: skyblue;
+            margin: 0 auto 200px;
+            padding: 10px;
+            border: 15px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="father">
+        <div class="son"></div>
+    </div>
+    <div class="w"></div>
+    <script>
+        // offset 系列
+        var father = document.querySelector('.father');
+        var son = document.querySelector('.son');
+        // 1.可以得到元素的偏移 位置 返回的不带单位的数值  
+        console.log(father.offsetTop);
+        console.log(father.offsetLeft);
+        // 它以带有定位的父亲为准  如果么有父亲或者父亲没有定位 则以 body 为准
+        console.log(son.offsetLeft);
+        var w = document.querySelector('.w');
+        // 2.可以得到元素的大小 宽度和高度 是包含padding + border + width 
+        console.log(w.offsetWidth);
+        console.log(w.offsetHeight);
+        // 3. 返回带有定位的父亲 否则返回的是body
+        console.log(son.offsetParent); // 返回带有定位的父亲 否则返回的是body
+        console.log(son.parentNode); // 返回父亲 是最近一级的父亲 亲爸爸 不管父亲有没有定位
+    </script>
+</body>
+
+</html>
+```
+## offset与style区别
+
+| offset                                                                                       | style                                                                                     |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| offset 可以得到任意样式表中的样式值                                            | style 只能得到行内样式表中的样式值                                          |
+| offset 系列获得的数值是没有单位的                                               | style.width 获得的是带有单位的字符串                                          |
+| offsetWidth 包含padding+border+width                                                       | style.width 获得不包含padding和border的值                                         |
+| offsetWidth 等属性是只读属性，只能获取不能赋值所以，我们想要获取元素大小位置，用offset更合适 | style.width 是可读写属性，可以获取也可以赋值所以，我们想要给元素更改值，则需要用style改变 |
+
+```html
+<body>
+    <div class="box" style="width: 200px;"></div>
+    <script>
+        // offset与style的区别
+        var box = document.querySelector('.box');
+        console.log(box.offsetWidth);
+        console.log(box.style.width);
+        // box.offsetWidth = '300px';
+        box.style.width = '300px';
+    </script>
+</body>
+```
+## 获取鼠标在盒子内的坐标
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 300px;
+            background-color: pink;
+            margin: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box"></div>
+    <script>
+        // 我们在盒子内点击， 想要得到鼠标距离盒子左右的距离。
+        // 首先得到鼠标在页面中的坐标（ e.pageX, e.pageY）
+        // 其次得到盒子在页面中的距离(box.offsetLeft, box.offsetTop)
+        // 用鼠标距离页面的坐标减去盒子在页面中的距离， 得到 鼠标在盒子内的坐标
+        var box = document.querySelector('.box');
+        box.addEventListener('mousemove', function(e) {
+            // console.log(e.pageX);
+            // console.log(e.pageY);
+            // console.log(box.offsetLeft);
+            var x = e.pageX - this.offsetLeft;
+            var y = e.pageY - this.offsetTop;
+            this.innerHTML = 'x坐标是' + x + ' y坐标是' + y;
+        })
+    </script>
+</body>
+
+</html>
+```
+## 拖动模态框
+```html
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .login-header {
+            width: 100%;
+            text-align: center;
+            height: 30px;
+            font-size: 24px;
+            line-height: 30px;
+        }
+        
+        ul,
+        li,
+        ol,
+        dl,
+        dt,
+        dd,
+        div,
+        p,
+        span,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        a {
+            padding: 0px;
+            margin: 0px;
+        }
+        
+        .login {
+            display: none;
+            width: 512px;
+            height: 280px;
+            position: fixed;
+            border: #ebebeb solid 1px;
+            left: 50%;
+            top: 50%;
+            background: #ffffff;
+            box-shadow: 0px 0px 20px #ddd;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        
+        .login-title {
+            width: 100%;
+            margin: 10px 0px 0px 0px;
+            text-align: center;
+            line-height: 40px;
+            height: 40px;
+            font-size: 18px;
+            position: relative;
+            cursor: move;
+        }
+        
+        .login-input-content {
+            margin-top: 20px;
+        }
+        
+        .login-button {
+            width: 50%;
+            margin: 30px auto 0px auto;
+            line-height: 40px;
+            font-size: 14px;
+            border: #ebebeb 1px solid;
+            text-align: center;
+        }
+        
+        .login-bg {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            background: rgba(0, 0, 0, .3);
+        }
+        
+        a {
+            text-decoration: none;
+            color: #000000;
+        }
+        
+        .login-button a {
+            display: block;
+        }
+        
+        .login-input input.list-input {
+            float: left;
+            line-height: 35px;
+            height: 35px;
+            width: 350px;
+            border: #ebebeb 1px solid;
+            text-indent: 5px;
+        }
+        
+        .login-input {
+            overflow: hidden;
+            margin: 0px 0px 20px 0px;
+        }
+        
+        .login-input label {
+            float: left;
+            width: 90px;
+            padding-right: 10px;
+            text-align: right;
+            line-height: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+        
+        .login-title span {
+            position: absolute;
+            font-size: 12px;
+            right: -20px;
+            top: -30px;
+            background: #ffffff;
+            border: #ebebeb solid 1px;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-header"><a id="link" href="javascript:;">点击，弹出登录框</a></div>
+    <div id="login" class="login">
+        <div id="title" class="login-title">登录会员
+            <span><a id="closeBtn" href="javascript:void(0);" class="close-login">关闭</a></span>
+        </div>
+        <div class="login-input-content">
+            <div class="login-input">
+                <label>用户名：</label>
+                <input type="text" placeholder="请输入用户名" name="info[username]" id="username" class="list-input">
+            </div>
+            <div class="login-input">
+                <label>登录密码：</label>
+                <input type="password" placeholder="请输入登录密码" name="info[password]" id="password" class="list-input">
+            </div>
+        </div>
+        <div id="loginBtn" class="login-button"><a href="javascript:void(0);" id="login-button-submit">登录会员</a></div>
+    </div>
+    <!-- 遮盖层 -->
+    <div id="bg" class="login-bg"></div>
+    <script>
+        // 1. 获取元素
+        var login = document.querySelector('.login');
+        var mask = document.querySelector('.login-bg');
+        var link = document.querySelector('#link');
+        var closeBtn = document.querySelector('#closeBtn');
+        var title = document.querySelector('#title');
+        // 2. 点击弹出层这个链接 link  让mask 和login 显示出来
+        link.addEventListener('click', function() {
+                mask.style.display = 'block';
+                login.style.display = 'block';
+            })
+            // 3. 点击 closeBtn 就隐藏 mask 和 login 
+        closeBtn.addEventListener('click', function() {
+                mask.style.display = 'none';
+                login.style.display = 'none';
+            })
+            // 4. 开始拖拽
+            // (1) 当我们鼠标按下， 就获得鼠标在盒子内的坐标
+        title.addEventListener('mousedown', function(e) {
+            var x = e.pageX - login.offsetLeft;
+            var y = e.pageY - login.offsetTop;
+            // (2) 鼠标移动的时候，把鼠标在页面中的坐标，减去 鼠标在盒子内的坐标就是模态框的left和top值
+            document.addEventListener('mousemove', move)
+
+            function move(e) {
+                login.style.left = e.pageX - x + 'px';
+                login.style.top = e.pageY - y + 'px';
+            }
+            // (3) 鼠标弹起，就让鼠标移动事件移除
+            document.addEventListener('mouseup', function() {
+                document.removeEventListener('mousemove', move);
+            })
+        })
+    </script>
+</body>
+
+</html>
+```
+## client系列
+
+| client系列属性   | 作用                                                        |
+| -------------------- | ------------------------------------------------------------- |
+| element.clientTop    | 返回元素上边框的大小                                |
+| element.clientLeft   | 返回元素左边框的大小                                |
+| element.clientWidth  | 返回自身包括padding、内容区的宽度，不含边框，返回数值不带单位 |
+| element.clientHeight | 返回自身包括padding、内容区的高度，不含边框，返回数值不带单位 |
+
+## 立即执行函数
+立即执行函数(function() {})() 或者(function(){}())
+主要作用:创建一个独立的作用域。避免了命名冲突问题
+## 淘宝flexble.JS源码分析及pageshow事件
+下面三种情况都会刷新页面都会触发load事件
+1. a标签的超链接
+2. F5或者刷新按钮(强制刷新 )
+3. 前进后退按钮
+但是火狐中，有个特点，有个“往返缓存”，这个缓存中不仅保存着页面数据，还保存了DOM和JavaScript的状态;实际上是将整个页面都保存在了内存里。所以此时后退按钮不能刷新页面。
+此时可以使用 pageshow事件来触发。这个事件在页面显示时触发，无论页面是否来自缓存。在重新加载页面中，pageshow会在load事件触发后触发;根据事件对象中的persisted来判断是否是缓存中的页面触发的pageshow事件，`注意这个事件给window添加。`
+
+```js
+(function flexible(window, document) {
+    // 获取的html 的根元素
+    var docEl = document.documentElement
+        // dpr 物理像素比
+    var dpr = window.devicePixelRatio || 1
+
+    // adjust body font size  设置我们body 的字体大小
+    function setBodyFontSize() {
+        // 如果页面中有body 这个元素 就设置body的字体大小
+        if (document.body) {
+            document.body.style.fontSize = (12 * dpr) + 'px'
+        } else {
+            // 如果页面中没有body 这个元素，则等着 我们页面主要的DOM元素加载完毕再去设置body
+            // 的字体大小
+            document.addEventListener('DOMContentLoaded', setBodyFontSize)
+        }
+    }
+    setBodyFontSize();
+
+    // set 1rem = viewWidth / 10    设置我们html 元素的文字大小
+    function setRemUnit() {
+        var rem = docEl.clientWidth / 10
+        docEl.style.fontSize = rem + 'px'
+    }
+
+    setRemUnit()
+
+    // reset rem unit on page resize  当我们页面尺寸大小发生变化的时候，要重新设置下rem 的大小
+    window.addEventListener('resize', setRemUnit)
+        // pageshow 是我们重新加载页面触发的事件
+    window.addEventListener('pageshow', function(e) {
+        // e.persisted 返回的是true 就是说如果这个页面是从缓存取过来的页面，也需要从新计算一下rem 的大小
+        if (e.persisted) {
+            setRemUnit()
+        }
+    })
+
+    // detect 0.5px supports  有些移动端的浏览器不支持0.5像素的写法
+    if (dpr >= 2) {
+        var fakeBody = document.createElement('body')
+        var testElement = document.createElement('div')
+        testElement.style.border = '.5px solid transparent'
+        fakeBody.appendChild(testElement)
+        docEl.appendChild(fakeBody)
+        if (testElement.offsetHeight === 1) {
+            docEl.classList.add('hairlines')
+        }
+        docEl.removeChild(fakeBody)
+    }
+}(window, document))
+```
+## scroll系列
+scroll翻译过来就是滚动的，我们使用scroll系列的相关属性可以动态的得到该元素的大小、滚动距离等。
+
+| scroll系列属性   | 作用                                         |
+| -------------------- | ---------------------------------------------- |
+| element.scrollTop    | 返回被卷去的上侧距离，返回数值不带单位 |
+| element.scrollLeft   | 返回被卷去的左侧距离，返回数值不带单位 |
+| element.scrollWidth  | 返回自身实际的宽度，不含边框，返回数值不带单位 |
+| element.scrollHeight | 返回自身实际的高度，不含边框，返回数值不带单位 |
+
+## 仿淘宝固定侧边栏
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .slider-bar {
+            position: absolute;
+            left: 50%;
+            top: 300px;
+            margin-left: 600px;
+            width: 45px;
+            height: 130px;
+            background-color: pink;
+        }
+        
+        .w {
+            width: 1200px;
+            margin: 10px auto;
+        }
+        
+        .header {
+            height: 150px;
+            background-color: purple;
+        }
+        
+        .banner {
+            height: 250px;
+            background-color: skyblue;
+        }
+        
+        .main {
+            height: 1200px;
+            background-color: yellowgreen;
+        }
+        
+        span {
+            display: none;
+            position: absolute;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slider-bar">
+        <span class="goBack">返回顶部</span>
+    </div>
+    <div class="header w">头部区域</div>
+    <div class="banner w">banner区域</div>
+    <div class="main w">主体部分</div>
+    <script>
+        //1. 获取元素
+        var sliderbar = document.querySelector('.slider-bar');
+        var banner = document.querySelector('.banner');
+        // banner.offestTop 就是被卷去头部的大小 一定要写到滚动的外面
+        var bannerTop = banner.offsetTop
+            // 当我们侧边栏固定定位之后应该变化的数值
+        var sliderbarTop = sliderbar.offsetTop - bannerTop;
+        // 获取main 主体元素
+        var main = document.querySelector('.main');
+        var goBack = document.querySelector('.goBack');
+        var mainTop = main.offsetTop;
+        // 2. 页面滚动事件 scroll
+        document.addEventListener('scroll', function() {
+                // console.log(11);
+                // window.pageYOffset 页面被卷去的头部
+                // console.log(window.pageYOffset);
+                // 3 .当我们页面被卷去的头部大于等于了 172 此时 侧边栏就要改为固定定位
+                if (window.pageYOffset >= bannerTop) {
+                    sliderbar.style.position = 'fixed';
+                    sliderbar.style.top = sliderbarTop + 'px';
+                } else {
+                    sliderbar.style.position = 'absolute';
+                    sliderbar.style.top = '300px';
+                }
+                // 4. 当我们页面滚动到main盒子，就显示 goback模块
+                if (window.pageYOffset >= mainTop) {
+                    goBack.style.display = 'block';
+                } else {
+                    goBack.style.display = 'none';
+                }
+
+            })
+            // 3. 当我们点击了返回顶部模块，就让窗口滚动的页面的最上方
+        goBack.addEventListener('click', function() {
+            // 里面的x和y 不跟单位的 直接写数字即可
+            // window.scroll(0, 0);
+            // 因为是窗口滚动 所以对象是window
+            animate(window, 0);
+        });
+        // 动画函数
+        function animate(obj, target, callback) {
+            // console.log(callback);  callback = function() {}  调用的时候 callback()
+
+            // 先清除以前的定时器，只保留当前的一个定时器执行
+            clearInterval(obj.timer);
+            obj.timer = setInterval(function() {
+                // 步长值写到定时器的里面
+                // 把我们步长值改为整数 不要出现小数的问题
+                // var step = Math.ceil((target - obj.offsetLeft) / 10);
+                var step = (target - window.pageYOffset) / 10;
+                step = step > 0 ? Math.ceil(step) : Math.floor(step);
+                if (window.pageYOffset == target) {
+                    // 停止动画 本质是停止定时器
+                    clearInterval(obj.timer);
+                    // 回调函数写到定时器结束里面
+                    // if (callback) {
+                    //     // 调用函数
+                    //     callback();
+                    // }
+                    callback && callback();
+                }
+                // 把每次加1 这个步长值改为一个慢慢变小的值  步长公式：(目标值 - 现在的位置) / 10
+                // obj.style.left = window.pageYOffset + step + 'px';
+                window.scroll(0, window.pageYOffset + step);
+            }, 15);
+        }
+    </script>
+</body>
+
+</html>
+```
+## 三大系列总结
+
+| 三大系列大小对比 | 作用                                                        |
+| ------------------- | ------------------------------------------------------------- |
+| element.offsetWidth | 返回自身包括padding、边框、内容区的宽度，返回数值不带单位 |
+| element.clientWidth | 返回自身包括padding、内容区的宽度，不含边框，返回数值不带单位 |
+| element.scrollWidth | 返回自身实际的宽度，不含边框，返回数值不带单位 |
+
+他们主要用法:
+1. offset系列经常用于获得元素位置 offsetLeft offsetTop
+2. client经常用于获取元素大小 clientWidth clientHeight
+3. scroll经常用于获取滚动距离 scrollTop scrollLeft
+4. 注意页面滚动的距离通过window.pageYoffset 获得
+
+## mouseover和mouseenter区别
+1. 当鼠标移动到元素上时就会触发mouseenter事件
+2. 类似mouseover，它们两者之间的差别是
+3. mouseover 鼠标经过自身盒子会触发，经过子盒子还会触发。mouseenter 只会经过自身盒子触发
+4. 之所以这样，就是因为mouseenter不会冒泡
+5. 跟mouseenter搭配鼠标离开 mouseleave 同样不会冒泡
+
+## 动画原理
+核心原理:通过定时器setlnterval()不断移动盒子位置
+
+实现步骤:
+1. 获得盒子当前位置
+2. 让盒子在当前位置加上1个移动距离
+3. 利用定时器不断重复这个操作
+4. 加一个结束定时器的条件
+5. 注意此元素需要添加定位，才能使用element.style.left
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            position: absolute;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+    <script>
+        // 动画原理
+        // 1. 获得盒子当前位置  
+        // 2. 让盒子在当前位置加上1个移动距离
+        // 3. 利用定时器不断重复这个操作
+        // 4. 加一个结束定时器的条件
+        // 5. 注意此元素需要添加定位， 才能使用element.style.left
+        var div = document.querySelector('div');
+        var timer = setInterval(function() {
+            if (div.offsetLeft >= 400) {
+                // 停止动画 本质是停止定时器
+                clearInterval(timer);
+            }
+            div.style.left = div.offsetLeft + 1 + 'px';
+        }, 30);
+    </script>
+</body>
+
+</html>
+```
+
+## 简单给动画函数封装
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            position: absolute;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+        
+        span {
+            position: absolute;
+            left: 0;
+            top: 200px;
+            display: block;
+            width: 150px;
+            height: 150px;
+            background-color: purple;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+    <span>夏雨荷</span>
+    <script>
+        // 简单动画函数封装obj目标对象 target 目标位置
+        function animate(obj, target) {
+            var timer = setInterval(function() {
+                if (obj.offsetLeft >= target) {
+                    // 停止动画 本质是停止定时器
+                    clearInterval(timer);
+                }
+                obj.style.left = obj.offsetLeft + 1 + 'px';
+
+            }, 30);
+        }
+
+        var div = document.querySelector('div');
+        var span = document.querySelector('span');
+        // 调用函数
+        animate(div, 300);
+        animate(span, 200);
+    </script>
+</body>
+
+</html>
+```
+## 动画函数-给不同元素记录不同定时器
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            position: absolute;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+        
+        span {
+            position: absolute;
+            left: 0;
+            top: 200px;
+            display: block;
+            width: 150px;
+            height: 150px;
+            background-color: purple;
+        }
+    </style>
+</head>
+
+<body>
+    <button>点击夏雨荷才走</button>
+    <div></div>
+    <span>夏雨荷</span>
+    <script>
+        // var obj = {};
+        // obj.name = 'andy';
+        // 简单动画函数封装obj目标对象 target 目标位置
+        // 给不同的元素指定了不同的定时器
+        function animate(obj, target) {
+            // 当我们不断的点击按钮，这个元素的速度会越来越快，因为开启了太多的定时器
+            // 解决方案就是 让我们元素只有一个定时器执行
+            // 先清除以前的定时器，只保留当前的一个定时器执行
+            clearInterval(obj.timer);
+            obj.timer = setInterval(function() {
+                if (obj.offsetLeft >= target) {
+                    // 停止动画 本质是停止定时器
+                    clearInterval(obj.timer);
+                }
+                obj.style.left = obj.offsetLeft + 1 + 'px';
+
+            }, 30);
+        }
+
+        var div = document.querySelector('div');
+        var span = document.querySelector('span');
+        var btn = document.querySelector('button');
+        // 调用函数
+        animate(div, 300);
+        btn.addEventListener('click', function() {
+            animate(span, 200);
+        })
+    </script>
+</body>
+
+</html>
+```
+## 缓动动画原理
+缓动动画就是让元素运动速度有所变化，最常见的是让速度慢慢停下来思路:
+1. 让盒子每次移动的距离慢慢变小，速度就会慢慢落下来。
+2. 核心算法: (目标值-现在的位置)/ 10 做为每次动的距离步长
+3. 停止的条件是:让当前盒子位置等于目标位置就停止定时器
+ 
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            position: absolute;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+        
+        span {
+            position: absolute;
+            left: 0;
+            top: 200px;
+            display: block;
+            width: 150px;
+            height: 150px;
+            background-color: purple;
+        }
+    </style>
+</head>
+
+<body>
+    <button>点击夏雨荷才走</button>
+    <span>夏雨荷</span>
+    <script>
+        // 缓动动画函数封装obj目标对象 target 目标位置
+        // 思路：
+        // 1. 让盒子每次移动的距离慢慢变小， 速度就会慢慢落下来。
+        // 2. 核心算法：(目标值 - 现在的位置) / 10 做为每次移动的距离 步长
+        // 3. 停止的条件是： 让当前盒子位置等于目标位置就停止定时器
+        function animate(obj, target) {
+            // 先清除以前的定时器，只保留当前的一个定时器执行
+            clearInterval(obj.timer);
+            obj.timer = setInterval(function() {
+                // 步长值写到定时器的里面
+                var step = (target - obj.offsetLeft) / 10;
+                if (obj.offsetLeft == target) {
+                    // 停止动画 本质是停止定时器
+                    clearInterval(obj.timer);
+                }
+                // 把每次加1 这个步长值改为一个慢慢变小的值  步长公式：(目标值 - 现在的位置) / 10
+                obj.style.left = obj.offsetLeft + step + 'px';
+
+            }, 15);
+        }
+        var span = document.querySelector('span');
+        var btn = document.querySelector('button');
+
+        btn.addEventListener('click', function() {
+                // 调用函数
+                animate(span, 500);
+            })
+            // 匀速动画 就是 盒子是当前的位置 +  固定的值 10 
+            // 缓动动画就是  盒子当前的位置 + 变化的值(目标值 - 现在的位置) / 10）
+    </script>
+</body>
+
+</html>
+```
+## 缓动动画多个目标值之间移动
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            position: absolute;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+        
+        span {
+            position: absolute;
+            left: 0;
+            top: 200px;
+            display: block;
+            width: 150px;
+            height: 150px;
+            background-color: purple;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="btn500">点击夏雨荷到500</button>
+    <button class="btn800">点击夏雨荷到800</button>
+    <span>夏雨荷</span>
+    <script>
+        // 缓动动画函数封装obj目标对象 target 目标位置
+        // 思路：
+        // 1. 让盒子每次移动的距离慢慢变小， 速度就会慢慢落下来。
+        // 2. 核心算法：(目标值 - 现在的位置) / 10 做为每次移动的距离 步长
+        // 3. 停止的条件是： 让当前盒子位置等于目标位置就停止定时器
+        function animate(obj, target) {
+            // 先清除以前的定时器，只保留当前的一个定时器执行
+            clearInterval(obj.timer);
+            obj.timer = setInterval(function() {
+                // 步长值写到定时器的里面
+                // 把我们步长值改为整数 不要出现小数的问题
+                // var step = Math.ceil((target - obj.offsetLeft) / 10);
+                var step = (target - obj.offsetLeft) / 10;
+                step = step > 0 ? Math.ceil(step) : Math.floor(step);
+                if (obj.offsetLeft == target) {
+                    // 停止动画 本质是停止定时器
+                    clearInterval(obj.timer);
+                }
+                // 把每次加1 这个步长值改为一个慢慢变小的值  步长公式：(目标值 - 现在的位置) / 10
+                obj.style.left = obj.offsetLeft + step + 'px';
+
+            }, 15);
+        }
+        var span = document.querySelector('span');
+        var btn500 = document.querySelector('.btn500');
+        var btn800 = document.querySelector('.btn800');
+
+        btn500.addEventListener('click', function() {
+            // 调用函数
+            animate(span, 500);
+        })
+        btn800.addEventListener('click', function() {
+                // 调用函数
+                animate(span, 800);
+            })
+            // 匀速动画 就是 盒子是当前的位置 +  固定的值 10 
+            // 缓动动画就是  盒子当前的位置 + 变化的值(目标值 - 现在的位置) / 10）
+    </script>
+</body>
+
+</html>
+```
+## 缓动动画添加回调函数
+回调函数原理:函数可以作为一个参数。将这个函数作为参数传到另一个函数里面，当那个函数执行完之后,再执行传进去的这个函数，这个过程就叫做回调。
+
+## 动画函数的使用
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .sliderbar {
+            position: fixed;
+            right: 0;
+            bottom: 100px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+            color: #fff;
+        }
+        
+        .con {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 40px;
+            background-color: purple;
+            z-index: -1;
+        }
+    </style>
+    <script src="animate.js"></script>
+</head>
+
+<body>
+    <div class="sliderbar">
+        <span>←</span>
+        <div class="con">问题反馈</div>
+    </div>
+
+    <script>
+        // 1. 获取元素
+        var sliderbar = document.querySelector('.sliderbar');
+        var con = document.querySelector('.con');
+        // 当我们鼠标经过 sliderbar 就会让 con这个盒子滑动到左侧
+        // 当我们鼠标离开 sliderbar 就会让 con这个盒子滑动到右侧
+        sliderbar.addEventListener('mouseenter', function() {
+            // animate(obj, target, callback);
+            animate(con, -160, function() {
+                // 当我们动画执行完毕，就把 ← 改为 →
+                sliderbar.children[0].innerHTML = '→';
+            });
+
+        })
+        sliderbar.addEventListener('mouseleave', function() {
+            // animate(obj, target, callback);
+            animate(con, 0, function() {
+                sliderbar.children[0].innerHTML = '←';
+            });
+
+        })
+    </script>
+</body>
+
+</html>
+```
+```js
+function animate(obj, target, callback) {
+    // console.log(callback);  callback = function() {}  调用的时候 callback()
+
+    // 先清除以前的定时器，只保留当前的一个定时器执行
+    clearInterval(obj.timer);
+    obj.timer = setInterval(function() {
+        // 步长值写到定时器的里面
+        // 把我们步长值改为整数 不要出现小数的问题
+        // var step = Math.ceil((target - obj.offsetLeft) / 10);
+        var step = (target - obj.offsetLeft) / 10;
+        step = step > 0 ? Math.ceil(step) : Math.floor(step);
+        if (obj.offsetLeft == target) {
+            // 停止动画 本质是停止定时器
+            clearInterval(obj.timer);
+            // 回调函数写到定时器结束里面
+            // if (callback) {
+            //     // 调用函数
+            //     callback();
+            // }
+            callback && callback();
+        }
+        // 把每次加1 这个步长值改为一个慢慢变小的值  步长公式：(目标值 - 现在的位置) / 10
+        obj.style.left = obj.offsetLeft + step + 'px';
+
+    }, 15);
+}
+```
+## 网页轮播图-结构搭建
+1. 鼠标经过轮播图模块，左右按钮显示，离开隐藏左右按钮
+2. 点击右侧按钮一次，图片往左播放一张，以此类推，左侧按钮同理
+3. 图片播放的同时，下面小圆圈模块跟随一起变化。
+4. 点击小圆圈，可以播放相应图片
+5. 鼠标不经过轮播图，轮播图也会自动播放图片
+6. 鼠标经过，轮播图模块，自动播放停止。
+
+## 节流阀以及逻辑中断应用
+防止轮播图按钮连续点击造成播放过快;
+节流阀目的: `当上一个函数动画内容执行完毕，再去执行下一个函数动画`，让事件无法连续触发核心实现思路:利用回调函数，添加一个变量来控制，锁住函数和解锁函数。
+
+> 开始设置一个变量var flag=true;
+> lf(flag) {flag=false; do something)关闭水龙头
+> 利用回调函数动画执行完毕，flag=true 打开水龙头
+
+## 带有动画的返回顶部
+滚动窗口至文档中的特定位置
+window.scroll(x, y)
+## 筋斗云案例
+```html
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0
+        }
+        
+        ul {
+            list-style: none;
+        }
+        
+        body {
+            background-color: black;
+        }
+        
+        .c-nav {
+            width: 900px;
+            height: 42px;
+            background: #fff url(images/rss.png) no-repeat right center;
+            margin: 100px auto;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .c-nav ul {
+            position: absolute;
+        }
+        
+        .c-nav li {
+            float: left;
+            width: 83px;
+            text-align: center;
+            line-height: 42px;
+        }
+        
+        .c-nav li a {
+            color: #333;
+            text-decoration: none;
+            display: inline-block;
+            height: 42px;
+        }
+        
+        .c-nav li a:hover {
+            color: white;
+        }
+        
+        .c-nav li.current a {
+            color: #0dff1d;
+        }
+        
+        .cloud {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 83px;
+            height: 42px;
+            background: url(images/cloud.gif) no-repeat;
+        }
+    </style>
+    <script src="animate.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            // 1. 获取元素
+            var cloud = document.querySelector('.cloud');
+            var c_nav = document.querySelector('.c-nav');
+            var lis = c_nav.querySelectorAll('li');
+            // 2. 给所有的小li绑定事件 
+            // 这个current 做为筋斗云的起始位置
+            var current = 0;
+            for (var i = 0; i < lis.length; i++) {
+                // (1) 鼠标经过把当前小li 的位置做为目标值
+                lis[i].addEventListener('mouseenter', function() {
+                    animate(cloud, this.offsetLeft);
+                });
+                // (2) 鼠标离开就回到起始的位置 
+                lis[i].addEventListener('mouseleave', function() {
+                    animate(cloud, current);
+                });
+                // (3) 当我们鼠标点击，就把当前位置做为目标值
+                lis[i].addEventListener('click', function() {
+                    current = this.offsetLeft;
+                });
+            }
+        })
+    </script>
+</head>
+
+<body>
+    <div id="c_nav" class="c-nav">
+        <span class="cloud"></span>
+        <ul>
+            <li class="current"><a href="#">首页新闻</a></li>
+            <li><a href="#">师资力量</a></li>
+            <li><a href="#">活动策划</a></li>
+            <li><a href="#">企业文化</a></li>
+            <li><a href="#">招聘信息</a></li>
+            <li><a href="#">公司简介</a></li>
+            <li><a href="#">我是佩奇</a></li>
+            <li><a href="#">啥是佩奇</a></li>
+        </ul>
+    </div>
+</body>
+
+</html>
+```
+## 移动端touch触摸事件
+移动端浏览器兼容性较好，我们不需要考虑以前JS 的兼容性问题，可以放心的使用原生JS 书写效果，但是移动端也有自己独特的地方。比如```触屏事件 touch```(也称触摸事件)，Android和IOS都有。
+
+touch 对象代表一个触摸点。触摸点可能是一根手指，也可能是一根触摸笔。触屏事件可响应用户手指(或触控笔)对屏幕或者触控板操作。
+
+| 触屏touch事件 | 说明                          |
+| ------------- | ------------------------------- |
+| touchstart    | 手指触摸到一个 DOM 元素时触发 |
+| touchmove     | 手指在一个 DOM 元素上滑动时触发 |
+| touchend      | 手指从一个 DOM 元素上移开时触发 |
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+    <script>
+        // 1. 获取元素
+        // 2. 手指触摸DOM元素事件
+        var div = document.querySelector('div');
+        div.addEventListener('touchstart', function() {
+            console.log('我摸了你');
+
+        });
+        // 3. 手指在DOM元素身上移动事件
+        div.addEventListener('touchmove', function() {
+            console.log('我继续摸');
+
+        });
+        // 4. 手指离开DOM元素事件
+        div.addEventListener('touchend', function() {
+            console.log('轻轻的我走了');
+
+        });
+    </script>
+</body>
+
+</html>
+```
+## 移动端TouchEvent触摸事件对象
+TouchEvent 是一类描述手指在触摸平面(触摸屏、触摸板等)的状态变化的事件。这类事件用于描述一个或多个触点，使开发者可以检测触点的移动，触点的增加和减少，等等
+
+`touchstart`、`touchmove`、`touchend` 三个事件都会各自有事件对象。
+
+| 触摸列表   | 说明                                           |
+| -------------- | ------------------------------------------------ |
+| touches        | 正在触摸屏幕的所有手指的一个列表 |
+| targetTouches  | 正在触摸当前 DOM 元素上的手指的一个列表 |
+| changedTouches | 手指状态发生了改变的列表，从无到有，从有到无变化 |
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+    <script>
+        // 触摸事件对象
+        // 1. 获取元素
+        // 2. 手指触摸DOM元素事件
+        var div = document.querySelector('div');
+        div.addEventListener('touchstart', function(e) {
+            // console.log(e);
+            // touches 正在触摸屏幕的所有手指的列表 
+            // targetTouches 正在触摸当前DOM元素的手指列表
+            // 如果侦听的是一个DOM元素，他们两个是一样的
+            // changedTouches 手指状态发生了改变的列表 从无到有 或者 从有到无
+            // 因为我们一般都是触摸元素 所以最经常使用的是 targetTouches
+            console.log(e.targetTouches[0]);
+            // targetTouches[0] 就可以得到正在触摸dom元素的第一个手指的相关信息比如 手指的坐标等等
+
+        });
+        // 3. 手指在DOM元素身上移动事件
+        div.addEventListener('touchmove', function() {
+
+        });
+        // 4. 手指离开DOM元素事件
+        div.addEventListener('touchend', function(e) {
+            // console.log(e);
+            // 当我们手指离开屏幕的时候，就没有了 touches 和 targetTouches 列表
+            // 但是会有 changedTouches
+
+        });
+    </script>
+</body>
+
+</html>
+```
+## 移动端拖动元素
+拖动元素三步曲:
+1. 触摸元素touchstart: 获取手指初始坐标，同时获得盒子原来的位置
+2. 移动手指touchmove: 计算手指的滑动距离，并且移动盒子
+(3)离开手指touchend:
+```注意:手指移动也会触发滚动屏幕所以这里要阻止默认的屏幕滚动e.preventDefault():```
+
+## classList类名操作
+classList属性是HTML5新增的一个属性，返回元素的类名。但是ie10以上版本支持
+添加类:
+element.classList.add('类名');
+
+    focus.classList.add('current');
+
+移除类:
+element.classListremove ('类名');
+切换类:
+element.classList.toggle('类名');
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .bg {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="one two"></div>
+    <button> 开关灯</button>
+    <script>
+        // classList 返回元素的类名
+        var div = document.querySelector('div');
+        // console.log(div.classList[1]);
+        // 1. 添加类名  是在后面追加类名不会覆盖以前的类名 注意前面不需要加.
+        div.classList.add('three');
+        // 2. 删除类名
+        div.classList.remove('one');
+        // 3. 切换类
+        var btn = document.querySelector('button');
+        btn.addEventListener('click', function() {
+            document.body.classList.toggle('bg');
+        })
+    </script>
+</body>
+</html>
+```
+## 移动端click事件300ms延时问题解决方案
+`移动端click事件`会有300ms的延时原因是移动端屏幕双击会缩放(double tap to zoom)页面解决方案:
+1.禁用缩放。浏览器禁用默认的双击缩放行为并且去掉300ms的点击延迟
+
+> `<meta name="viewport"content="user-scalable=no">`
+
+## fastclick插件使用
+JS插件是js文件，它遵循一定规范编写，方便程序展示效果，拥有特定功能且方便调用。如轮播图和瀑布流插件.特点:它一般是为了解决某个问题而专门存在，其功能单一，并且比较小。我们以前写的animate.js也算一个最简单的插件
+
+`<script src="fastclick.js></script>`
+
+## swiper插件使用-引入相关文件
+中文官网地址: https://www.swiper.com.cn/
+1. 引入插件相关文件
+2. 按照规定语法使用
+
+## 移动端其他插件以及使用总结
+1. 确认插件实现的功能
+2. 去官网查看使用说明
+3. 下载插件
+4. 打开demo实例文件，查看需要引入的相关文件，并且引入
+5. 复制demo实例文件中的结构html，样式css以及js代码
+
+## 框架概述
+框架，顾名思义就是一套架构，它会基于自身的特点向用户提供一套较为完整的解决方案。框架的控制权在框架本身，使用者要按照框架所规定的某种规范进行开发
+
+插件一般是为了解决某个问题而专门存在，其功能单一，并且比较小。
+前端常用的框架有`Bootstrap`、`Vue`、`Angular`、`React`等。既能开发PC端，也能开发移动端
+前端常用的移动端插件有swiper、superslide、iscroll等
+
+> 框架:大而全，一整套解决方案
+> 插件:小而专一，某个功能的解决方案
+
+## 本地存储之sessionStorage
+
+本地存储特性: 
+1. 数据存储在用户浏览器中
+2. 设置、读取方便、甚至页面刷新不丢失数据
+3. 容量较大，sessionStorage约5M、localStorage约20M
+4. 只能存储字符串，可以将对象JSON.stringify()编码后存储
+
+window.sessionStorage
+1. 生命周期为关闭浏览器窗口
+2. 在同一个窗口(页面)下数据可以共享
+3. 以键值对的形式存储使用
+
+存储数据: sessionStorage.setltem(key, value)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text">
+    <button class="set">存储数据</button>
+    <button class="get">获取数据</button>
+    <button class="remove">删除数据</button>
+    <button class="del">清空所有数据</button>
+    <script>
+        console.log(localStorage.getItem('username'));
+
+        var ipt = document.querySelector('input');
+        var set = document.querySelector('.set');
+        var get = document.querySelector('.get');
+        var remove = document.querySelector('.remove');
+        var del = document.querySelector('.del');
+        set.addEventListener('click', function() {
+            // 当我们点击了之后，就可以把表单里面的值存储起来
+            var val = ipt.value;
+            sessionStorage.setItem('uname', val);
+            sessionStorage.setItem('pwd', val);
+        });
+        get.addEventListener('click', function() {
+            // 当我们点击了之后，就可以把表单里面的值获取过来
+            console.log(sessionStorage.getItem('uname'));
+
+        });
+        remove.addEventListener('click', function() {
+            // 
+            sessionStorage.removeItem('uname');
+
+        });
+        del.addEventListener('click', function() {
+            // 当我们点击了之后，清除所有的
+            sessionStorage.clear();
+
+        });
+    </script>
+</body>
+</html>
+```
+## 本地存储之localStorage
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text">
+    <button class="set">存储数据</button>
+    <button class="get">获取数据</button>
+    <button class="remove">删除数据</button>
+    <button class="del">清空所有数据</button>
+    <script>
+        var ipt = document.querySelector('input');
+        var set = document.querySelector('.set');
+        var get = document.querySelector('.get');
+        var remove = document.querySelector('.remove');
+        var del = document.querySelector('.del');
+        set.addEventListener('click', function() {
+            var val = ipt.value;
+            localStorage.setItem('username', val);
+        })
+        get.addEventListener('click', function() {
+            console.log(localStorage.getItem('username'));
+
+        })
+        remove.addEventListener('click', function() {
+            localStorage.removeItem('username');
+
+        })
+        del.addEventListener('click', function() {
+            localStorage.clear();
+
+        })
+    </script>
+</body>
+
+</html>
+```
+## 记住用户名案例
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text" id="username"> <input type="checkbox" name="" id="remember"> 记住用户名
+    <script>
+        var username = document.querySelector('#username');
+        var remember = document.querySelector('#remember');
+        if (localStorage.getItem('username')) {
+            username.value = localStorage.getItem('username');
+            remember.checked = true;
+        }
+        remember.addEventListener('change', function() {
+            if (this.checked) {
+                localStorage.setItem('username', username.value)
+            } else {
+                localStorage.removeItem('username');
+            }
+        })
+    </script>
+</body>
+```

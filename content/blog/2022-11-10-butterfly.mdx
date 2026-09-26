@@ -1,0 +1,70 @@
+---
+title: "Butterfly主题配置"
+description: "注意：此方法只支持 Hexo 5.0.0以上版本!"
+date: "2022-11-10"
+category: "编程"
+tags: ["butterfly"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a21.jpg"
+source: "legacy-blog"
+---
+
+***
+
+# 安装主题(三选一即可)
+## 安装主题
+
+#### npm安装(推荐)
+
+注意：此方法只支持 Hexo 5.0.0以上版本!
+在你的博客根目录（我这里路径为【C:/Hexo-Blog/blog-demo】）
+```shell
+npm i hexo-theme-butterfly
+```
+
+
+
+#### Github安装
+
+在你的博客根目录里（我这里路径为【C:/Hexo-Blog/blog-demo】），打开**Git BASH**工具，执行命令即可
+```shell
+git clone -b 4.5.0 https://github.com/jerryc127/hexo-theme-butterfly.git themes/butterfly
+```
+
+
+
+#### Gitee安装
+
+在你的博客根目录里（我这里路径为【C:/Hexo-Blog/blog-demo】），打开Git BASH工具，执行命令即可。
+执行以下命令，安装稳定版本，这是国内的gitee，速度比较快
+```git
+git clone -b master https://gitee.com/immyw/hexo-theme-butterfly.git themes/butterfly
+```
+
+## 应用主题
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m54.jpg)
+* 修改站点配置文件_config.yml，把主题改为butterfly
+```yaml
+theme: butterfly
+```
+* 如果你没有pug以及stylus的渲染器，请下载安装，这两个渲染器是Butterfly生成基础页面所需的依赖包：
+```shell
+npm install hexo-renderer-pug hexo-renderer-stylus --save
+```
+* 执行以下命令，清除原来主题文件，然后重新生成文件，hexo clean是清除原来的public文件，hexo g生成新的public文件，这样主题才能生效,hexo s是开启本地预览服务
+```hexo
+hexo clean
+hexo g
+hexo s
+```
+* 最后打开网页，成功!
+# 基础用法说明
+VS Code不能在终端执行程序脚本
+解决方法如下:
+1. 右击VSCodeQ图标，选择以管理员身份运行;
+2. 在vscode终端中执行get-ExecutionPolicy，显示Restricted，状态是禁止的;
+3. 这时执行set-ExecutionPolicy RemoteSigned;
+4. 再执行get-ExecutionPolicy，显示RemoteSigned，状态解禁，可以运行
+# 完善配置
+**查看官方主题文档**

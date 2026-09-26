@@ -1,0 +1,114 @@
+---
+title: "Ubuntu 22.04 桌面美化Mac风格"
+description: "Ubuntu默认的桌面也是一个不错的样式，但千篇一律的主题很容易让人疲惫。本文描述了如何通过安装 gnome 桌面主题和动画，使桌面趋向于 Mac 的样式。"
+date: "2023-09-06"
+category: "工程技术"
+tags: ["Linux"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x198.jpg"
+source: "legacy-blog"
+---
+
+## 前言 
+`Ubuntu`默认的桌面也是一个不错的样式，但千篇一律的主题很容易让人疲惫。本文描述了如何通过安装 `gnome` 桌面主题和动画，使桌面趋向于 Mac 的样式。
+
+美化后的样式如下，请参考：
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x202.jpg)
+
+## 安装 tweaks
+
+* 打开终端，执行更新命令
+
+```shell
+sudo apt update && sudo apt upgrade
+```
+
+* 安装美化插件扩展支持
+
+```
+sudo apt install gnome-tweaks gnome-shell-extensions -y
+```
+
+* 安装完成后在应用中可以`搜索`到一个名为（tweaks/优化）的应用。或者终端输入
+
+```
+gnome-tweaks
+```
+
+
+## 安装主题
+
+* 主题 Github 地址：https://github.com/vinceliuice/WhiteSur-gtk-theme
+
+使用 `git 命令` 将主题内容同步到本地。（git的安装本文不赘述，也可在Github直接下载主题）
+
+```
+git clone https://github.com/vinceliuice/WhiteSur-gtk-theme.git
+```
+
+下载完成后进入**主题目录**
+```
+cd WhiteSur-gtk-theme
+```
+
+执行如下命令进行主题安装。
+```
+./install.sh -t all -N glassy -s 220
+```
+
+* 安装过程中会下载软件包，如果下载失败可以更换软件源试试。
+
+设置主题
+```
+sudo ./tweaks.sh -g
+```
+
+
+
+## 安装图标
+
+Mac 图标下载地址：https://www.gnome-look.org/p/1400021
+
+进入下载地址下载图标(**右方直接下载即可**)。
+
+进入用户`主目录`，新建 `.icons` 目录，将图标压缩包中的文件解压到 .icons 目录，解压后的目录结构如下。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x201.jpg)
+
+
+## 插件开启
+
+* 尝试刷新或`重启虚拟机`
+
+在`应用`中找到插件打开，向下搜索 `User Themes` 插件，打开该插件。
+
+
+## 应用主题和图标
+搜索打开 `tweaks`，调整 `Icons / 图标`、`Shell`、`Legacy Applications / 过时应用程序` 三个配置。本文的配置如下：
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x200.jpg)
+
+## 元素位置调整
+
+1. 将标题栏的操作按钮从右侧移动到左侧。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/4939123e21000e025df21b480d5aa326.png)
+
+2. 调整`桌面图标的大小`和`新图标的位置`，将 `Dock` 栏从左侧调整到底部，并设置`自动隐藏`，取消 Dock 延伸到屏幕边缘的选项，调整 Dock 图标的大小。(自行配置即可)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x199.jpg)
+
+
+## 更换壁纸
+
+* 可以选择自己喜欢的壁纸
+
+`Mac 壁纸`可以从这个存储库中下载：https://github.com/vinceliuice/WhiteSur-wallpapers
+
+下载完成后选中图片设置为壁纸即可。
+
+## 说说
+
+* 这只是一些简单的设置，**高阶的魔改**靠大家慢慢摸索了

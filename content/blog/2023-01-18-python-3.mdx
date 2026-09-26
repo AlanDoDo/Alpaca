@@ -1,0 +1,488 @@
+---
+title: "Python基础学习笔记(三)"
+description: "当检测到一个错误时，Python解释器就无法继续执行了，反而出现了一些错误的提示，这就是所谓的“异常”，也就是我们常说的BUG"
+date: "2023-01-18"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a22.jpg"
+source: "legacy-blog"
+---
+
+***
+# 第九章
+
+## 了解异常
+* 当检测到**一个错误**时，Python解释器就无法继续执行了，反而出现了一些错误的提示，这就是所谓的“**异常**”，也就是我们常说的BUG
+
+## 异常的捕获
+* 为什么需要捕获异常?
+当我们的程序遇到了BUG，那么接下来有两种情况:
+1. 整个程序因为一个BUG停止运行
+2. 对BUG进行提醒，整个程序继续运行
+
+* 显然在之前的学习中，我们所有的程序遇到BUG就会出现1的这种情况，也就是整个程序直接奔溃.但是在真实工作中，我们肯定不能因为一个小的BUG就让整个程序全部奔溃，也就是我们希望的是达到2的这种情况那这里我们就需要使用到**捕获异常**
+* 捕获异常的作用在于:提前假设某处会出现异常，做好提前准备，当真的出现异常的时候，可以有后续手段。
+
+```py
+# try:可能发生错误的代码
+# except:如果出现异常执行的代码
+
+#基本捕获语法
+try:
+    f = open("D:/abc.txt","r",encoding="UTF-8")
+except:
+    print("出现异常了,因为文件不存在,我将open的模式,改为w模式去打开")
+    f = open("D:/abc.txt","w",encoding="UTF-8")
+
+# 捕获指定的异常
+try:
+    print(name)
+    # 1 / 0
+except NameError as e:
+    print("出现了变量未定义的异常")
+    print(e)
+    
+# 捕获所有异常
+try:
+    f = open("D:/123.txt","r")
+except Exception as e:
+    print("出现异常了")
+else:
+    print("好高兴，没有异常。")
+finally:
+    print("我是finally,有没有异常我都要执行")
+    f.close()
+```
+
+## 异常的传递性
+* 异常是具有传递性:
+当函数func01中发生异常，并且没有捕获处理这个异常的时候，异常会传递到函数func02，当func02也没有捕获处理这个异常的时候main函数会捕获这个异常，这就是异常的传递性.
+* 提示:当所有函数都没有捕获异常的时候，程序就会报错
+
+```py
+# 定义一个出现异常的方法
+def func1():
+    print("func1 开始执行")
+    num = 1 / 0 # 肯定有异常，除以0的异常
+    print("func1 结束执行")
+
+# 定义一个无异常的方法，调用上面的方法
+def func2():
+    print("func2 开始执行")
+    func1()
+    print("func2 结束执行")
+    # 定义一个方法，调用上面的方法
+
+def main():
+    try:
+        func2()
+    except Exception as e:
+        print(f"出现异常了，异常的信息是: {e}")
+main()
+```
+
+## 模块的概念和导入
+* Python 模块(Module),是一个Python文件，以.py结尾. 模块能定义函数，类和变量，模块里也能包含可执行的代码.
+
+* 模块的作用:python中有很多各种不同的模块，每一个模块都可以帮助我们快速的实现一些**功能**，比如实现和时间相关的功能就可以使用time模块我们可以认为**一个模块**就是**一个工具包**，每一个工具包中都有各种不同的工具供我们使用进而实现各种不同的功能.
+```py
+# [from 模块名] import [模块 | 类 | 变量 | 函数 *] [as 别名]
+# import模块名-案例
+#使用import导入time模块使用sLeep功能(函数)
+import time     # 导入Python内置的time模块(time.py这个代码文件)
+print("你好")
+time.sleep(5)   # 通过，就可以使用模块内部的全部功能(类、函数、变量)
+print("我好")
+```
+```py
+# 使用from号入time的sLeep功能(函数)
+from time import sleep
+print("你好")
+sleep(5)
+print("我好")
+```
+```py
+# 使用*导入time模块的全部功能
+from time import *   # *表示全部的意思
+print("你好")
+sleep(5)
+
+print("我好")
+```
+```py
+# 使用as给特定功能加上别名
+import time as t
+print("你好")
+t.sleep(5)
+print("我好")
+```
+
+## 自定义模块并导入
+* 案例:新建一个Python文件，命名为my_modulel.py，并定义test函数
+```py
+# 导入自定义模块使用
+# import my_module1
+from my_module1 import test
+test(1,2)
+```
+1. 如何自定义模块并导入?
+在Python代码文件中正常写代码即可，通过import、from关键字和导入Python内置模块一样导入即可使用。
+2. _main_变量的功能是?
+`if_main_== "_main_"` 表示，只有当程序是直接执行的才会进入if内部，如果是被导入的，则if无法进入
+
+* 注意事项:不同模块，同名的功能，如果都被导入，那么后导入的会覆盖先导入的
+_all_变量可以控制import*的时候哪些功能可以被导入
+
+## 自定义Python包
+* 从物理上看，包就是一个**文件夹**，在该文件夹下包含了一个 **_init_.py文件**，该文件夹可用于包含多个**模块文件**
+* 从逻辑上看，包的本质依然是**模块**
+```py
+# 演示Python的包
+# 创建一个包
+# 导入自定义的包中的模块，并使用
+# import my_package.my_module1
+# import my_package.my_module2
+
+# my_package.my_modulel.info_print1()
+# my_package.my_module2.info_print2()
+
+# from my_package import my_module1
+# from my_package import my_module2
+# my_modulel.info_print1()
+# my_module2.info_print2()
+
+# from my_package.my_modulel import info_print1
+# from my_package.my_module2 import info_print2
+# info_print1()
+# info_print2()
+
+# 通过__all__变量，控制import *
+from my_package import *
+my_modulel.info_print1()
+# my_module2.info_print2() 只引用了my_moudle1,因此该行不被调用
+```
+
+## 安装第三方包
+* 在Python程序的生态中，有许多非常多的第三方包(非Python官方)，可以极大的帮助我们提高开发效率，如:
+1. 科学计算中常用的:numpy包
+2. 数据分析中常用的:pandas包
+3. 大数据计算中常用的:pyspark、apache-flink包
+4. 图形可视化常用的:matplotlib、pyecharts
+5. 人工智能常用的:tensorflow等
+
+* pip install xxx
+
+# 第十章
+## JSON数据格式的转换
+* JSON是一种轻量级的数据交互格式。可以按照JSON指定的格式去组织和封装数据
+* JSON本质上是一个带有特定格式的字符串
+* 主要功能: json就是一种在各个编程语言中流通的数据格式，负责不同编程语言中的数据传递和交互.(类python的字典)
+```py
+import json
+# 准备列表，列表内每一个元素都是字典，将其转换为JSON
+data = [{"name":"张大山","age": 11},{"name":"王大锤","age": 13},{"name":"赵小虎","age": 16}]
+json_str = json.dumps(data, ensure_ascii=False) # ensure_ascii=False中文显示
+print(type(json_str))
+print(json_str)
+
+# 准备字典，将字典转换为JSON
+d = {"name":"周杰轮","addr":"台北"}
+json_str = json.dumps(d, ensure_ascii=False)
+print(type(json_str))
+print(json_str)
+
+# 将JSON字符串转换为Python数据类型[{k:v，k: v，{k:v，k: v}]
+s = '[{"name":"张大山","age": 11},{"name":"王大锤","age": 13},{"name":"赵小虎","age": 16}]'
+l = json.loads(s)
+print(type(l))
+print(l)
+
+# JSON宇符申转换为Python数据类型{k: v，k: v}
+s = '{"name": "周杰轮","addr": "台北"}'
+d = json.loads(s)
+print(type(d))
+print(d)
+```
+* JSON可以直接和Python的字典或列表进行无缝转换
+
+## pyecharts模块简介
+* 概况:Echarts 是个由百度开源的数据可视化，凭借着良好的交互性，精巧的图表设计，得到了众多开发者的认可.而 Python 是门富有表达力的语言，很适合用于数据处理.当数据分析遇上数据可视化时pyecharts 诞生了
+
+* 如何安装PyEcharts包:
+> pip install pyecharts
+
+* 如何查看官方示例
+打开官方画廊:
+https://gallery.pyecharts.org/#/README
+
+## pyecharts的入门使用
+* 全局配置项能做什么?
+配置图表的标题，配置图例，配置鼠标移动效果，配置工具栏等整体配置项
+```py
+# 导包
+from pyecharts.charts import Line
+from pyecharts.options import TitleOpts, LegendOpts, ToolboxOpts, VisualMapOpts
+# 创建一个折线图对象
+line = Line()
+# 给折线图对象添加x轴的数据
+line.add_xaxis(["中国","美国","英国"])
+# 给折线图对象添加y轴的数据
+line.add_yaxis("GDP", [30,20,10])
+
+# 设置全局配置项set_global_opts来设置,
+line.set_global_opts(
+    title_opts=TitleOpts(title="GDP展示", pos_left="center", pos_bottom="1%"),
+    legend_opts=LegendOpts(is_show=True),
+    toolbox_opts=ToolboxOpts(is_show=True),
+    visualmap_opts=VisualMapOpts(is_show=True),
+)
+# 通过render方法，将代码生成为图像
+line.render()
+```
+* 复制代码，运行后，同一文件夹下生成html文件
+
+## 数据准备/生成折线图
+```py
+import json
+from pyecharts.charts import Line
+from pyecharts.options import TitleOpts, LabelOpts
+
+# 处理数据
+f_us = open("F:\Code\python\可视化案例数据\折线图数据\美国.txt","r", encoding="UTF-8")
+us_data = f_us.read() # 美国的全部内容
+
+f_jp = open("F:\Code\python\可视化案例数据\折线图数据\日本.txt","r", encoding="UTF-8")
+jp_data = f_jp.read() # 日本的全部内容
+
+f_in = open("F:\Code\python\可视化案例数据\折线图数据\印度.txt","r", encoding="UTF-8")
+in_data = f_in.read() # 印度的全部内容
+
+# 去不JSON规范的开头
+us_data = us_data.replace("jsonp_1629344292311_69436(","")
+jp_data = jp_data.replace("jsonp_1629350871167_29498(","")
+in_data = in_data.replace("jsonp_1629350745930_63180(","")
+
+# 去不合JSON规范的结尾
+us_data = us_data[:-2]
+jp_data = jp_data[:-2]
+in_data = in_data[:-2]
+
+# JSON转Python字典
+us_dict = json.loads(us_data)
+jp_dict = json.loads(jp_data)
+in_dict = json.loads(in_data)
+
+# 获取trend key
+us_trend_data = us_dict['data'][0]['trend']
+jp_trend_data = jp_dict['data'][0]['trend']
+in_trend_data = in_dict['data'][0]['trend']
+
+# 获取日期数据，用于x ，取2020年(到314下标结束)
+us_x_data = us_trend_data['updateDate'][:314]
+jp_x_data = jp_trend_data['updateDate'][:314]
+in_x_data = in_trend_data['updateDate'][:314]
+
+# 获确认数据，用于y，取2020年(到314下标结束)
+us_y_data = us_trend_data[ 'list'][0]['data'][:314]
+jp_y_data = jp_trend_data[ 'list'][0]['data'][:314]
+in_y_data = in_trend_data[ 'list'][0]['data'][:314]
+
+# 生成图表
+line = Line() # 构建折线图对象
+# 添加X轴数据
+line.add_xaxis(us_x_data) # x轴是公用的，所以使用一个国家的数据即可
+# 添加y轴数据
+line.add_yaxis("美国确诊人数",us_y_data, label_opts=LabelOpts(is_show=False)) # 添加美国的数据
+line.add_yaxis("日本确诊人数",jp_y_data, label_opts=LabelOpts(is_show=False)) # 添加日本的数据
+line.add_yaxis("印度确诊人数",in_y_data, label_opts=LabelOpts(is_show=False)) # 添加印度的数据
+
+# 设置全局选项
+line.set_global_opts(
+    # 标题设置
+    title_opts=TitleOpts(title="2020年美日印三国确诊人数对比折线图", pos_left="center", pos_bottom="1%")
+)
+
+# 调用render方法，生成图表
+line.render()
+#关闭文件对象
+f_us.close()
+f_jp.close()
+f_in.close()
+```
+
+# 第十一章
+## 数据可视化案例-全国疫情地图构建
+```py
+# 演示全国疫情可视化地图开发
+import json
+from pyecharts.charts import Map
+from pyecharts.options import *
+
+# 读取数据文件
+f = open("F:\Code\python\可视化案例数据\地图数据\疫情.txt","r",encoding="UTF-8")
+data = f.read()    # 全部数指
+# 关闭文件
+f.close()
+# 取到各省数据
+# 将字符申json转换为python的字典
+data_dict = json.loads(data)  # 基础数据字典
+# 从字典中取出省份的数据
+province_data_list = data_dict["areaTree"][0]["children"]
+# 组装每个省份和确诊人数为元组，并各个省的数据都封装入列表内
+data_list = [] # 绘图而要用的数据列表
+for province_data in province_data_list:
+    province_name = province_data["name"]  # 省份名称
+    province_confirm = province_data["total"]["confirm"]  # 确诊人数
+    data_list.append((province_name,province_confirm))
+
+# 创建地图对象
+map = Map()
+
+# 添加数据
+map.add("各省份确诊人数", data_list, "china")
+# 设置全局配置，定制分段的视觉映射
+map.set_global_opts(
+    title_opts=TitleOpts(title="全国疫情地图"),
+    visualmap_opts=VisualMapOpts(
+        is_show=True,  # 是否显示
+        is_piecewise=True,  # 是否分段
+        pieces=[
+            {"min": 1,"max": 99,"lable":"1~99人","color":"#CCFFFF"},
+            {"min": 100,"max": 999,"lable":"100~9999人","color":"#FFFF99"},
+            {"min": 1000,"max": 4999,"lable":"1000~4999人","color":"#FF9966"},
+            {"min": 5000,"max": 9999,"lable":"5000~99999人","color":"#FF6666"},
+            {"min": 10000,"max": 99999,"lable":"10000~99999人","color":"#CC3333"},
+            {"min": 100000,"lable":"100000+","color":"#990033"},
+        ]
+    )
+)
+# 绘图
+map.render("全国疫情地图.html")
+```
+## 河南省疫情地图绘制
+```py
+# 演示河南省疫情地图开发
+import json
+from pyecharts.charts import Map
+from pyecharts.options import *
+# 读取文件
+f = open("F:\Code\python\可视化案例数据\地图数据\疫情.txt", "r", encoding="UTF-8")
+data = f.read()
+# 关闭文件
+f.close()
+# 获取河南省数据
+#json数据转换为python字典
+data_dict = json.loads(data)
+# 取到河南省数据
+cities_data = data_dict["areaTree"][0]["children"][3]["children"]
+
+# 准备数据为元组并放入List
+data_list = []
+for city_data in cities_data:
+    city_name = city_data["name"] +"市"
+    city_confirm = city_data["total"]["confirm"]
+    data_list.append((city_name, city_confirm))
+    
+# 手动添加济源市的数据
+data_list.append(("济源市",5))
+
+# 构建地图
+map = Map()
+map.add("河南省疫情分布", data_list,"河南")
+# 没置全局选项
+map.set_global_opts(
+    title_opts=TitleOpts(title="河南省疫情地图"),
+    visualmap_opts=VisualMapOpts(
+        is_show=True,  # 是否显示
+        is_piecewise=True, # 是否分段
+        pieces=[
+            {"min": 1,"max": 99,"lable":"1~99人","color":"#CCFFFF"},
+            {"min": 100,"max": 999,"lable": "100~9999人","color":"#FFFF99"},
+            {"min": 1000,"max": 4999,"lable":"1000~4999人","color":"#FF9966"},
+            {"min": 5000,"max": 9999,"lable":"5000~99999人","color":"#FF6666"},
+            {"min": 10000,"max": 99999,"lable": "10000~99999人","color":"#CC3333"},
+            {"min": 100000,"lable":"100000+","color":"#990033"}
+        ]
+    )
+)
+
+# 绘图
+map.render("河南省疫情地图.html")
+```
+## 动态GDP柱状图绘制
+* Timeline ()-时间线
+柱状图描述的是分类数据，回答的是每一个分类中了有多少?] 这个问题，这是柱状图的主要特点,同时柱状图很难动态的描述个趋势性的数据.这里pyecharts为我们提供了一种解决方案-**时间线**
+```py
+# 演示第三个图表:GDP动态柱状图开发
+from pyecharts.charts import Bar, Timeline
+from pyecharts.options import *
+from pyecharts.globals import ThemeType
+
+# 读取数据
+f = open("F:\Code\python\可视化案例数据\动态柱状图数据\GDP.csv", "r", encoding="GB2312")
+data_lines = f.readlines()
+# 关闭文件
+f.close()
+# 删除第一条数据
+data_lines.pop(0)
+# 将数据转换为字典存储，格式为:
+# { 年份:[[国家，gdp]，[国家,gdp],......]，年份: [[国家，gdp]，[国家,gdp],......]，......}
+#[ 1960:[[美国，123]，[中国,321]，......]，1961:[[美国，123]，[中国,321]，...... ]，......}
+
+# 先定义一个字典对象
+data_dict = {}
+for line in data_lines:
+    year = int(line.split(",")[0]) # 年份
+    country = line.split(",")[1]  # 国家
+    gdp = float(line.split(",")[2]) # GDP数据
+    # 如何判断字典里面有没有指定的key呢?
+    try:
+        data_dict[year].append([country, gdp])
+    except KeyError:
+        data_dict[year] =[]
+        data_dict[year].append([country, gdp])
+        
+# print(data_dict[1960])
+# 创建时间线对象
+timeline = Timeline({"theme": ThemeType.LIGHT})
+# 排序年份
+sorted_year_list = sorted(data_dict.keys())
+for year in sorted_year_list:
+    data_dict[year].sort(key=lambda element: element[1], reverse=True)
+    # 取出本年份前8名的国家
+    year_data = data_dict[year][0:8]
+    x_data = []
+    y_data = []
+    for country_gdp in year_data:
+        x_data.append(country_gdp[0]) # x轴添加国家
+        y_data.append(country_gdp[1] / 100000000) # y轴添加gdp数据
+
+    #构建柱状图
+    bar = Bar()
+    x_data.reverse()
+    y_data.reverse()
+    bar.add_xaxis(x_data)
+    bar.add_yaxis("GDP(亿)", y_data, label_opts=LabelOpts(position="right"))
+    # 反转x轴和y轴
+    bar.reversal_axis()
+    # 设置每一年的图表的标题
+    bar.set_global_opts(
+        title_opts=TitleOpts(title=f"{year}年全球前8GDP数据")
+    )
+    timeline.add(bar, str(year))
+    
+# for循环每一年的数据，基于每一年的数，创建每一年的bar对象
+# 在for中，将每一年的bar对象添加到时问线中
+# 设置时间线自动播放
+timeline.add_schema(
+    play_interval=1000,
+    is_timeline_show=True,
+    is_auto_play=True,
+    is_loop_play=False
+)
+
+# 绘图
+timeline.render("1960-2019全球GDP前8国家.html")
+```

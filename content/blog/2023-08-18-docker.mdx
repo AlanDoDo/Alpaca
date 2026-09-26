@@ -1,0 +1,232 @@
+---
+title: "Docker"
+description: "在计算机中，虚拟化(英语: Virtualization)是一种资源管理技术，是将计算机的各种实体资源，如服务器.网络、内存及存储等，予以抽象、转换后呈现出来，打破实体结构间的不可切割的障碍，使用户可以比原本的组态更好的方式来应用这些资源。这些资源的新虚拟部份是不受现有资源的架设方式，地域或物理组态所限制。一般所指的虚拟化资源包括计算能力和资料存储。"
+date: "2023-08-18"
+category: "工程技术"
+tags: ["Docker"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x192.jpg"
+source: "legacy-blog"
+---
+
+## 什么是Docker
+
+在计算机中，`虚拟化(英语: Virtualization)`是一种资源管理技术，是将计算机的各种实体资源，如服务器.网络、内存及存储等，予以抽象、转换后呈现出来，打破实体结构间的不可切割的障碍，使用户可以比原本的组态更好的方式来应用这些资源。这些资源的新虚拟部份是不受现有资源的架设方式，地域或物理组态所限制。一般所指的虚拟化资源包括计算能力和资料存储。
+
+在实际的生产环境中，虚拟化技术主要用来`解决高性能的物理硬件产能过剩和老的旧的硬件产能过低的重组重用`，`透明化底层物理硬件`，从而最大化的利用物理硬件对资源充分利用虚拟化技术种类很多，例如: 软件虚拟化硬件虚拟化、内存虚拟化、网络虚拟化(vip)、桌面虚拟化、服务虚拟化、虚拟机等等。
+
+**Docker是一个开源项目**，项目代码在GitHub(https://github.com/docker/docker) 上进行维护。
+
+`Docker是一个客户端服务器(C/S) 架构程序`。Docker客户端只需要向Docker服务器或者守护进程发出请求服务器或者守护进程将完成所有工作并返回结果。Docker提供了一个命令行工具Docker以及一整套RESTful APl.你可以在同一台宿主机上运行Docker守护进程和客户端，也可以从本地的Docker客户端连接到运行在另一台宿主机上的远程Docker守护进程。
+
+1. 更高效的利用系统资源
+2. 更快速的启动时间
+3. 一致的运行环境
+4. 持续交付和部署
+5. 更轻松的迁移
+6. 更轻松的维护和扩展
+
+## 安装Docker
+1. yum包更新到最新
+```shell
+yum update
+```
+2. 安装需要的软件包，yum-util 提供 yum-config-manager 功能，另外两个是 devicemapper 驱动依赖的
+```shell
+yum install -y yum-utils device-mapper-persistent-data lvm2
+```
+3. 设置yum源为阿里云
+```shell
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+```
+4. 安装docker
+```shell
+yum -y instal1 docker-ce
+```
+5. 安装后查看docker版本
+```shell
+docker -v
+```
+
+## 设置ustc的镜像
+* ustc docker mirror的优势之一就是不需要注册是真正的公共服务
+
+https://lug.ustc.edu.cn/wiki/mirrors/help/docker
+
+编辑该文件
+```shell
+mkdir -p /etc/docker
+vim /etc/docker/daemon.json
+```
+在该文件中输入如下内容
+```shell
+{
+    "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"]
+}
+```
+
+## Docker的启动与停止
+
+1. 启动一个新的容器：
+
+docker run 命令用于创建并启动一个新的容器。例如，运行下面的命令可以创建并启动一个新的 Nginx 容器：
+```shell
+docker run -d --name my-nginx nginx
+```
+2. 启动一个已停止的容器：
+
+docker start 命令用于启动已经停止的容器。例如，运行下面的命令可以启动名为 my-nginx 的容器：
+```
+docker start my-nginx
+```
+3. 停止正在运行的容器：
+
+docker stop 命令用于停止正在运行的容器。例如，运行下面的命令可以停止名为 my-nginx 的容器：
+```
+docker stop my-nginx
+```
+4. 重启容器：
+
+docker restart 命令用于重启容器，即先停止再启动容器。例如，运行下面的命令可以重启名为 my-nginx 的容器：
+
+```
+docker restart my-nginx
+```
+5. 暂停容器：
+
+docker pause 命令用于暂停容器中的所有进程。例如，运行下面的命令可以暂停名为 my-nginx 的容器：
+```
+docker pause my-nginx
+```
+6. 恢复容器：
+
+docker unpause 命令用于恢复容器中的所有进程。例如，运行下面的命令可以恢复名为 my-nginx 的容器：
+```
+docker unpause my-nginx
+```
+7. 停止并删除容器：
+
+docker rm 命令用于停止并删除容器。例如，运行下面的命令可以停止并删除名为 my-nginx 的容器：
+```
+docker rm my-nginx
+```
+
+## 镜像操作
+镜像作为容器执行的前提条件，一般需要掌握的几个命令无非是搜索，下载，删除，创建
+
+1. 镜像列表
+```
+docker images
+```
+2. 检索镜像, 从镜像仓库中检索
+```
+docker search xxx
+```
+3. 下载镜像
+```
+docker pull xxx
+```
+4. 删除镜像
+```
+docker rmi xxx
+```
+
+5. 通过容器创建镜像
+```
+docker commit -m="首次提交" -a="MyBlog" dd85eb05xxx8 yh/centos:v0.1
+```
+6. 镜像历史查询
+```
+docker history yh/centos
+```
+
+> -m 和 git 的提交一样，后面更上描述信息
+> -a 版权声明，这个东西是我创建的，有啥问题，找我
+> dd85eb05xxx8 容器 id
+> yhh/quick-os:0.1 创建的镜像名
+
+7. 容器操作
+
+接下来就是正菜了，容器的各种操作，启动，关闭，重启，日志查询以及各种进入容器内部搞事情
+
+**a. run**
+
+万事开头第一步，加载镜像，创建容器
+
+`docker run 镜像名:版本`
+run 后面可以跟很多的参数，比如容器暴露端口指定，存储映射，权限等等，由于参数过多，下面只给出几个不同的例子，来具体的演示参数可以怎么加
+
+case1: 创建并后台执行
+```
+docker run -i -t -d centos:latest
+```
+其中关键参数为-d，指定容器运行与前台或者后台，不加上时前台
+
+> -i: 打开 STDIN，用于控制台交互
+> -t: 支持终端登录
+
+case2: 运行一个带命令在后台不断执行的容器
+```
+docker run -d centos:latest ping www.baidu.com
+```
+
+case3: 运行一个在后台不断执行的容器，同时带有命令，程序被终止后还能重启继续跑
+```
+docker run -d --restart=always centos:latest ping www.baidu.com
+```
+
+case4: 指定容器名
+```
+docker run -d --name=my_centos centos:latest
+```
+
+case5: 暴露容器端口 80，并与宿主机端口 8080 绑定
+```
+docker run -d --name=my_centos -p 8080:80 centos:latest
+```
+case6: 指定容器与宿主机目录（/home/yihui/html/www）共享
+```
+docker run -d --name=my_centos -v /home/yihui/html/www:/var/www centos:latest
+```
+
+**b. 基操**
+容器创建完毕之后，就是一些基本操作了，启动、停止、重启、删除
+
+
+# 查询xxx容器的日志
+```
+docker logs yhhos
+```
+基本上不太会直接使用上面的命令，因为上面把所有的日志都打印出来了，可以直接晃瞎我们的钛合金 x 眼
+
+一般日志可以加两个参数 -f, -t
+
+> docker logs -f -t --since="2023-05-11" --tail=10 yhhos
+> --since : 此参数指定了输出日志开始日期，即只输出指定日期之后的日志。
+> -f : 查看实时日志
+> -t : 查看日志产生的日期
+> --tail=10 : 查看最后的 10 条日志。
+
+文件拷贝
+
+将容器的某个文件捞出来；或者强塞，一个 cp 即可
+
+2. 将当前目录的test.md文件拷贝到容器的 /tmp 目录下
+```
+docker cp test.md yhhos:/tmp
+```
+3. 将容器的/tmp/test.md目录拷贝到当前目录下
+```
+docker cp yhhos:/tmp/test.md ./out.md
+```
+进入容器
+
+进入容器内部，然后就可以为所欲为了...
+```
+docker exec -it yhhos /bin/bash
+```
+获取容器所有信息
+```
+docker inspect yhhos
+```

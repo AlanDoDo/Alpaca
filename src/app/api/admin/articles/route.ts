@@ -1,0 +1,150 @@
+import { NextRequest, NextResponse } from "next/server";
+import matter from "gray-matter";
+import fs from "node:fs";
+import path from "node:path";
+import { getArticleBySlug } from "@/modules/content";
+import { adminAuthConfigured, verifyAdminSessionValue, ADMIN_COOKIE } from "@/lib/admin-auth";
+import type { ArticleCategory } from "@/modules/content/types";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "编程", "工程技术", "设计", "杂谈"];
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const maxArticleBytes = 500_000;
+
+type ArticleDraft = {
+  slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
+  tags?: unknown; author?: unknown; featured?: unknown; cover?: unknown; content?: unknown; expectedSha?: unknown;
+};
+
+type ValidatedDraft = { slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+function authorized(request: NextRequest) {
+  return adminAuthConfigured() && verifyAdminSessionValue(request.cookies.get(ADMIN_COOKIE)?.value);
+}
+
+function githubConfig() {
+  const token = process.env.GITHUB_TOKEN;
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  if (!token || !owner || !repo) return null;
+  return { token, owner, repo, branch: process.env.GITHUB_BRANCH || "main" };
+}
+
+function githubHeaders(token: string) {
+  return { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, "X-GitHub-Api-Version": "2022-11-28" };
+}
+
+function githubFileUrl(owner: string, repo: string, slug: string) {
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/content/blog/${encodeURIComponent(slug)}.mdx`;
+}
+
+export async function GET(request: NextRequest) {
+  if (!authorized(request)) return NextResponse.json({ error: "请先登录管理员后台。" }, { status: 401 });
+  const slug = request.nextUrl.searchParams.get("slug") ?? "";
+  if (!slugPattern.test(slug)) return NextResponse.json({ error: "文章标识无效。" }, { status: 400 });
+
+  const config = githubConfig();
+  if (config) {
+    try {
+      const response = await fetch(`${githubFileUrl(config.owner, config.repo, slug)}?ref=${encodeURIComponent(config.branch)}`, { headers: githubHeaders(config.token), cache: "no-store" });
+      if (response.ok) {
+        const file = await response.json() as { content?: string; encoding?: string; sha?: string };
+        if (!file.content || file.encoding !== "base64" || !file.sha) return NextResponse.json({ error: "暂时无法读取这篇文章。" }, { status: 502 });
+        const raw = Buffer.from(file.content.replace(/\n/g, ""), "base64").toString("utf8");
+        const parsed = matter(raw);
+        return NextResponse.json({ slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: parsed.data.date ?? "", category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
+      }
+      if (response.status !== 404) return NextResponse.json({ error: "从 GitHub 读取文章失败，请稍后重试。" }, { status: 502 });
+    } catch {
+      return NextResponse.json({ error: "连接 GitHub 失败，请检查网络后重试。" }, { status: 502 });
+    }
+  }
+
+  const article = getArticleBySlug(slug);
+  if (!article) return NextResponse.json({ error: "文章不存在，或 GitHub 尚未配置。" }, { status: 404 });
+  const filePath = [".mdx", ".md"].map((extension) => path.join(process.cwd(), "content/blog", slug + extension)).find((candidate) => fs.existsSync(candidate));
+  const parsed = matter(filePath ? fs.readFileSync(filePath, "utf8") : "");
+  return NextResponse.json({ slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
+}
+
+function validateDraft(body: ArticleDraft) {
+  const slug = typeof body.slug === "string" ? body.slug.trim() : "";
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  const description = typeof body.description === "string" ? body.description.trim() : "";
+  const date = typeof body.date === "string" ? body.date.trim() : "";
+  const category = typeof body.category === "string" ? body.category as ArticleCategory : undefined;
+  const tags = Array.isArray(body.tags) ? body.tags.filter((tag): tag is string => typeof tag === "string").map((tag) => tag.trim()).filter(Boolean).slice(0, 20) : [];
+  const author = typeof body.author === "string" ? body.author.trim() : "TechAlpaca";
+  const featured = body.featured === true;
+  const cover = typeof body.cover === "string" ? body.cover.trim() : "";
+  const content = typeof body.content === "string" ? body.content : "";
+  if (!slugPattern.test(slug) || slug.length > 100) return { error: "文章路径只支持小写英文、数字和连字符。" };
+  if (!title || title.length > 160) return { error: "标题必填，且不能超过 160 个字符。" };
+  if (!description || description.length > 320) return { error: "摘要必填，且不能超过 320 个字符。" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) return { error: "日期格式请使用 YYYY-MM-DD。" };
+  if (!category || !categories.includes(category)) return { error: "请选择有效分类。" };
+  if (author.length > 80) return { error: "作者名称不能超过 80 个字符。" };
+  if (cover && (!/^https:\/\//i.test(cover) || cover.length > 2048)) return { error: "封面请填写有效的 HTTPS 图片地址；留空表示无封面。" };
+  if (!content.trim() || Buffer.byteLength(content, "utf8") > maxArticleBytes) return { error: "正文不能为空，且不能超过 500 KB。" };
+  if (typeof body.expectedSha !== "string" && body.expectedSha !== null) return { error: "文章版本信息无效，请重新打开文章。" };
+  return { value: { slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } };
+}
+
+function frontmatter(value: ValidatedDraft) {
+  const fields = [
+    `title: ${JSON.stringify(value.title)}`,
+    `description: ${JSON.stringify(value.description)}`,
+    `date: ${JSON.stringify(value.date)}`,
+    `category: ${JSON.stringify(value.category)}`,
+    `tags: ${JSON.stringify(value.tags)}`,
+    `author: ${JSON.stringify(value.author)}`,
+    `featured: ${value.featured}`,
+    ...(value.cover ? [`cover: ${JSON.stringify(value.cover)}`] : []),
+  ];
+  return `---\n${fields.join("\n")}\n---\n\n${value.content.trim()}\n`;
+}
+
+export async function POST(request: NextRequest) {
+  if (request.headers.get("origin") !== new URL(request.url).origin) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
+  if (!authorized(request)) return NextResponse.json({ error: "登录状态已失效，请重新登录。" }, { status: 401 });
+  if (!request.headers.get("content-type")?.includes("application/json")) return NextResponse.json({ error: "请求格式无效。" }, { status: 415 });
+  const length = Number(request.headers.get("content-length") ?? "0");
+  if (length > maxArticleBytes + 32_000) return NextResponse.json({ error: "文章内容超过允许大小。" }, { status: 413 });
+  let body: ArticleDraft;
+  try { body = await request.json() as ArticleDraft; } catch { return NextResponse.json({ error: "请求内容无效。" }, { status: 400 }); }
+  const validated = validateDraft(body);
+  if ("error" in validated) return NextResponse.json({ error: validated.error }, { status: 400 });
+
+  const config = githubConfig();
+  if (!config) return NextResponse.json({ error: "发布配置尚未完成。请在本地 .env.local 或 Vercel 环境变量中设置 GITHUB_TOKEN、GITHUB_OWNER、GITHUB_REPO、GITHUB_BRANCH。" }, { status: 503 });
+  const value = validated.value;
+  const url = githubFileUrl(config.owner, config.repo, value.slug);
+  try {
+    const existingResponse = await fetch(`${url}?ref=${encodeURIComponent(config.branch)}`, { headers: githubHeaders(config.token), cache: "no-store" });
+    let currentSha: string | null = null;
+    if (existingResponse.ok) {
+      const existing = await existingResponse.json() as { sha?: string };
+      currentSha = existing.sha ?? null;
+    } else if (existingResponse.status !== 404) {
+      return NextResponse.json({ error: "检查 GitHub 文章版本失败，请稍后重试。" }, { status: 502 });
+    }
+    if (currentSha !== value.expectedSha) return NextResponse.json({ error: "GitHub 上的文章版本已变化。请重新打开文章并合并最新内容后再发布。" }, { status: 409 });
+
+    const published = await fetch(url, {
+      method: "PUT",
+      headers: { ...githubHeaders(config.token), "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `${currentSha ? "Update" : "Publish"} article: ${value.title}`, content: Buffer.from(frontmatter(value), "utf8").toString("base64"), branch: config.branch, ...(currentSha ? { sha: currentSha } : {}) }),
+      cache: "no-store",
+    });
+    if (!published.ok) {
+      const status = published.status;
+      if (status === 401 || status === 403) return NextResponse.json({ error: "GitHub 拒绝了发布请求。请检查 Token 权限和仓库访问设置。" }, { status: 502 });
+      return NextResponse.json({ error: status === 409 ? "GitHub 发现版本冲突，请重新打开文章后再试。" : "发布到 GitHub 失败，请稍后重试。" }, { status: status === 409 ? 409 : 502 });
+    }
+    const result = await published.json() as { content?: { html_url?: string; sha?: string }; commit?: { html_url?: string } };
+    return NextResponse.json({ ok: true, slug: value.slug, expectedSha: result.content?.sha ?? null, fileUrl: result.content?.html_url ?? null, commitUrl: result.commit?.html_url ?? null });
+  } catch {
+    return NextResponse.json({ error: "连接 GitHub 失败，请检查网络后重试。" }, { status: 502 });
+  }
+}

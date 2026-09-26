@@ -1,0 +1,782 @@
+---
+title: "Python基础学习笔记(一)"
+description: "这里有基础的同学看看一就行啦"
+date: "2021-10-22"
+category: "编程"
+tags: ["Python"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a11.jpg"
+source: "legacy-blog"
+---
+
+***
+# 第一章
+
+* 这里有基础的同学看看一就行啦
+* 第一个python程序，括号和引号使用英文符号
+```py
+    print("Hello World")
+```
+Python解释器：
+1. 翻译代码
+2. 计算机识别的二进制（01101）运行,(建议使用PyCharm软件),作者用的VSCode
+
+# 第二章
+
+## 字面量
+在代码中，被写下来的**固定的值**，称之为**字面量**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m39.jpg)
+* 字符串(string)，又称文本，是由任意数量的字符如中文、英文、各类符号、数字等组成，叫做字符的串。
+```py
+    print(666)  #整数
+    print(13.14)  #浮点数
+    print("学习Python")  #字符串 
+```
+
+## 注释
+
+### 了解注释的作用
+1. 注释: 在程序代码中对程序代码进行解释说明的文字。
+2. 作用: 注释不是程序，不能被执行，只是对程序代码进行解释说明，让别人可以看懂程序代码的作用，能够大大增强程序的可读性。
+
+### 能够使用单行注释和多行注释
+* 单行注释:以`#`开头,`#`右边的所有文字当作说明，而不是真正要执行的程序，起**辅助说明**作用
+```py
+# 我是单行注释, '#'号和注释内容一般建议以一个空格隔开
+print("Hello world") 
+```
+* 多行注释: 以 **一对三个双引号** 引起来 (**"""注释内容"""**)来解释说明一段代码的作用使用方法
+```py
+    """
+        我是多行注释
+        诗名:悯农
+        作者:李绅
+    """
+        print("锄禾日当午")
+        print("汗滴禾下土")
+        print("谁知盘中餐")
+        print("粒粒皆辛苦")     
+```
+
+## 变量
+
+* 变量:在程序运行时，能储存计算结果或能表示值的抽象概念简单的说，变量就是在程序运行时，**记录数据**用的
+```py
+"""
+定义一个变量，用来记录钱包的余额
+通过print语句，输出变量记录的内容
+买了一个冰激凌，花费10元
+"""
+money = 50
+print("钱包还有：", money) # 这里 money 为 50
+money = money - 10
+print("买了冰激凌花费10元，还剩余：", money, "元") 
+```
+
+## 数据类型
+
+### 掌握使用type()语句
+* 主要接触三类数据类型：**string**(字符串类型), **int**(整型), **float**(浮点型)
+* 在print语句中，直接输出类型信息
+
+```py
+print(type("语句"))
+print(type(666))
+print(type(11.345))
+```
+
+* 用变量储存 type() 的结果(返回值)
+
+```py
+string_type = type("语句")
+int_type = type(666)
+float_type = type(11.345)
+print(string_type)
+print(int_type)
+print(float_type)
+```
+* 可以查看变量中储存的数据类型
+```py
+name = "语句"
+name_type = type(name)
+print(name_type)
+```
+
+### 理解变量无类型而数据有类型的概念
+
+我们通过`type(变量)`可以输出类型，这是查看变量的类型还是数据的类型?
+
+查看的是: **变量存储的数据的类型**。因为，变量无类型，但是它存储的数据有。
+
+## 数据类型转换
+
+### 掌握如何在字符串、整数、浮点数之间进行相互转换
+* 从文件中读取的数字，默认是字符串，我们需要转换成数字类型
+* 后续学习的 input() 语句，默认结果是字符串，若需要数字也需要转换
+* 将数字转换成字符串用以写出到外部系统等等
+
+> int(x)   ------>  将x转换为一个整数   
+> float(x) ------>  将x转换为一个浮点数  
+> str(x)   ------>  将对象x转换为字符串  
+
+* 将数字类型转换成字符串
+```py
+num_str = str(11)
+print(type(num_str),num_str)
+
+float_str = str(11.345)
+print(type(float_str),float_str)
+```
+* 将字符串转换成数字
+```py
+num = int("11")
+print(type(num),num)
+
+num2 = float("11.345")
+print(type(num2),num2)
+```
+
+### 转换的注意事项
+
+**数字不一定能转换成字符串，必须要求字符串内的内容都是数字**
+* 整数转浮点数,这里注意会丢失精度
+```py
+float_num = float(11)
+print(type(float_num), float_num)
+```
+* 浮点数转整数
+```py
+int_num = int(11.345)
+print(type(int_num), int_num)
+```
+
+## 标识符
+**标识符**: 是用户在编程的时候所使用的一系列名字，用于给**变量、类、方法等命名。**
+
+1. 不推荐使用中文
+2. 数字不可以开头
+
+**关键字(不可以做标识符)：**
+> import keyword
+> keyword.kwlist
+```py
+['False', 'None', 'True', 'and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
+```
+
+## 运算符
+### 算术(数学)运算符
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m40.jpg)
+```py
+print("1 + 1 = ", 1 + 1 )
+print("2 - 1 = ", 2 - 1 )
+print("3 * 3 = ", 3 * 3 )
+print("4 / 2 = ", 4 / 2 )
+print("11 // 2 = ", 11 // 2 )
+print("9 % 2 = ", 9 % 2 )
+```
+
+### 赋值运算符
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m41.jpg)
+
+## 字符串扩展
+
+### 三种定义方式
+
+1. 单引号定义法: name = '程序员'
+2. 双引号定义法: name = "程序员"
+3. 三引号定义法: name = """程序员"""
+
+引号的嵌套:可以使用`\`来进行转义，单引号内可以写双引号，或双引号内可以写单引号
+
+### 字符串的拼接
+* 拼接字符串
+```py
+print("字符串的" + "拼接")
+name ="字符串"
+address ="拼接"
+print("我是:" + name + "，我的地址是:" +address)
+```
+**无法和非字符串类型进行拼接**
+
+### 字符串格式化(1)
+* 占位拼接
+```py
+name ="alandodo"
+message ="学IT来找: %s" % name
+print(message)
+```
+* 占位数字转成字符串
+```py
+class_num = 1
+avg_salary = 1
+message ="学习Python,来互联网%s班,毕业工资: %s"% (class_num,avg_salary)
+print(message)
+```
+
+三类占位：
+**%s**  将内容转换成**字符串**，放入占位位置
+**%d**  将内容转换成**整型**，放入占位位置
+**%f**  将内容转换成**浮点型**，放入占位位置
+
+### 格式化字符串的过程中做数字的精度控制
+m,控制宽度，要求是数字(很少使用),设置的宽度小于数字自身，不生效
+n,控制小数点精度，要求是数字,会进行小数的四舍五入
+* 精度控制
+```py
+num1 = 11
+num2 = 11.345
+print("数字11宽度限制5,结果是: %5d" % num1)
+print("数字11宽度限制1,结果是: %1d" % num1)
+print("数字11.345宽度限制7,小数精度2,结果是: %7.2f" % num2)
+print("数字11.345不限制,小数精度2,结果是: %.2f" % num2)
+```
+
+### 字符串格式化(2)--快速写法
+**通过语法:f"内容{变量}"的格式来快速格式化**
+* 字符串格式化
+```py
+name ="字符串"
+set_up_year = 2002
+stock_price = 19.99
+print(f"我是{name}，我成立于: {set_up_year}年，我今天的股价是: {stock_price}")
+```
+
+### 对表达式进行格式化
+**表达式：一条具有明确执行结果的代码语句**
+* 表达式格式化
+```py
+print("1 *1 的结果是: %d" % (1*1))
+print(f"1 * 2的结果是: {1 * 2}")
+print("字符串在Python中的类型名是: %s" % type("字符串"))
+```
+* 认识代码
+```py
+name ="Python"
+stock_price = 19.99
+stock_code ="000001"
+stock_price_daily_growth_factor = 1.2
+growth_days = 7
+finally_stock_price = stock_price * stock_price_daily_growth_factor ** growth_days
+print(f"公司: {name}，股票代码: {stock_code}，当前股价:{stock_price}")
+print("每日增长系数: %0.2f, 经过%d天的增长后,股价达到了: %.2f" % (stock_price_daily_growth_factor, growth_days, finally_stock_price))
+```
+
+## 数据输入
+* 数据输出:`print`
+* 数据输入:`input`
+使用上也非常简单:使用input()语句可以从键盘获取输入
+使用一个变量接收(存储)input语句获取的键盘输入数据即可
+* input语句(函数)
+```py
+print("请告诉我你是谁?")
+name = input()
+print("我知道了，你是:%s" % name)
+```
+* 数字,数据类型转换
+```py
+num = input("请告诉我你的银行卡密码：")
+num = int(num)
+print("你的银行卡密码的类型是：",type(num))
+```
+
+# 第三章 判断语句
+
+## 布尔类型和比较运算符
+
+### 布尔(数字)类型
+* 判断的结果：True表示真，数字记作`1`，False表示假，数字记作`0`
+* 定义变量存储布尔类型数据: 变量名称 = 布尔类型字面量
+```py
+# 定义变量存储布尔类型的数据
+bool_1 = True
+bool_2 = False
+print(f"bool_1变量的内容是: {bool_1},类型是: {type(bool_1)}")
+print(f"bool_2变量的内容是: {bool_2},类型是: {type(bool_2)}")
+```
+
+### 比较运算符
+```py
+ # 比较运算符的使用
+ # ==，!=，>，>=， <=
+ # 演示进行内容的相等比较
+num1= 10
+num2 = 10
+print(f"10 == 1的结果是: {num1 == num2}")
+num1 = 10
+num2 = 15
+print(f"10 != 15的结果是: {num1 != num2}")
+
+name1 ="itcast"
+name2 ="itheima"
+print(f"itcast == itheima 结果是: {name1 == name2}")
+
+# 演示大于小于，大于等于小于等于的比较运算
+num1 = 10
+num2 = 5
+print(f"10 > 5结果是: {num1 > num2}")
+print(f"10 < 5结果是: {num1 < num2}")
+
+num1 =10
+num2 = 11
+print(f"10 >= 11的结果是: {num1 >= num2}")
+print(f"10 <= 11的结果是: {num1 <= num2}")
+```
+
+## if语句的基本格式
+```py
+if 要判断的条件:
+    条件成立时，要做的事情(注意一个Tab缩进)
+```
+```py
+# 演示Python判断语句: if语句的基本式应用
+age = 19
+print(f"今年我已经{age}岁了")
+
+if age >= 18:
+    print("我已经成年了")
+    print("即将步入大学生活")
+print("时间过的真快呀")
+```
+**案例-成年人判断**
+1. 通过input语句，获取键盘输入,为变量age赋值(注意转换成数字类型)
+2. 通过if判断是否是成年人，满足条件则输出提示信息，如下:
+欢迎来到py儿童游乐场，儿童免费，成人收费。
+请输入你的年龄: 30
+您已成年，游玩需要补票10元
+祝您游玩愉快。
+```py
+# 获取键盘输入
+age = int(input("请输入你的年龄:"))
+
+# 通过if判断是否是成年人
+if age >= 18:
+    print("您已成年,游玩需要买票,10元.")
+print("祝您游玩偷快!")
+```
+
+## if else组合判断语句
+* 程序中的判断
+```py
+if 条件:
+    满足条件时要做的事情1
+    满足条件时要做的事情2
+    满足条件时要做的事情3
+    ...(省略)...
+else:
+    不满足条件时要做的事情1
+    不满足条件时要做的事情2
+    不满足条件时要做的事情3
+    ..(省略)..
+```
+```py
+age = int(input("请输入你的年龄:"))
+
+if age >= 18:
+    print("您已成年,需要买票10元。")
+else :
+    print("您未成年，可以免费游玩。")
+```
+**案例-我要买票吗**
+
+1. 通过input语句获取键盘输入的身高
+2. 判断身高是否超过120cm，并通过print给出提示信息
+
+```py
+# 定义键盘输入获取身高数据
+height = int(input("请输入你的身高 (cm) :"))
+
+# 通过if进行判断
+if height > 120:
+    print("您的身高超出120CM,需要买票,10元。")
+else:
+    print("您的身高低于120CM,可以免费游玩。")
+print("祝您游玩愉快")
+```
+
+## if_elif_else组合使用的语法
+* 程序中的判断
+```py
+if 条件1:
+    条件1满足应做的事情
+    条件1满足应做的事情
+    ...
+elif 条件2:
+    条件2满足应做的事情
+    条件2满足应做的事情
+elif 条件N:
+    条件N满足应做的事情
+    条件N满足应做的事情
+    ...
+else:
+    所有条件都不满足应做的事情
+    所有条件都不满足应做的事情
+    ...
+```
+```py
+height = int(input("请输入你的身高(cm):"))
+vip_level = int(input("请输入你的VIP等级(1-5) :"))
+day = int(input("请告诉我今天几号："))
+
+# 通过if判断，可以使用多条件判断的语法
+# 第一个条件就是if
+if height < 120:
+    print("身高小于120cm,可以免费。")
+elif vip_level > 3:
+    print("vip级别大于3,可以免费。")
+elif day == 1:
+    print("今天是1号免费日，可以免费")
+else:
+    print("不好意思,条件都不满足,需要买票10元。")
+```
+
+**案例-猜猜心里数字**
+1. 定义一个变量，数字类型，内容随意。
+2. 基于input语句输入猜想的数字，通过if和多次elif的组合判断猜想数字是否和心里数字一致。
+```py
+# 定义一个变量数字
+num = 5
+# 通过键盘输入获取猜想的数字，通过多f和elf的组合进行想比较
+if int(input("请猜一个数宁:")) == num:
+    print("恭喜第一次就猜对了呢")
+elif int(input("猜错了，再猜一次:")) == num:
+    print("猜对了")
+elif int(input("猜错了，最后一次:")) == num:
+    print("恭喜，最后一次机会，你猜对了")
+else:
+    print("Sorry 我想的数字是5，你猜错了")
+```
+
+## 判断语句的嵌套
+* 基础语法格式如下:
+```py
+if 条件1:
+    满足条件1 做的事情1
+    满足条件1 做的事情2
+    if 条件2:
+        满足条件2 做的事情1
+        满足条件2 做的事情2
+```
+```py
+if int(input("你的身高是多少:")) > 12:
+    print("身高超出限制，不可以免费")
+    print("但是,如果vip级别大于3,可以免费")
+    
+    if int(input("你的vip级别是多少:")) >3:
+        print("恭喜你,vip级别达标,可以免费")
+    else:
+        print("Sorry 你需要买票10元")
+else:
+    print("欢迎小朋友，免费游玩。")
+```
+* 自由组合嵌套，需求如下:
+公司要发礼物，条件是:
+必须是大于等于18岁小于30岁的成年人2.同时入职时间需满足大于两年，或者级别大于3才可领取
+```py
+age = 20
+year = 3
+level = 1
+
+if age >= 18:
+    print("你是成年人")
+    if age < 30:
+        print("你的年龄达标了")
+        if year > 2:
+            print("恭喜你，年龄和入职时间都达标，可以领取礼物")
+        elif level > 3:
+            print("恭喜你，年龄和级别大表，可以领取礼物")
+        else:
+            print("不好意思，尽管年龄达标，但是入职时间和级别都不达标。")
+    else:
+        print("不好意思，年龄太大了")
+else:
+    print("不好意思，小朋友不可以领取。")
+```
+
+## 判断语句综合案例
+* 案例需求:定义一个数字(1~10,随机产生)，通过3次判断来猜出来数字
+案例要求:
+1. 数字随机产生，范围1-10
+2. 有3次机会猜测数字，通过3层嵌套判断实现
+3. 每次猜不中，会提示大了或小了
+```py
+# 1.构建一个随机的数宇交量
+import random
+num = random.randint(1, 10)
+
+guess_num = int(input("输入你要猜测的数字:"))
+# 2.通过f判断语句进行数字的猜测
+if guess_num == num:
+    print("恭喜，第一次就猜中了")
+else:
+    if guess_num > num:
+        print("你猜测的数字大了")
+    else:
+        print("你猜测的数字小了")
+        
+    guess_num = int(input("再次输入你要猜测的数字:"))
+    
+    if guess_num == num:
+        print("恭喜，第二次猜中了")
+    else:
+        if guess_num > num:
+            print("你猜测的数字大了")
+        else:
+            print("你猜测的数字小了")
+        guess_num = int(input("第三次输入你要猜测的数字:"))
+
+        if guess_num == num:
+            print("第三次猜中了")
+        else:
+            print("三次机会用完了，没有猜中。")
+```
+
+# 第四章
+
+## while循环的基础应用
+* 程序中的循环
+```py
+while 条件:
+    条件满足时，做的事情1
+    条件满足时，做的事情2
+    条件满足时，做的事情3
+    ...(省略)...
+```
+```py
+i=0
+while i < 100:
+    print("从0~99输出100次")
+    i += 1
+```
+**只要条件满足会无限循环执行**
+
+* 案例 通过while循环，求1累加到100的和
+```py
+sum = 0
+i = 1
+while i <= 100:
+    sum += i
+    i += 1
+    
+print(f"1-100累加的和是: {sum}")
+```
+* 案例 while循环猜数字
+```py
+# 获取范用在1-100的随机数宁
+import random
+num = random.randint(1, 100)
+# 定义一个变量，记录总共猜测了多少次
+count = 0
+
+# 通过一个布尔类型的变量，做循环是否继续的标记
+flag = True
+while flag:
+    guess_num = int(input("请输入你猜测的数字:"))
+    count += 1
+    if guess_num == num:
+        print("猜中了")
+        #设置为False就是终止循环的条件
+        flag = False
+    else:
+        if guess_num > num:
+            print("你猜的大了")
+        else:
+            print("你猜的小了")
+            
+print(f"你总共猜测了{count}次")
+```
+
+## while循环的嵌套应用
+* 程序中的循环
+```py
+while 条件1:
+    条件1满足时，做的事情1
+    条件1满足时，做的事情2
+    条件1满足时，做的事情3
+    ...(省略)...
+    while 条件2:
+    条件2满足时，做的事情1
+    条件2满足时，做的事情2
+    条件2满足时，做的事情3
+    ...(省略)..
+```
+```py
+# 外层:表白100天的控制
+# 内层:每天的表白都送10只玫瑰花的控制
+
+i = 1
+while i <= 100:
+    print(f"今天是第{i}天，准备表白.....")
+    # 内层循环的控制变量
+    j = 1
+    while j <= 10:
+        print(f"送给小美第{j}只玫瑰花")
+        j += 1
+    
+    print("小美，我喜欢你")
+    i += 1
+print(f"坚持到第{i - 1}天,表白成功")
+```
+* 案例 九九乘法表
+**知识点:制表符**
+```py
+# 制表符
+print("Hello\tWorld")
+print("itheima\tbest")
+```
+**通过while循环，输出九九乘法表**
+```py
+# 定义外层循环的控制变量
+i = 1
+while i <= 9:
+    #定义内层循环的控制变量
+    j = 1
+    while j <= i:
+        # 内层循环的print语句，不要换行，通过\t制表符进行对齐
+        print(f"{j} * {i} = {j * i}\t",end='')
+        j += 1
+        
+    i += 1
+    print()    #print空内容，就是输出一个换行
+```
+
+## for循环的基础语法
+* 程序中的for循环语法格式是：
+```py
+for 临时变量 in 待处理数据集:
+    循环满足条件时执行的代码
+```
+```py
+name = "itxunhuan"
+for x in name:
+    # name的内容，挨个取出赋予x临时变量
+    # 就可以在循环体内对X进行处理
+    print(x)
+```
+* 案例 数一数多少字母a
+```py
+# 统计如下字符串中，有多少个气母a
+name = "itxunhuan is a brand of itcast"
+#定义一个变量，用来统计有多少个a
+count = 0
+# for 循环统计
+# for 临时交量 in 被统计的数据:
+for x in name:
+    if x == "a":
+        count += 1
+print(f"被统计的字符串中有{count}个a")
+```
+
+## range语句
+1. range语句的功能是:获得一个数字序列
+2. range语句的语法格式:
+> 语法1:range(num)
+> 语法2:range(num1，num2)
+> 语法3:range(num1，num2，step)
+3. range语句的注意事项:
+> 语法1:从0开始，到num结束(不含num本身)
+> 语法2:从num1开始，到num2结束(不含num2本身)
+> 语法3:从num1开始，到num2结束(不含num2本身)，步长以step值为准
+```py
+# range语法1 range(num)
+for x in range(10):
+    print(x)
+```
+```py
+# range 语法2 range(num1，num2)
+for x in range(5,10):
+    # 从5开始，到10结束(不包含10本身)的一个数字序列
+    print(x)
+```
+```py
+# range 语法3 range(num1,num2,step)
+for x in range(5,10,2):
+# 从5开始，到10结束(不包合10本身)的一个数序列，数字之间的间隔是2
+    print(x)
+```
+
+## for循环临时变量作用域
+1. for循环中的临时变量，其作用域限定为：循环内
+2. 这种限定:
+    1. 是编程规范的限定，而非强制限定
+    2. 不遵守也能正常运行，但是不建议这样做
+3. 如需访问临时变量，可以预先在循环外定义它
+## for循环的嵌套使用
+```py
+# 坚持表白100天，每天都送10杂花
+# range
+i = 0
+for i in range(1,101):
+    print(f"今天是向小美表白的第{i}天，加油坚持。")
+    # 写内层的循环了
+    for j in range(1,11):
+        print(f"给小美送的第{j}朵玫瑰花")
+        
+    print("小美我喜欢你")
+print(f"第{i}天，表白成功")
+```
+
+* for循环打印九九乘法表
+```py
+# 通过外层循环控制行数
+for i in range(1, 10):
+    # 通过内层循环控制每一行的数据
+    for j in range(1, i + 1):
+        # 在内层循环中输出每一行的内容
+        print(f"{j} * {i} = {j * i}\t",end='')
+    #外层循环可以通过print输出一个回车符
+    print()
+```
+
+## continue和break
+continue关键字用于: **中断本次循环**，直接进入下一次循环
+continue可以用于: for循环和while循环，效果一致
+```py
+# 演示continue的嵌套应用
+for i in range(1,6):
+    print("语句1")
+    for j in range(1,6):
+        print("语句2")
+        continue
+        print("语句3")
+    print("语句4")
+```
+break关键字用于: **直接结束循环**
+break可以用于: for循环和while循环，效果一致
+```py
+# 演示循环中断语句 break
+for i in range(1,101):
+    print("语句1")
+    break
+    print("语句2")
+print("语句3")
+```
+**综合案例 循环**
+* 练习案例:发工资
+1. 某公司，账户余额有1W元，给20名员工发工资
+2. 员工编号从1到20，从编号1开始，依次领取工资，每人可领取1000元
+3. 领工资时，财务判断员工的绩效分(1-10)(随机生成,如果低于5，不发工资，换下一位
+4. 如果工资发完了，结束发工资
+
+```py
+# 定义账户余额变量
+money = 10000
+# for循环对员工发放工资
+for i in range(1,21):
+    import random
+    score = random.randint(1,10)
+
+    if score < 5:
+        print(f"员工{i}绩效分{score}，不满足，不发工资，下一位")
+        # continue跳过发放
+        continue
+    
+    # 要判断余额足不足
+    if money >= 1000:
+        money -= 1000
+        print(f"员工{i},满足条件发放工资1000,公司账户余额: {money}")
+    else:
+        print(f"余额不足，当前余额: {money}元，不足以发工资，不发了，下个月再来")
+        # break结束发放
+        break
+```

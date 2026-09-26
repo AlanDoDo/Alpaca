@@ -1,0 +1,454 @@
+---
+title: "AI智能车方向的认识"
+description: "这里是学习部分知识的记录"
+date: "2023-09-18"
+category: "机器人"
+tags: ["嵌入式"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x234.jpg"
+source: "legacy-blog"
+---
+
+## 说说
+
+这里是学习部分**知识的记录**
+
+## 总线370电机介绍
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x230.png)
+
+`电源：`总线接口既是通信接口又是电源输入接口，输入电源范围 DC：6-12V
+
+通信接口和电源接口共用一个接口，其中 VCC/GND 表示电源引脚，DATA 是信号引脚
+
+`【工作灯】：`输入电源正常工作时，指示灯 1S 闪烁一次即为正产，常亮或者常灭均有问题，需立即拔下电源检查问题所在。
+`【转向灯】：`当一个灯亮起时的转动定义正向转动时，另一个灯亮起即表示反向转动。
+
+`B （测速信号）``CH1 （驱动信号）``CH2 （驱动信号）``A （测速信号）`
+
+## 麦克纳姆轮控制原理
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x231.png)
+
+```python
+'''
+    通过串口发送指令控制电机的转速,时间
+    参数：
+    speed_l1---左前轮
+    speed_r1---右前轮
+    speed_l2---左后轮
+    speed_r2---右后轮
+    (-1000~1000)负值后退，正值前进，绝对值越大转速越高。
+    time 代表车轮转动时间，0 代表一直转动，1000 代表转动 1 秒，以此类推。
+'''
+def car_run(speed_l1,speed_r1,speed_l2,speed_r2,time):
+    textSrt = '#006P{0:0>4d}T{4:0>4d}!#007P{1:0>4d}T{4:0>4d}!#008P{2:0>4d}T{4:0>4d}!#009P{3:0>4d}T{4:0>4d}!'.format(1500+speed_l1,1500-speed_r1,1500+speed_l2,1500-speed_r2,time)
+    print(textSrt)
+    myUart.uart_send_str(textSrt)
+
+# 小车停止
+    def car_stop():
+    myUart.uart_send_str('#006P1500T1000!#007P1500T1000!#008P1500T1000!#009P1500T1000!')
+def car_text():
+    car_run(400,400,400,400,1000) #前进
+    time.sleep(1)
+    car_run(-400,-400,-400,-400,1000) #后退
+    time.sleep(1)
+    car_run(-400,400,-400,400,1000) #左转
+    time.sleep(1)
+    car_run(400,-400,400,-400,1000) #右转
+    time.sleep(1)
+    car_run(-400,400,400,-400,1000) #左平移
+    time.sleep(1)
+    car_run(400,-400,-400,400,1000) #右平移
+    time.sleep(1)
+    car_stop()
+```
+
+## 自由避障代码讲解
+
+`超声波传感器原理：`
+1. 采用 IO 触发测距，给至少 10us 的高电平信号;
+2. 模块自动发送 8 个 40khz 的方波，自动检测是否有信号返回； 有信号返回，通过 IO 输出一高电平，高电平持续的时间就是超声波从发射到返回的时间．测试距离=(高电平时间*声速(340M/S))/2;
+
+`工作原理：`
+超声波传感器检测距离，小于 30cm 时左转，判断 mode 的值使指令只发送一次
+
+```python
+# 自由避障
+def obstacle_avoidance():
+    global systick_ms_bak,dis,mode
+    if(int((time.time() * 1000))- systick_ms_bak > 100):
+        systick_ms_bak = int((time.time() * 1000))
+        dis = myUls.distance()
+        dis = int(dis)
+        if 30 >= dis and mode != 1:
+            myCar.car_run(400,400,400,400,0) #前进
+            mode = 1
+        elif dis < 30 and mode != 2:
+            mode = 2
+            myCar.car_run(-400,400,-400,400,2000)
+            myBeep.beep(1,1)
+```
+
+## 跟随模式代码讲解
+
+`代码逻辑：`
+dis 获取超声波检测的距离，单位 cm，小于 15cm 时后退，在 15-35 范围内和大于 60cm 时停止，在 35-60cm 内前进，判断 mode 的值使指令发送一次
+
+```python
+def nterval_follow():
+    global systick_ms_bak,dis,mode
+    if(int((time.time() * 1000))- systick_ms_bak > 100):
+        systick_ms_bak = int((time.time() * 1000))
+        dis = myUls.distance()
+    if dis < 15 and mode != 1:
+        myCar.car_run(-400,-400,-400,-400,0) #后退
+        mode = 1
+    elif (15 <= dis <= 35 or dis > 60) and mode != 2:
+        mode = 2
+        myCar.car_stop()
+    elif 35 < dis <= 60 and mode != 3:
+        myCar.car_run(400,400,400,400,0) #前进
+        mode = 3
+```
+
+## 总线舵机介绍
+
+`舵机参数`
+1. 舵机供电范围 4.8-8.4V。
+2. 扭力 15kg/cm。
+3. 八种角度工作模式，270 度角度控制正反转、180 度角度控制正反转、360 度定圈连续旋转正反转、360 度定时连续旋转正反转八种工作模式可切换,同一个舵机可在这八种角度工作模式下供用户切换。
+4. 单总线通讯，波特率 115200，舵机之间通过总线串联。 每个舵机都有自己 ID 号，
+5. 舵机默认 ID 为 0，用户可通过命令改变舵机 ID，255 代表广播地址。
+6. 可回读角度，用户可读取舵机当前实时位置。
+7. 串口指令控制，无需用户编写舵机 PWM 驱动程序， 控制简单。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x232.png)
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x233.png)
+
+注意：所有的 ID 号必须是 3 位，不够用 0 补齐，例如 1 号，则 001，PWM 位 4 位，不够用 0 补齐，
+例如 500 则 0500，Time 4 位，例如 20，则为 0020，最大时间位 9999ms. 
+
+`1、#000P1500T1000!`
+**解析**：“#”和“!”是固定英文格式。000 代表 ID（范围 0-254），必须为 3 位，不足补 0。比如 3 号舵机为“003”而不能为“3”。1500 代表 PWM 脉冲宽度调制（P）（范围 500-2500）， 必须为 4 位，不足补 0。比如 PWM 为 800，则必须为“P0800”。1000 代表 TIME 时间(T)（范围 0-9999），同样必须为 4 位，不足补 0，单位 ms。比如 TIME 为 500，则必须为“T0500” 该指令可以叠加同时控制多个舵机。多个指令同时使用时（2 个或 2 个以上叠加）需要在整条指令前后加“{}”，比如：{G0000#000P1602T1000!#001P2500T0000!#002P1500T1000!}
+
+`2、#000PVER!`
+解析：读取舵机版本号，返回格式为：#000PV0.97!
+
+`3、#000PID!`
+
+`4、#000PID001!`
+解析：指定ID检测，该指令时读取000的ID，检测当前舵机是否为000 这个ID号，是返回#000P!。
+否则无返回，当不知道舵机 ID 时，发送#255PID! 可返回舵机 ID 号。
+
+解析：指定修改 ID，该指令是把 000 号 ID 改为 001 号，修改成功后返回#001P!。不成功无返回。
+
+`5、#000PULK!`
+解析：释放后舵机处于制动状态，此时可以用手扳动舵机旋转。在纠正舵机偏差和手动编程时会用到此功能，成功返回 #OK!。
+
+`6、#000PULR!`
+解析：恢复扭力，以舵机当前的位置恢复扭力，成功返回#OK!
+
+`7、#000PMOD!`
+解析：读取舵机当前的工作模式，返回如下：
+
+    #000PMOD1! ：舵机模式，角度最大范围 270 度，方向顺时针
+    #000PMOD2! ：舵机模式，角度最大范围 270 度，方向逆时针
+    #000PMOD3! ：舵机模式，角度最大范围 180 度，方向顺时针
+    #000PMOD4! ：舵机模式，角度最大范围 180 度，方向逆时针
+    #000PMOD5! ：马达模式，角度 360 度，定圈旋转，方向顺时针
+    #000PMOD6! ：马达模式，角度 360 度，定圈旋转，方向逆时针
+    #000PMOD7! ：马达模式，角度 360 度，定时旋转，方向顺时针
+    #000PMOD8! ：马达模式，角度 360 度，定时旋转，方向逆时针
+
+`8、#000PMOD1!`
+
+解析：设置舵机工作模式，默认工作模式为 1
+1：舵机模式 270 度顺时针
+2：舵机模式 270 度逆时针
+3：舵机模式 180 度顺时针
+4：舵机模式 180 度逆时针
+5：马达模式 360 度定圈顺时针模式
+6：马达模式 360 度定圈逆时针模式
+7：马达模式 360 度定时顺时针模式
+8：马达模式 360 度定时逆时针模式
+**设置成功均返回#OK!**
+
+关于定圈定时问题解释：
+**定圈模式：**若指令为 #000P1800T1000! 表示以 300（1800-1500）的速度，运行 1000 圈后停止，允许误差存在。若 T=0000！ 则表示以 300（1800-1500）的速度无限循环执行。
+**定时模式：**若指令为 #000P1800T1000! 表示以 300（1800-1500）的速度，运行 1000S 后停止，
+允许误差存在。若 T=0000！ 则表示以 300（1800-1500）的速度无限循环执行。
+
+`9、#000PRAD!`
+解析：读取舵机当前位置，返回格式为#000P1500!
+
+`10、#000PDPT!`
+解析：暂停，舵机运行过程中接收此指令，会停止当前，再接收继续指令后，会接在当前位置继续运行，成功返回 #OK!
+
+`11、#000PDCT!`
+解析：配合暂停指令继续操作，比如#001P2500T5000! 发送给舵机，在 2000ms 的时候发送了#000PDPT! 指令给舵机，则舵机暂停，保持力矩在停止的位置，再发送#000PDCT!给舵机，则舵机继续剩余的 3000ms 结束，成功返回 #OK!
+
+`12、#000PDST!`
+解析：停止在当前位置，与暂停指令不同的事，之后无法继续执行，需重新执行，返回#OK!
+
+`13、#000PBD1!`
+解析：设置舵机通信波特率，默认 115200。数字参数对应关系为：1-9600，2-19200，3-38400，4-57600，5-115200，6-128000，7-256000，8-1000000，该指令设置成功后返回#000PBD9600!。
+
+`14、#000PSCK!`
+解析：用于纠正偏差，将当前位置设置为 1500 中间值，成功返回 #OK!
+
+`15、#000PCSD!`
+解析：设置舵机启动位置，默认 1500，开机自启动范围为 0500~2500，成功返回 #OK!
+
+`16、#000PCSM!`
+解析：去除初始值，使用该命令后，#000PCSD! 指令失效，舵机启动释力状态。成功返回 #OK!
+
+`17、#000PCSR!`
+解析：恢复初始值，使用该命令后，舵机启动恢复力矩，#000PCSD! 指令恢复，转到初始值，成功返回 #OK!
+
+`18、#000PSMI!`
+解析：设置舵机最小值，最小值默认为 0500，将舵机调节到合适位置后，发送此命令设置。 成功返回#OK!
+
+`19、#000PSMX!`
+解析：设置舵机最大值，最大值默认为 2500，将舵机调节到合适位置后，发送此命令设置。成功返回#OK!
+
+`20、#000PCLE!`
+解析：全恢复出厂设置，ID 号恢复 000，舵机模式默认 1、波特率默认 115200、初始值 1500、矫正值 1500、最小值 0500、最大值 2500，成功返回 #OK!
+
+`21、#000PRTV!`
+解析：获取温度和电压，成功返回 #000T25V07!
+舵机的 ID 默认是 0， ID 为 255 是广播模式， 广播命令对所有舵机都有效。
+
+`22、#000PSTB!`
+解析：读取设置温度和电压。
+
+`23、#000PSTB=60!`
+解析：设置释放扭力阈值温度为 60
+
+`注意事项`
+舵机默认 ID 为 0， 用户在使用前需要修改 ID， 使每个舵机 ID 号不一样， 否则舵机串联后所有舵机都会同时运动。 修改 ID 时候舵机不要串联， 当所有要使用舵机 ID 修改完毕后， 在将舵机串联即可。
+
+## 机械臂之逆运动学控制
+
+`机械臂正逆运动学认识：`
+正运动学分析是已知每个关节的姿态的前提下，解算出末端执行器的姿态。而逆运动学研究的问题是，要求控制末端执行器到达某一位置时，各关节应处于什么姿态。
+
+```py
+import sys
+sys.path.append('/home/pi/Desktop/ZL-PI/factory_code/')
+import time
+
+import ZL_SDK.z_beep as myBeep
+import ZL_SDK.Z_UartServer as myUart
+import AI_Functions.z_kinematics as kms
+
+myBeep.setup_beep()
+myUart.setup_uart(115200)
+
+'''
+设置四个关节的长度
+单位 0.1mm
+底盘到第二个舵机中心轴的距离
+第二个舵机到第三 个舵机的距离
+第三个舵机到第四 个舵机的距离
+第四个舵机到机械臂(闭合后)最高点的距离
+'''
+kms.setup_kinematics(170,105,75,185)# 初始化
+myUart.uart_send_str("#255P1500T1000!")
+time.sleep(2)
+# 发出嘀嘀嘀作为开机声音
+myBeep.beep(3,0.1)
+
+'''输入参数：x,y,z,time
+
+以机械臂的视角来看：
+左右为 x 轴，右为正值，单位毫米;
+前后为 y 轴，前为正值，y 值不能小于 0,单位毫米;
+z 为高度，单位毫米;
+time 为机械臂运行到目标位置的时间，单位毫秒。
+
+若输出为{#000P0000T1000!#001P0000T1000!#002P0000T1000!#003P0000T1000!}。说明机械臂无法达到目标位置。
+'''
+
+kms.kinematics_move(0,100,150,1000)# 运用
+time.sleep(2)
+kms.kinematics_move(0,200,200,1000)
+time.sleep(2)
+kms.kinematics_move(0,300,50,2000)
+time.sleep(3)
+myUart.uart_send_str("#255P1500T2000!")
+```
+
+## 颜色追踪代码讲解
+
+`颜色识别的流程：`
+
+**第一步：**高斯滤波使图片模糊，减小图像噪点；
+**第二步：**将 BGR 模型转换为 HSV 模型，
+RGB 模型适合显示，但却并不适合作为颜色识别的模型。HSV 更加符合人眼的感受，将其作为颜色识别的模型会大大提高识别的鲁棒性，因为 HSV 模型颜色识别大大减少了对环境光的依赖。
+**第三步：**设置阈值，去除背景，保留所设置的颜色。
+**第四，五步：**对图像进行开运算，先腐蚀后膨胀，移除由图像噪声形成的斑点。
+**第六步：**通过边缘检测获取识别到物体的中心点坐标，及长宽。
+
+根据物体在画面中的相对坐标判断物体的位置，换算成 pwm 值，通过（#000P1500T1000!）控制指令控制舵机或电机转动
+
+Flag 变量为真时是机械臂跟随模式，为假时是车体跟随模式。
+
+```python
+def color_detect(frame,color,flag):
+    global x_bias,y_bias,c_h,c_w,width,hight
+
+    frame = cv2.resize(frame, (320,240), interpolation = cv2.INTER_CUBIC) # 将图片缩放到 320*240
+
+    #1-高斯滤波 GaussianBlur() 让图片模糊
+    frame = cv2.GaussianBlur(frame,(5,5),0)
+
+    #2-转换 HSV 的样式 以便检测
+    hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+
+    #3-查找字典
+    mask = cv2.inRange(hsv, color_dist[color]['Lower'], color_dist[color]['Upper'])
+    
+    #4-腐蚀图像
+    mask = cv2.erode(mask,None,iterations=2)
+    
+    #5-膨胀
+    mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) #膨胀
+
+    #图像合并
+    #res = cv2.bitwise_and(frame,frame,mask=mask)
+
+    #6-边缘检测
+    cnts = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
+
+    if len(cnts) >0 : #通过边缘检测来确定所识别物体的位置信息得到相对坐标
+        
+        cnt = max(cnts,key=cv2.contourArea)
+        rect = cv2.minAreaRect(cnt)
+        # 获取最小外接矩形的 4 个顶点
+        box = cv2.boxPoints(rect)
+        cv2.drawContours(frame, [np.int0(box)], -1, (0, 255, 255), 2) #绘制轮廓
+
+        #获取坐标 长宽 角度
+        c_x, c_y = rect[0]
+        c_h, c_w = rect[1]
+        c_angle = rect[2]
+        x_bias = c_x - width/2
+        y_bias = c_y - hight/2
+        area = c_h*c_w 39. print(time.time(), 'x=', int(c_x), 'y=', int(c_y), 'c_h=', int(c_h),'c_w=', int(c_w), 'angle=', int(c_angle))
+        if 30 < c_h < 150 and 30 < c_w < 150:
+            if flag:
+                camera_follow(x_bias,y_bias) #机械臂跟随模式，根据物体距画面中心点的距离计算云台和 3 号舵机转动角度
+        else:
+        car_follow(x_bias,area) #车体跟随模式
+        return frame
+```
+
+## 视觉循迹代码讲解
+
+`工作流程：`
+颜色识别流程参考第二课，在视觉循迹代码中不同的是查找轮廓的方法不同。
+使用 cv2.CHAIN_APPROX_NONE 存储轮廓所有的点，然后寻找轮廓质心，根据轮廓质心在画面中的位置控制车辆移动。
+
+```python
+def car_tracking(frame,color):
+    global cx,cy
+    # frame = cv2.resize(frame, (160,120), interpolation = cv2.INTER_CUBIC) 
+    # 将图片缩放到 160*120
+
+    frame = cv2.resize(frame,(160,60),interpolation = cv2.INTER_CUBIC)
+
+    frame = cv2.GaussianBlur(frame,(5,5),0) #高斯滤波 GaussianBlur() 让图片模糊
+
+    hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV) #将图片的色域转换为 HSV 的样式 以便检测
+
+    mask = cv2.inRange(hsv, color_dist[color]['Lower'], color_dist[color]['Upper']) #设置阈值，去除背景 保留所设置的颜色
+
+    mask = cv2.erode(mask,None,iterations=2) #显示腐蚀后的图像
+    #膨胀，
+    mask = cv2.dilate(mask, None, iterations=2)
+
+    mask = cv2.GaussianBlur(mask,(3,3),0) #高斯模糊
+
+    #查找轮廓
+    image,contours,hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
+    
+    if len(contours) > 0:
+    
+        c = max(contours, key=cv2.contourArea)
+        M = cv2.moments(c)
+        26. cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        Tracing(cx)
+    else:
+        #print("I don't see the line" )
+        pass
+    return frame
+```
+
+## 人脸追踪代码讲解
+
+```python
+
+face_cascade = cv2.CascadeClassifier('/home/pi/Desktop/car_code/AI_Functions/face.xml')
+
+# 摄像头跟随
+def camera_follow(x,y):
+    global pwm_value1,pwm_value2
+    x_bias = x - width/2
+    y_bias = y - hight/2
+    pwm_value1 = pwm_value1 - x_bias//5
+    pwm_value2 = pwm_value2 - y_bias//5
+    TextStr = '#000P%04dT0000!#003P%04dT0000!' % (pwm_value1,pwm_value2)
+    print(TextStr)
+    myUart.uart_send_str(TextStr)
+def face(frame):
+    frame = frame
+    frame = cv2.resize(frame, (320,240), interpolation = cv2.INTER_CUBIC) #
+    将图片缩放到 320*240
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray,1.1,5)
+    debug = True
+    findOk = 0
+for (x,y,w,h) in faces:
+    cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+    roi_gray = gray[y:y+h, x:x+w]
+    roi_color = frame[y:y+h, x:x+w]
+    x = int(x+w/2)
+    y = int(y+h/2)
+
+    findOk = 1
+    if findOk == 1:
+        print ('time:',time.time(), ' x=',x, ' y=',y)
+        camera_follow(x,y)
+    return fram
+```
+
+## 太阳能板的选择
+
+### 电池参数分析
+
+* **电压（Voltage）**：7.4V
+* **容量（Capacity）**：5200mAh（或5.2Ah）
+* **放电倍率（Discharge Rate）**：25C
+
+其中，放电倍率25C意味着电池可以在1/25小时内完全放电，即理论上可以在2.4分钟内放电完毕。但实际上，这样的高倍率放电主要用于短时间的高功率应用，如电动工具或赛车。对于太阳能充电系统，我们主要关心的是电池的电压和容量。
+
+### 太阳能板选择
+
+1. **电压**：太阳能板的输出电压应略高于电池电压，以保证充电效率。因此，一个输出电压为8V到12V的太阳能板是比较合适的。
+2. **电流**：电池的容量是5.2Ah，但太阳能板提供的电流会随光照强度而变化。在理想情况下，太阳能板在最大光照时的电流应至少为电池容量的1/3到1/2，即1.73A到2.6A。然而，由于太阳能板的输出电流会随光照条件变化，因此实际选择时可以考虑稍大一些的太阳能板。
+3. **功率**：太阳能板的功率（瓦特）是电压和电流的乘积。根据上述分析，一个功率在80W到150W之间的太阳能板可能是合适的。
+
+### 充电控制器选择
+
+1. **电压和电流兼容性**：充电控制器应能处理太阳能板的输出电压和电流。因此，选择一个兼容8V到12V电压和至少2.6A电流的充电控制器是必要的。
+2. **充电模式**：充电控制器通常有几种充电模式，如恒流充电、恒压充电和涓流充电。选择具有这些基本充电模式的控制器可以满足大多数应用需求。
+3. **保护功能**：充电控制器应具备过充、过放、反接和短路保护等基本功能，以保护电池和整个系统的安全。
+
+### 总结
+
+需要选择一个输出电压为8V到12V，功率为80W到150W的太阳能板，以及一个兼容这些参数的充电控制器。

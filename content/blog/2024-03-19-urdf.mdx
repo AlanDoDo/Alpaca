@@ -1,0 +1,1103 @@
+---
+title: "URDF创建简单的机器人模型"
+description: "URDF（Unified Robot Description Format）统一机器人描述格式，URDF使用XML格式描述机器人文件。"
+date: "2024-03-19"
+category: "机器人"
+tags: ["URDF"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x319.jpg"
+source: "legacy-blog"
+---
+
+## URDF统一机器人建模语言
+
+URDF（Unified Robot Description Format）统一机器人描述格式，URDF使用**XML格式**描述机器人文件。
+
+**XML**是 **被设计用来传输和存储数据的可扩展标记语言**，注意语言本身是没有含义的，只是规定了其数据格式
+
+比如说下面这段信息：
+
+```xml
+<robot name="阿童木">
+<link name="大手臂">具体的描述</link>
+<joint name="胳膊肘">具体的描述</joint>
+<link name="小手臂">具体的描述</link>
+</robot>
+```
+
+[在线代码格式化](https://tool.oschina.net/codeformat/xml)
+
+XML格式注释： 标签: `robot` `link`
+
+robot标签的属性 **name**: `<robot name="fishbot"></robot>`
+
+robot标签的子标签 **link**: `<robot name="fishbot"><link name="base_link"></link>link></robot>`
+
+使用XML定义的一个最简单的URDF模型可以像下面这样
+
+```xml
+<?xml version="1.0"?>
+<robot name="flowerbot">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.18" radius="0.06"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
+```
+
+接着我们从下面**四个方面**介绍URDF：
+
+1. URDF的组成介绍
+2. URDF-Link介绍
+3. URDF-Joint介绍
+4. 创建一个简单的URDF并在RVIZ2中可视化
+
+### URDF的组成介绍
+
+一般情况下，URDF由**声明信息**和**两种关键组件**共同组成
+
+####  声明信息
+
+声明信息包含两部分，第一部分是**xml的声明信息**，放在第一行 第二部分是**机器人的声明**，通过robot标签就可以声明一个机器人模型
+
+```xml
+<?xml version="1.0"?>
+<robot name="flowerbot">
+     <link></link>
+     <joint></joint>
+  ......
+</robot>
+```
+
+#### 两种关键组件(Joint&Link)
+
+以平衡车为例，可以简化为如下五个部件组成
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x320.jpg)
+
+我们把左轮，右轮、支撑轮子，IMU和雷达部件称为机器人的Link
+
+**Link和Link之间的连接部分称之为Joint关节**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x321.jpg)
+
+### Link介绍
+
+通过link标签即可声明一个link, 属性name指定部件名字
+
+```xml
+  <link name="base_link">
+
+  </link>
+```
+
+通过两行代码就可以定义好**base_link**，但现在的**base_link**是空的，我们还要声明我们的base_link长什么样，通过**visual子标签**就可以声明出来机器人的visual形状。
+
+```xml
+  <!-- base link -->
+  <link name="base_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.10"/>
+      </geometry>
+    </visual>
+  </link>
+```
+
+#### link标签定义
+
+link的子标签列表
+
+    visual 显示形状
+        <geometry> (几何形状)
+            <box> 长方体
+                标签属性: size - 长宽高
+                举例：<box size="1 1 1" />
+            <cylinder> 圆柱体
+                标签属性: radius - 半径 length - 高度
+                举例：<cylinder radius="1" length="0.5"/>
+            sphere 球体
+                属性：radius - 半径
+                举例：<sphere radius="0.015"/>
+            mesh 第三方导出的模型文件
+                属性：filename
+                举例: <mesh filename="package://robot_description/meshes/base_link.DAE"/>
+        origin (可选：默认在物体几何中心)
+                属性 xyz默认为零矢量 rpy弧度表示的翻滚、俯仰、偏航
+                举例：<origin xyz="0 0 0" rpy="0 0 0" />
+        material 材质
+                属性 name 名字
+            color
+                属性 rgba a代表透明度
+                举例：<material name="white"><color rgba="1.0 1.0 1.0 0.5" /> </material>
+    collision 碰撞属性
+    inertial 惯性参数 质量等
+
+### Joint介绍
+
+joint为**机器人关节**，机器人关节用于**连接两个机器人部件**，主要写明父子关系
+
+* 父子之间的连接类型，包括是否固定的，可以旋转的等
+
+* 父部件名字
+
+* 子部件名字
+
+* 父子之间相对位置
+
+* 父子之间的旋转轴，绕哪个轴转
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x322.jpg)
+
+比如我们再建立一个雷达部件**laser_link**，然后将**laser_link**固定到**base_link**
+
+```xml
+<?xml version="1.0"?>
+<robot name="fishbot">
+    
+  <!-- base link -->
+  <link name="base_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.10"/>
+      </geometry>
+    </visual>
+  </link>
+    
+  <!-- laser link -->
+  <link name="laser_link">
+      <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+      <material name="black">
+          <color rgba="0.0 0.0 0.0 0.5" /> 
+      </material>
+    </visual>
+  </link>
+    
+  <!-- laser joint -->
+    <joint name="laser_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="laser_link" />
+        <origin xyz="0 0 0.075" />
+    </joint>
+
+</robot>
+```
+
+#### joint标签详解
+
+**joint属性**
+
+    name 关节的名称
+    type 关节的类型
+        revolute: 旋转关节，绕单轴旋转,角度有上下限,比如舵机0-180
+        continuous: 旋转关节，可以绕单轴无限旋转,比如自行车的前后轮
+        fixed: 固定关节，不允许运动的特殊关节
+        prismatic: 滑动关节，沿某一轴线移动的关节，有位置极限
+        planer: 平面关节，允许在xyz，rxryrz六个方向运动
+        floating: 浮动关节，允许进行平移、旋转运动
+
+**joint的子标签**
+
+    parent 父link名称
+        <parent link="base_link" />
+    child子link名称
+        <child link="laser_link" />
+    origin 父子之间的关系xyz rpy
+        <origin xyz="0 0 0.014" />
+    axis 围绕旋转的关节轴
+        <axis xyz="0 0 1" />
+
+## RVIZ2可视化移动机器人模型
+
+URDF可视化的步骤如下：
+
+1. 建立机器人描述功能包
+2. 建立**urdf**文件夹编写urdf文件
+3. 建立**launch**文件夹，编写launch文件
+4. 修改**setup.py**配置，编译测试
+
+### 建立功能包
+
+轻车熟路，先创建一个**chapt8_ws**工作空间，然后建立功能包，包的类型选**ament_python**
+
+```
+ros2 pkg create fishbot_description --build-type ament_python
+```
+
+### 建立URDF文件
+
+建立URDF文件夹，创建urdf文件
+
+```
+cd fishbot_description && mkdir urdf 
+touch fishbot_base.urdf
+```
+
+完成后src下的目录结构：
+```
+├── fishbot_description
+│   ├── __init__.py
+├── package.xml
+├── setup.cfg
+├── setup.py
+└── urdf
+    └── fishbot_base.urdf
+```
+
+编辑**fishbot_base.urdf**
+```xml
+<?xml version="1.0"?>
+<robot name="fishbot">
+    
+  <!-- base link -->
+  <link name="base_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.10"/>
+      </geometry>
+    </visual>
+  </link>
+    
+  <!-- laser link -->
+  <link name="laser_link">
+      <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+      <material name="black">
+          <color rgba="0.0 0.0 0.0 0.8" /> 
+      </material>
+    </visual>
+  </link>
+    
+  <!-- laser joint -->
+    <joint name="laser_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="laser_link" />
+        <origin xyz="0 0 0.075" />
+    </joint>
+
+</robot>
+```
+
+### 建立launch文件
+
+在目录**src/fishbot_description**下创建**launch**文件夹并在其下新建**display_rviz2.launch.py**文件
+```
+mkdir launch
+touch display_rviz2.launch.py
+```
+
+完成后的目录结构：
+```
+├── fishbot_description
+│   ├── __init__.py
+├── launch
+│   └── display_rviz2.launch.py
+├── package.xml
+├── setup.cfg
+├── setup.py
+└── urdf
+    └── fishbot_base.urdf
+```
+
+```py
+import os
+from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def generate_launch_description():
+    package_name = 'fishbot_description'
+    urdf_name = "fishbot_base.urdf"
+
+    ld = LaunchDescription()
+    pkg_share = FindPackageShare(package=package_name).find(package_name) 
+    urdf_model_path = os.path.join(pkg_share, f'urdf/{urdf_name}')
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        arguments=[urdf_model_path]
+        )
+
+    joint_state_publisher_node = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+        name='joint_state_publisher_gui',
+        arguments=[urdf_model_path]
+        )
+
+    rviz2_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        )
+
+    ld.add_action(robot_state_publisher_node)
+    ld.add_action(joint_state_publisher_node)
+    ld.add_action(rviz2_node)
+
+    return ld
+```
+
+想要可视化模型需要三个节点参与
+
+* **joint_state_publisher_gui** 负责发布机器人关节数据信息，通过**joint_states**话题发布
+* **robot_state_publisher_node** 负责发布机器人模型信息**robot_description**，并将joint_states数据转换tf信息发布
+* **rviz2_node**负责显示机器人的信息
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x323.jpg)
+
+这里我们用到了**joint_state_publisher_gui**和**robot_state_publisher**两个包，如果你的系统没有安装这两个包，可以手动安装:
+
+```
+sudo apt install ros-$ROS_DISTRO-joint-state-publisher-gui ros-$ROS_DISTRO-robot-state-publisher
+```
+
+> **joint_state_publisher_gui**，还有一个兄弟叫做**joint_state_publisher**两者区别在于**joint_state_publisher_gui**运行起来会跳出一个界面，通过界面可以操作URDF中能动的关节
+
+### 修改setup.py
+
+导入头文件
+```py
+from glob import glob
+import os
+```
+
+加入目录安装
+```py
+('share/ament_index/resource_index/packages',
+['resource/' + package_name]),
+('share/' + package_name, ['package.xml']),
+```
+
+完整
+```py
+from setuptools import find_packages, setup
+from glob import glob
+import os
+
+package_name = 'fishbot_description'
+
+setup(
+    name=package_name,
+    version='0.0.0',
+    packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='shios',
+    maintainer_email='shios@todo.todo',
+    description='TODO: Package description',
+    license='TODO: License declaration',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+        ],
+    },
+    
+)
+```
+
+### 编译测试
+
+编译
+```
+colcon build
+```
+
+运行测试
+```
+source install/setup.bash
+ros2 launch fishbot_description display_rviz2.launch.py
+```
+
+添加robotmodel模块，分别选择link名称如下，即可看到机器人的模型显示
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x324.jpg)
+
+## 创建一个两轮差速模型
+
+机器人除了雷达之外，还需要**IMU加速度传感器**以及**可以驱动的轮子**，所以我们还需要再创建两个差速驱动轮和一个支撑轮。
+
+1. IMU传感器部件与关节
+2. 左轮子部件与关节
+3. 右轮子部件与关节
+4. 支撑轮子部件与关节
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x325.jpg)
+
+
+### 添加IMU传感器
+
+#### 修改颜色
+
+透明度修改只需要在**base_link**中添加**material**
+
+```xml
+<link name="base_link">
+    <visual>
+        <origin xyz="0 0 0.0" rpy="0 0 0"/>
+    <geometry>
+        <cylinder length="0.12" radius="0.10"/>
+    </geometry>
+    <material name="blue">
+        <color rgba="0.1 0.1 1.0 0.5" /> 
+    </material>
+    </visual>
+</link>
+```
+
+#### 添加imu
+
+```xml
+  <link name="imu_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+            <box size="0.02 0.02 0.02"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- imu joint -->
+  <joint name="imu_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="imu_link" />
+      <origin xyz="0 0 0.02" />
+  </joint>
+```
+
+### 添加右轮
+
+#### 添加关节
+
+关节名称为**right_wheel_link**
+
+轮子的宽为4cm,直径为6.4cm,几何形状是个圆柱体，所以**geometry**配置如下：
+
+```xml
+<geometry>
+    <cylinder length="0.04" radius="0.032"/>
+</geometry>
+```
+
+需要注意的是,圆柱默认的朝向是向上的
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x326.jpg)
+
+我们可通过**origin**的**rpy**改变轮子的旋转角度，让其绕**x轴**旋转**pi/2**,所以**origin**的配置为
+
+```xml
+<origin xyz="0 0 0" rpy="1.57079 0 0"/>
+```
+
+颜色换黑色，可以得到下面的配置：
+```xml
+  <link name="right_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+          <cylinder length="0.04" radius="0.032"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </visual>
+  </link>
+```
+
+#### 添加joint
+
+我们把左轮子的中心固定在机器人左后方
+
+需要注意的是**origin**和**axis**值的设置
+
+**先看origin**
+
+因为base_link的高度是0.12,我们
+
+* z表示child相对parent的z轴上的关系，想将轮子固定在机器人的下表面,所以origin的z向下偏移0.12/2=0.06m(向下符号为负)
+
+* y表示child相对parent的y轴上的关系，base_link的半径是0.10,所以我们让轮子的y轴向负方向偏移0.10m(向左符号为负)
+
+* x表示child相对parent的x轴上的关系，向后偏移则是x轴向后进行偏移，我们用个差不多的值0.02m(向后符号为负)
+
+**再看axis**
+
+轮子是会转动的，那应该按照哪个轴转动呢？从上图可以看出是绕着y轴的逆时针方向，所以axis的设置为：
+
+```xml
+<axis xyz="0 1 0" />
+```
+
+```xml
+  <joint name="right_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="right_wheel_link" />
+      <origin xyz="-0.02 -0.10 -0.06" />
+      <axis xyz="0 1 0" />
+  </joint>
+```
+
+### 添加左轮
+
+左轮就是右轮的映射，不再赘述
+
+```xml
+  <link name="left_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+          <cylinder length="0.04" radius="0.032"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </visual>
+  </link>
+    
+  <joint name="left_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="left_wheel_link" />
+      <origin xyz="-0.02 0.10 -0.06" />
+      <axis xyz="0 1 0" />
+  </joint>
+```
+
+### 添加支撑轮
+
+支撑轮子固定在机器人的前方，用个球体，半径用**0.016m**，小球的直径为0.032m与左右轮子半径相同，然后向下偏移**0.016+0.06=0.076m**,向下值为负，同时把支撑论向前移动一些，选个**0.06m**
+
+```xml
+<link name="caster_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+          <sphere radius="0.016"/>
+      </geometry>
+        <material name="black">
+          <color rgba="0.0 0.0 0.0 0.5" /> 
+        </material>
+    </visual>
+  </link>
+    
+  <joint name="caster_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="caster_link" />
+      <origin xyz="0.06 0.0 -0.076" />
+  </joint>
+```
+
+最终URDF文件
+
+```xml
+<?xml version="1.0"?>
+<robot name="fishbot">
+    
+  <!-- base link -->
+  <link name="base_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.10"/>
+      </geometry>
+      <material name="blue">
+          <color rgba="0.1 0.1 1.0 0.5" /> 
+      </material>
+    </visual>
+  </link>
+    
+  <!-- laser link -->
+  <link name="laser_link">
+      <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+      <material name="black">
+          <color rgba="0.0 0.0 0.0 0.5" /> 
+      </material>
+    </visual>
+  </link>
+    
+  <!-- laser joint -->
+  <joint name="laser_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="laser_link" />
+      <origin xyz="0 0 0.075" />
+  </joint>
+
+  <link name="imu_link">
+      <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+            <box size="0.02 0.02 0.02"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- imu joint -->
+  <joint name="imu_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="imu_link" />
+      <origin xyz="0 0 0.02" />
+  </joint>
+
+
+  <link name="left_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+          <cylinder length="0.04" radius="0.032"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </visual>
+  </link>
+    
+  <joint name="left_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="left_wheel_link" />
+      <origin xyz="-0.02 0.10 -0.06" />
+      <axis xyz="0 1 0" />
+  </joint>
+
+  <link name="right_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+          <cylinder length="0.04" radius="0.032"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </visual>
+  </link>
+    
+  <joint name="right_wheel_joint" type="continuous">
+      <parent link="base_link" />
+      <child link="right_wheel_link" />
+      <origin xyz="-0.02 -0.10 -0.06" />
+      <axis xyz="0 1 0" />
+  </joint>
+
+  <link name="caster_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+      <geometry>
+          <sphere radius="0.016"/>
+      </geometry>
+        <material name="black">
+          <color rgba="0.0 0.0 0.0 0.5" /> 
+        </material>
+    </visual>
+  </link>
+    
+  <joint name="caster_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="caster_link" />
+      <origin xyz="0.06 0.0 -0.076" />
+      <axis xyz="0 1 0" />
+  </joint>
+
+
+
+</robot>
+```
+
+### 测试运行
+
+#### 编译测试
+
+```
+colcon build
+source install/setup.bash
+ros2 launch fishbot_description display_rviz2.launch.py
+```
+
+#### 最终结果
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x327.jpg)
+
+打印**joint_states**话题
+
+```
+ros2 topic echo /joint_states
+```
+
+通过**joint_state_gui**改变关节tf中关节角度
+
+在JointStatePublisher中,拖动滑动条,观察
+
+1. rviz2中tf的变换
+2. joint_states中的值的变换
+
+### 论如何让车轮着地?
+
+在RVIZ中的机器人轮子是在地面之下的,原因在于我们**fixed-frame**选择的是**base_link**,base_link的位置本来就在**left_wheel_link**和**right_wheel_link**之上，那该怎么办呢？
+
+增加一个虚拟link和关节，这个关节与base_link相连，位置位于base_link向下刚好到车轮下表面的位置
+
+来，让我们**给base_link添加一个父link-base_footprint**，新增的URDF代码如下：
+
+```xml
+  <!-- Robot Footprint -->
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.076" rpy="0 0 0"/>
+  </joint>
+```
+
+因为是虚拟关节，我们不用对这个link的形状进行描述，joint的origin设置为**xyz="0.0 0.0 0.076"**表示关节base_footprint向上0.076就是base_link
+
+
+## 控制移动机器人轮子运动
+
+我们需要自己编写节点,取代**joint_state_publisher**发送关节位姿给**robot_state_pubsher**，**robot_state_publisher**发送tf控制机器人的关节转动。
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/blog/x328.jpg)
+
+1. 新建节点
+2. 创建发布者
+3. 编写发布逻辑
+4. 编译测试
+
+### 新建节点
+
+方便起见，我们就在fishbot_describle包中新建节点
+
+```
+touch fishbot_description/fishbot_description/rotate_wheel.py
+```
+
+```py
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+
+
+class RotateWheelNode(Node):
+    def __init__(self,name):
+        super().__init__(name)
+        self.get_logger().info(f"node {name} init..")
+
+def main(args=None):
+    """
+    ros2运行该节点的入口函数
+    1. 导入库文件
+    2. 初始化客户端库
+    3. 新建节点
+    4. spin循环节点
+    5. 关闭客户端库
+    """
+    rclpy.init(args=args) # 初始化rclpy
+    node = RotateWheelNode("rotate_fishbot_wheel")  # 新建一个节点
+    rclpy.spin(node) # 保持节点运行，检测是否收到退出指令（Ctrl+C）
+    rclpy.shutdown() # 关闭rclpy
+```
+
+配置下setup.py
+```py
+    entry_points={
+        'console_scripts': [
+            "rotate_wheel= fishbot_description.rotate_wheel:main"
+        ],
+    },
+```
+
+编译运行
+```
+colcon build
+source install/setup.bash
+ros2 run fishbot_description rotate_wheel
+```
+
+### 创建发布者
+
+创建发布者之前，要知道**robot_state_pubsher**所订阅的话题类型是什么？
+
+```
+ros2 topic info /joint_states
+```
+
+```
+Type: sensor_msgs/msg/JointState
+Publisher count: 1
+Subscription count: 1
+```
+
+```
+ros2 interfaces show sensor_msgs/msg/JointState
+```
+
+```
+# This is a message that holds data to describe the state of a set of torque controlled joints.
+#
+# The state of each joint (revolute or prismatic) is defined by:
+#  * the position of the joint (rad or m),
+#  * the velocity of the joint (rad/s or m/s) and
+#  * the effort that is applied in the joint (Nm or N).
+#
+# Each joint is uniquely identified by its name
+# The header specifies the time at which the joint states were recorded. All the joint states
+# in one message have to be recorded at the same time.
+#
+# This message consists of a multiple arrays, one for each part of the joint state.
+# The goal is to make each of the fields optional. When e.g. your joints have no
+# effort associated with them, you can leave the effort array empty.
+#
+# All arrays in this message should have the same size, or be empty.
+# This is the only way to uniquely associate the joint name with the correct
+# states.
+
+std_msgs/Header header
+
+string[] name
+float64[] position
+float64[] velocity
+float64[] effort
+```
+
+知道了话题类型，我们就可以来创建发布者了.
+
+```py
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+# 1.导入消息类型JointState
+from sensor_msgs.msg import JointState
+
+class RotateWheelNode(Node):
+    def __init__(self,name):
+        super().__init__(name)
+        self.get_logger().info(f"node {name} init..")
+        # 2.创建并初始化发布者成员属性pub_joint_states_
+        self.pub_joint_states_ = self.create_publisher(JointState,"joint_states", 10) 
+```
+
+### 编写发布逻辑
+
+#### 多线程定频发布Rate
+
+为了能够一直循环使用rate，我们单独开一个线程用于发布joint_states话题数据，在ROS2程序中单独开线程进行话题发布的方法为：
+
+```py
+import threading
+from rclpy.node import Node
+
+class RotateWheelNode(Node):
+    def __init__(self):
+        # 创建一个Rate和线程
+        self.pub_rate = self.create_rate(5) #5Hz
+        # 创建线程
+        self.thread_ = threading.Thread(target=self._thread_pub)
+        self.thread_.start()
+
+    def _thread_pub(self):
+        while rclpy.ok():
+            #做一些操作，使用rate保证循环频率
+            self.pub_rate.sleep()
+```
+
+#### 构造发布数据
+
+接着我们来构造发布的数据：
+
+**joint_states**有一个头和四个数组需要赋值（可通过**ros2 interface**指令查询）
+
+```py
+std_msgs/Header header #时间戳信息 和 frame_id
+string[] name
+float64[] position
+float64[] velocity
+float64[] effort
+```
+
+```py
+# 这是一个持有数据的信息，用于描述一组扭矩控制的关节的状态。
+#
+# 每个关节（渐进式或棱柱式）的状态由以下因素定义。
+# #关节的位置（rad或m）。
+# #关节的速度（弧度/秒或米/秒）和
+# #在关节上施加的力（Nm或N）。
+#
+# 每个关节都由其名称来唯一标识
+# 头部规定了记录关节状态的时间。所有的联合状态
+# 必须是在同一时间记录的。
+#
+# 这个消息由多个数组组成，每个部分的联合状态都有一个数组。
+# 目标是让每个字段都是可选的。例如，当你的关节没有
+# 扭矩与它们相关，你可以让扭矩数组为空。
+#
+# 这个信息中的所有数组都应该有相同的大小，或者为空。
+# 这是唯一能将关节名称与正确的
+# 状态。
+string[] name #关节名称数组
+float64[] position #关节位置数组
+float64[] velocity #关节速度数组
+float64[] effort #扭矩数据
+```
+
+##### name
+
+**name**是关节的名称，要与urdf中的定义的关节名称相同，根据我们的URDF定义有
+
+```py
+self.joint_states.name = ['left_wheel_joint','right_wheel_joint']
+```
+
+##### position
+
+表示关节转动的角度值，因为关节类型为**continuous**,所以其值无上下限制，初始值赋值为**0.0**
+
+```py
+# 关节的位置
+self.joint_states.position = [0.0,0.0]
+```
+
+我们采用速度控制机器人轮子转动，所以机器人的位置更新则可以通过下面式子计算得出
+
+> 某一段时间内轮子转动的角度 = （当前时刻-上一时刻）* 两个时刻之间的轮子转速
+
+```py
+delta_time =  time.time()-last_update_time
+# 更新位置
+self.joint_states.position[0]  += delta_time*self.joint_states.velocity[0]
+self.joint_states.position[1]  += delta_time*self.joint_states.velocity[1]
+```
+
+##### velocity
+
+因为我们采用速度进行控制，所以对外提供一个速度更改接口。
+
+```py
+def update_speed(self,speeds):
+    self.joint_speeds = speeds
+```
+
+#### 完成后代码
+
+```py
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+# 1.导入消息类型JointState
+from sensor_msgs.msg import JointState
+
+import threading
+import time
+
+class RotateWheelNode(Node):
+    def __init__(self,name):
+        super().__init__(name)
+        self.get_logger().info(f"node {name} init..")
+        # 创建并初始化发布者成员属性pub_joint_states_
+        self.joint_states_publisher_ = self.create_publisher(JointState,"joint_states", 10) 
+        # 初始化数据
+        self._init_joint_states()
+        self.pub_rate = self.create_rate(30)
+        self.thread_ = threading.Thread(target=self._thread_pub)
+        self.thread_.start()
+
+    
+    def _init_joint_states(self):
+        # 初始左右轮子的速度
+        self.joint_speeds = [0.0,0.0]
+        self.joint_states = JointState()
+        self.joint_states.header.stamp = self.get_clock().now().to_msg()
+        self.joint_states.header.frame_id = ""
+        # 关节名称
+        self.joint_states.name = ['left_wheel_joint','right_wheel_joint']
+        # 关节的位置
+        self.joint_states.position = [0.0,0.0]
+        # 关节速度
+        self.joint_states.velocity = self.joint_speeds
+        # 力 
+        self.joint_states.effort = []
+
+    def update_speed(self,speeds):
+        self.joint_speeds = speeds
+
+    def _thread_pub(self):
+        last_update_time = time.time()
+        while rclpy.ok():
+            delta_time =  time.time()-last_update_time
+            last_update_time = time.time()
+            # 更新位置
+            self.joint_states.position[0]  += delta_time*self.joint_states.velocity[0]
+            self.joint_states.position[1]  += delta_time*self.joint_states.velocity[1]
+            # 更新速度
+            self.joint_states.velocity = self.joint_speeds
+            # 更新 header
+            self.joint_states.header.stamp = self.get_clock().now().to_msg()
+            # 发布关节数据
+            self.joint_states_publisher_.publish(self.joint_states)
+            self.pub_rate.sleep()
+
+def main(args=None):
+    rclpy.init(args=args) # 初始化rclpy
+    node = RotateWheelNode("rotate_fishbot_wheel")  # 新建一个节点
+    node.update_speed([15.0,-15.0])
+    rclpy.spin(node) # 保持节点运行，检测是否收到退出指令（Ctrl+C）
+    rclpy.shutdown() # 关闭rclpy
+```
+
+### 编译测试
+
+编译程序
+
+```
+colcon build --packages-select fishbot_description
+source install/setup.bash
+```
+
+此时运行关节数据发布节点
+
+```
+ros2 run fishbot_description rotate_wheel
+```
+
+测试之前还需要修改下**display_rviz2.launch.py**文件，注释其**joint_state_publisher**节点
+
+```
+# ld.add_action(joint_state_publisher_node)
+ld.add_action(robot_state_publisher_node)
+ld.add_action(rviz2_node)
+```
+
+先运行rviz和robot_state_publisher
+
+```
+source install/setup.bash
+ros2 launch fishbot_description display_rviz2.launch.py
+```
+
+观察此时**rviz界面**，可以看到轮子疯狂转动

@@ -1,0 +1,104 @@
+---
+title: "【VMware虚拟机】Windows11下载安装激活教程"
+description: "本章内容教大家下载安装激活VMware虚拟机，目前只安装了Windows11，所以只推出Windows11的安装教程，其他系统安装大类相同。"
+date: "2021-01-20"
+category: "工程技术"
+tags: ["VMware"]
+author: "TechAlpaca"
+featured: false
+cover: "https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/a7.jpg"
+source: "legacy-blog"
+---
+
+# 前言
+1. 本章内容教大家下载安装激活VMware虚拟机，目前只安装了Windows11，所以只推出Windows11的安装教程，其他系统安装大类相同。
+2. 同样该教程需要的安装包放了链接，接下来我们一起来安装自己的虚拟机吧！
+
+# 环境与工具准备
+* 有40G以上的多余内存空间，后续如果安装东西多且需求大的话可能需要更大空间
+* 与本地账户不同的微软账号（微软默认为邮箱注册，当然你也可以选择使用手机号注册，点击下方的“改为使用电话号码”，就可以使用电话号码注册，国家要选择中国+86），也就是说需要一个没有绑定自己电脑的邮箱或者电话号码
+
+# VMware软件的安装
+链接：https://pan.baidu.com/s/1MkZgaHnTpd3H6Yi3WgW4kw 
+提取码：**2155**
+这里安装过程**安装位置根据需要自定义**，建议在C盘以外建立**虚拟机**的文件夹，一起存放,同时这一步**取消两个对勾**即可，其他都默认
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m21.jpg)
+**最后输入许可证密钥**  **ZF3R0-FHED2-M80TY-8QYGC-NPKYF**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m22.jpg)
+
+**打开软件，就完成啦**
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m23.jpg)
+
+# Windows11系统的配置
+1. 创建新的虚拟机
+2. 建议自定义
+3. 选择Workstation 16.2.x下一步
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m24.jpg)
+
+4. 选择稍后安装
+5. 版本选择Windows10 x64
+6. 虚拟机名称自拟，位置自己选择
+7. 默认UEFI，下一步
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m25.jpg)
+
+8. 处理器根据自己电脑配置选择，这里我选择二核三线程
+9. 4G（这里是电脑内存的三分之一左右）
+10. 使用桥接网络
+11. 默认LSI Logic，下一步
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m26.jpg)
+
+12. 默认NVMe，下一步
+13. 默认Create a new yirtual disk，下一步
+14. 这里我自己分的65G，按你以后需求来分配，需求不大可以少分，Windows11系统本身会占据30G~40G
+15. 文件名称自己命名，可以放到一起，下一步
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m27.jpg)
+
+16. 点击自定义硬件，找到DVD，需要选择映像文件，这里需要到微软官网下载
+[Windows11磁盘映像下载](https://www.microsoft.com/ "Windows11磁盘映像下载")
+17. 往下拉，找到磁盘映像，选择系统版本，点击第一个下载，等几秒，选择**简体中文**，确认，等一会，最后点击**64-bit Download**，这里下载比较慢，尽量把映像文件和虚拟机文件放到一起，下载完成。
+18. 将映像文件放入ISO映像文件中，选择完镜像后关闭，点击完成
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m28.jpg)
+
+* 找到**编辑虚拟机设置**，点击**选项**，这里需要加密虚拟机才能访问，自行设置密码
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m29.jpg)
+
+* 加密完成后，**添加**可信平台模块的硬件，到这里基本配置就完成了，接下来就该安装系统了
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m30.jpg)
+
+* 点击**开启虚拟机**，点击屏幕，出现DVD，快速！按**Enter**（也就是回车键），不然会进不去的0.0！（进不去重启虚拟机重试即可）
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m36.jpg)
+
+* Ctrl+Alt可以将鼠标移出虚拟机屏幕外，需要输入产品密钥的步骤，点击**我没有产品密钥**
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m37.jpg)
+
+1. 选择版本，我使用的**专业版**，大家自行选择即可，其他默认
+2. 选择**自定义安装**，(需要分盘的自行分盘)安装完后等待重启。
+3. 进去之后默认即可，接下来就是Windows11系统安装过程了，接触过安装的应该都会吧，不会的话默认安装即可，这里就需要**微软帐号**了。
+4. 登陆完账号，后面有一个**隐私设置**，基本不需要这个，可以都关闭，最后系统就安装完成了
+
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m38.jpg)
+
+
+# 安装完成后的优化
+## 屏幕的适配
+找到虚拟机设置，选择安装**VMware Tools**，根据提示走就行，打开**DVD**就行了，这里提示重启电脑，我们重启一下。
+安装完成后上方有全屏按钮，点进去就能看到一台新的电脑了
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m32.jpg)
+
+## 主题的激活 
+复制链接：https://pan.baidu.com/s/1mC16UTzYr1LrwxUFU-P_-w 
+提取码：2155 
+下载到电脑桌面，注意电脑文件可以拖拽到虚拟机上，打开程序输入**1**，等待安装即可.
+![](https://alandodo-1315761622.cos.ap-beijing.myqcloud.com/img/m33.jpg)
+##  其他优化
+最后的说说，虚拟机和正常的电脑操作是一样，可以在里面自行设置自己熟悉的操作方法
