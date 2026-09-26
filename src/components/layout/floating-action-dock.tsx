@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
 import { Sparkles, X } from "lucide-react";
 import { SearchFloatingButton } from "@/components/layout/search-floating-button";
 import { AdminEditorButton } from "@/components/layout/admin-editor-button";
@@ -11,6 +11,7 @@ const COLLAPSE_DELAY = 750;
 
 export function FloatingActionDock() {
   const [expanded, setExpanded] = useState(false);
+  const musicOpen = useRef(false);
   const closeTimer = useRef<number | null>(null);
 
   function handlePointerEnter(event: PointerEvent<HTMLElement>) {
@@ -21,11 +22,11 @@ export function FloatingActionDock() {
 
   function handlePointerLeave(event: PointerEvent<HTMLElement>) {
     if (event.pointerType !== "mouse") return;
-    closeTimer.current = window.setTimeout(() => setExpanded(false), COLLAPSE_DELAY);
+    closeTimer.current = window.setTimeout(() => { if (!musicOpen.current) setExpanded(false); }, COLLAPSE_DELAY);
   }
 
   function handleBlur(event: FocusEvent<HTMLElement>) {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setExpanded(false);
+    if (!musicOpen.current && !event.currentTarget.contains(event.relatedTarget as Node | null)) setExpanded(false);
   }
 
   useEffect(() => {
@@ -37,8 +38,15 @@ export function FloatingActionDock() {
     return () => window.removeEventListener("techalpaca:expand-dock", expandFromContextMenu);
   }, []);
 
+
   useEffect(() => () => {
     if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+  }, []);
+
+  const handleMusicOpen = useCallback((open: boolean) => {
+    musicOpen.current = open;
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    if (open) setExpanded(true);
   }, []);
 
   return (
@@ -56,7 +64,7 @@ export function FloatingActionDock() {
         aria-expanded={expanded}
         aria-controls="floating-dock-actions"
         title={expanded ? "收起快捷操作" : "快捷操作 · 右键打开菜单"}
-        onClick={() => setExpanded((current) => !current)}
+        onClick={() => { window.dispatchEvent(new Event("techalpaca:close-music")); setExpanded((current) => !current); }}
       >
         {expanded ? <X size={19} aria-hidden="true" /> : <Sparkles size={20} aria-hidden="true" />}
         {!expanded && <span className="floating-dock-indicator" aria-hidden="true" />}
@@ -69,7 +77,7 @@ export function FloatingActionDock() {
       >
         <SearchFloatingButton />
         <AdminEditorButton />
-        <MusicWidget />
+        <MusicWidget onOpenChange={handleMusicOpen} />
         <ThemeToggle />
       </div>
     </nav>

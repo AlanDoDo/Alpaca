@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type FormEvent, type PointerEvent } from "react";
-import { Headphones, Music2, X } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { Disc3, Settings2, X } from "lucide-react";
 
 type MusicSelection = { id: string; kind: "playlist" };
 const STORAGE_KEY = "techalpaca:netease-music";
@@ -49,141 +49,85 @@ function persistSelection(selection: MusicSelection) {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-export function MusicWidget() {
-  const [hovered, setHovered] = useState(false);
-  const [manualOpen, setManualOpen] = useState(false);
-  const [draftId, setDraftId] = useState(DEFAULT_ID);
+export function MusicWidget({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [draftId, setDraftId] = useState(DEFAULT_ID);
   const [error, setError] = useState("");
   const [playerReady, setPlayerReady] = useState(false);
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    function schedulePlayer() {
-      // Keep third-party requests out of the document load's critical path.
-      timer = setTimeout(() => setPlayerReady(true), 1500);
-    }
-    if (document.readyState === "complete") schedulePlayer();
-    else window.addEventListener("load", schedulePlayer, { once: true });
-    return () => {
-      window.removeEventListener("load", schedulePlayer);
-      if (timer !== undefined) clearTimeout(timer);
-    };
-  }, []);
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
-      localStorage.setItem(STORAGE_KEY, DEFAULT_SNAPSHOT);
-      localStorage.setItem(CONFIG_VERSION_KEY, CONFIG_VERSION);
-      window.dispatchEvent(new Event(CHANGE_EVENT));
-    } catch { /* Music remains available when browser storage is disabled. */ }
-  }, []);
-
-  useEffect(() => {
-    function openPlayer() {
-      setPlayerReady(true);
-      setHovered(false);
-      setManualOpen(true);
-    }
-    window.addEventListener("techalpaca:open-music", openPlayer);
-    return () => window.removeEventListener("techalpaca:open-music", openPlayer);
-  }, []);
-
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const selection = parsePlaylist(JSON.parse(snapshot)) ?? { id: DEFAULT_ID, kind: "playlist" as const };
-  const open = hovered || manualOpen;
 
-  function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse") { setPlayerReady(true); setHovered(true); }
+  function expand(value: boolean) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (value) setPlayerReady(true);
+    setOpen(value);
+    onOpenChange(value);
   }
 
-  function handlePointerLeave(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse") setHovered(false);
-  }
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    function schedule() { timer = setTimeout(() => setPlayerReady(true), 1500); }
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => { if (timer) clearTimeout(timer); window.removeEventListener("load", schedule); };
+  }, []);
 
-  function toggleManually() {
-    setPlayerReady(true);
-    setHovered(false);
-    setManualOpen((current) => !current);
-  }
-
-  function closeCard() {
-    setHovered(false);
-    setManualOpen(false);
-  }
+  useEffect(() => {
+    function show() { if (closeTimer.current) clearTimeout(closeTimer.current); setPlayerReady(true); setOpen(true); onOpenChange(true); }
+    function hide() { if (closeTimer.current) clearTimeout(closeTimer.current); setOpen(false); onOpenChange(false); }
+    function dismiss(event: globalThis.PointerEvent) { if (!anchorRef.current?.contains(event.target as Node)) hide(); }
+    function escape(event: KeyboardEvent) { if (event.key === "Escape" && anchorRef.current?.contains(document.activeElement)) { hide(); triggerRef.current?.focus(); } }
+    window.addEventListener("techalpaca:open-music", show);
+    window.addEventListener("techalpaca:close-music", hide);
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      window.removeEventListener("techalpaca:open-music", show);
+      window.removeEventListener("techalpaca:close-music", hide);
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [onOpenChange]);
 
   function savePlaylist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const id = draftId.trim();
-    if (!/^\d{1,20}$/.test(id)) {
-      setError("请输入网易云歌单链接中的纯数字 ID。");
-      return;
-    }
-    try { persistSelection({ id, kind: "playlist" }); } catch {
-      setError("浏览器禁止保存歌单，请允许此网站使用本地存储后重试。");
-      return;
-    }
-    setError("");
+    if (!/^[0-9]{1,20}$/.test(draftId.trim())) { setError("请输入纯数字歌单 ID。"); return; }
+    try { persistSelection({ id: draftId.trim(), kind: "playlist" }); }
+    catch { setError("无法保存歌单，请允许本地存储后重试。"); return; }
     setEditing(false);
+    setError("");
   }
 
-  const playerUrl = `https://music.163.com/outchain/player?type=0&id=${selection.id}&auto=1&height=90`;
-
   return (
-    <div
-      className="music-widget-anchor group relative z-50 self-end"
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
-    >
-      <section
-        aria-label="网易云音乐播放器"
-        aria-hidden={!open}
-        inert={!open}
-        className={`absolute bottom-0 right-[calc(100%+0.75rem)] w-[min(340px,calc(100vw-6rem))] overflow-y-auto rounded-xl border border-[var(--line)] bg-[var(--surface)] shadow-[0_18px_50px_rgba(18,22,28,0.16)] transition-[opacity,transform] duration-200 ${
-          open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
-        } max-h-[min(70dvh,28rem)]`}
-      >
-        <div className="flex items-start justify-between border-b border-[var(--line)] px-4 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--music-icon-bg)] text-[var(--music-icon-ink)]"><Music2 size={18} aria-hidden="true" /></span>
-            <div><p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--muted)]">TECHALPACA RADIO</p><h2 className="mt-0.5 text-sm font-semibold">给阅读配点音乐</h2></div>
-          </div>
-          <button type="button" onClick={closeCard} aria-label="收起音乐卡片" className="rounded p-1 text-[var(--muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"><X size={17} /></button>
+    <div ref={anchorRef} className="music-widget-anchor relative z-50 self-end"
+      onPointerEnter={(event) => { if (event.pointerType === "mouse") expand(true); }}
+      onPointerLeave={(event) => { if (event.pointerType === "mouse" && !editing) closeTimer.current = setTimeout(() => { setOpen(false); onOpenChange(false); }, 350); }}>
+      <section id="music-player-panel" aria-label="网易云音乐播放器" aria-hidden={!open} inert={!open} className={`music-embed-panel ${open ? "is-open" : "is-closed"}`}>
+        <div className="music-embed-body">
+          {playerReady ? <iframe title="网易云音乐歌单播放器" src={`https://music.163.com/outchain/player?type=0&id=${selection.id}&auto=1&height=90`} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="block w-full border-0" /> : <div className="flex h-[110px] items-center justify-center text-xs text-[var(--muted)]">正在准备音乐…</div>}
         </div>
-        <div className="p-3">
-          {playerReady ? <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="block rounded-md border-0" /> : <div className="flex h-[110px] items-center justify-center text-xs text-[var(--muted)]">音乐将在页面加载后准备</div>}
-          <div className="flex items-center justify-between gap-3 px-1 pt-2 text-xs text-[var(--muted)]">
-            <span>歌单 · 按列表顺序播放</span>
-            <button type="button" onClick={() => { setDraftId(selection.id); setEditing((current) => !current); setError(""); }} className="shrink-0 hover:text-[var(--ink)]">{editing ? "取消更换" : "更换歌单"}</button>
+        <div className="music-embed-footer">
+          <span className="music-embed-caption">NETEASE · RADIO</span>
+          <div className="flex items-center gap-1">
+            <button type="button" className="music-embed-action" aria-label="更换歌单" title="更换歌单" onClick={() => { setDraftId(selection.id); setError(""); setEditing((value) => !value); }}><Settings2 size={15} /></button>
+            <button type="button" className="music-embed-action" aria-label="收起播放器" onClick={() => { expand(false); triggerRef.current?.focus(); }}><X size={16} /></button>
           </div>
-          <p className="px-1 pt-2 text-[11px] leading-5 text-[var(--muted)]">进入网站会尝试播放音乐。如未响起，请点击播放器的播放按钮。</p>
         </div>
-        {editing && (
-          <form onSubmit={savePlaylist} className="space-y-3 border-t border-[var(--line)] p-4">
-            <label className="block text-xs font-medium text-[var(--ink)]" htmlFor="netease-playlist-id">网易云歌单 ID（顺序播放）</label>
-            <input id="netease-playlist-id" aria-label="网易云歌单 ID" inputMode="numeric" pattern="[0-9]+" value={draftId} onChange={(event) => { setDraftId(event.target.value); setError(""); }} placeholder="粘贴网易云歌单链接中的 ID" className="h-10 w-full rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 text-sm outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]" />
-            {error && <p role="alert" className="text-xs text-[var(--danger)]">{error}</p>}
-            <div className="flex items-center justify-between gap-3"><a href="https://music.163.com/" target="_blank" rel="noreferrer" className="text-xs text-[var(--muted)] underline underline-offset-4 hover:text-[var(--ink)]">打开网易云音乐找歌单</a><button type="submit" className="rounded-md bg-[var(--ink)] px-3 py-2 text-xs font-medium text-[var(--accent-contrast)] transition hover:opacity-80">保存歌单</button></div>
-          </form>
-        )}
+        {editing && <form onSubmit={savePlaylist} className="border-t border-[var(--line)] bg-[var(--surface)] p-3 text-[var(--ink)]">
+          <label htmlFor="netease-playlist-id" className="mb-2 block text-xs text-[var(--muted)]">网易云歌单 ID</label>
+          <div className="flex gap-2"><input id="netease-playlist-id" inputMode="numeric" maxLength={20} value={draftId} onChange={(event) => setDraftId(event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 text-sm outline-none focus:border-[var(--accent)]" /><button type="submit" className="rounded-lg bg-[var(--ink)] px-3 text-xs text-[var(--accent-contrast)]">保存</button></div>
+          {error && <p role="alert" className="mt-2 text-xs text-[var(--danger)]">{error}</p>}
+        </form>}
       </section>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-label={open ? "收起音乐卡片" : "打开音乐卡片"}
-        onClick={toggleManually}
-        className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#17191c] text-white shadow-lg transition duration-200 hover:w-[4.5rem] hover:bg-[#25282c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] group-hover:w-[4.5rem]"
-      >
-        <Headphones size={18} aria-hidden="true" />
-        <span className="ml-0 max-w-0 overflow-hidden whitespace-nowrap text-sm opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:max-w-12 group-hover:opacity-100">音乐</span>
-        <span className="absolute left-[2.15rem] top-0.5 h-2 w-2 rounded-full border border-[#17191c] bg-[#65c18c]" aria-label="已连接" />
+      <button ref={triggerRef} type="button" className="music-capsule" aria-label={open ? "收起网易云播放器" : "打开网易云播放器"} aria-expanded={open} aria-controls="music-player-panel" onClick={() => expand(!open)}>
+        <span className="music-capsule-record" aria-hidden="true"><Disc3 size={25} strokeWidth={1.2} /></span>
+        <span className="music-capsule-copy"><span>阅读电台</span></span>
       </button>
     </div>
   );
 }
-
-
-
-
-
-
-

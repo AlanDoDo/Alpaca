@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
     remotePatterns: [
+      { protocol: "https", hostname: "tianjihub-1315761622.cos.ap-guangzhou.myqcloud.com", port: "", pathname: "/img/**" },
       { protocol: "https", hostname: "alandodo-1315761622.cos.ap-beijing.myqcloud.com" },
       { protocol: "https", hostname: "techalpaca.vercel.app" },
     ],
