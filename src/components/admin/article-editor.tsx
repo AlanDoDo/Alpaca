@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { ArticleBody } from "@/components/blog/article-body";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
-import { ArrowDownToLine, ArrowLeft, ArrowUpRight, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, Sparkles, List, Link2, X } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, Link2, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -24,11 +24,14 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [noticeError, setNoticeError] = useState(false);
   const [query, setQuery] = useState("");
   const [showAllArticles, setShowAllArticles] = useState(false);
+  const [showArticleMenu, setShowArticleMenu] = useState(false);
+  const [loadingArticleSlug, setLoadingArticleSlug] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const articleMenuRef = useRef<HTMLDivElement>(null);
   const draftReadyRef = useRef(false);
   const draftRef = useRef(draft);
   const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
@@ -74,8 +77,11 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   }, [draft, saveDraft]);
 
   useEffect(() => {
-    function onBeforeUnload() {
-      if (status === "saving") saveDraft(draftRef.current);
+    function onBeforeUnload(event: BeforeUnloadEvent) {
+      if (status === "saved") return;
+      saveDraft(draftRef.current);
+      event.preventDefault();
+      event.returnValue = "";
     }
     function onKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -91,6 +97,22 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     };
   }, [saveDraft, status]);
 
+  function guardNavigation(event: MouseEvent<HTMLDivElement>) {
+    if (status === "saved" || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const anchor = target.closest("a[href]");
+    if (!(anchor instanceof HTMLAnchorElement) || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+    const next = new URL(anchor.href, window.location.href);
+    if (next.origin !== window.location.origin || next.pathname === window.location.pathname) return;
+    if (!window.confirm("草稿仍在保存或尚未保存，确定离开写作台吗？")) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    saveDraft(draftRef.current);
+  }
+
   function update<K extends keyof Draft>(key: K, value: Draft[K]) { setStatus("saving"); setDraft((current) => { const next = { ...current, [key]: value }; draftRef.current = next; return next; }); }
 
   function loadLocalDraft(base: Draft) {
@@ -104,19 +126,6 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     return base;
   }
 
-  async function openArticle(slug: string) {
-    setNotice("");
-    try {
-      const response = await fetch(`/api/admin/articles?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
-      const data = await response.json() as Draft & { error?: string };
-      if (!response.ok) throw new Error(data.error ?? "读取文章失败。");
-      const nextDraft = loadLocalDraft(data);
-      draftRef.current = nextDraft;
-      setDraft(nextDraft);
-      setMobileTab("edit");
-    } catch (error) { setNotice(error instanceof Error ? error.message : "读取文章失败。"); setNoticeError(true); }
-  }
-
   function createArticle() {
     setNotice("");
     const nextDraft = loadLocalDraft(blankDraft(`article-${Date.now().toString(36)}`));
@@ -124,6 +133,48 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     setDraft(nextDraft);
     setMobileTab("edit");
   }
+
+  async function editArticle(slug: string) {
+    setLoadingArticleSlug(slug);
+    setNotice("");
+    saveDraft(draftRef.current);
+    try {
+      const response = await fetch(`/api/admin/articles?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+      const data = await response.json() as Draft & { error?: string };
+      if (!response.ok) throw new Error(data.error ?? "文章载入失败，请稍后重试。");
+      const nextDraft = loadLocalDraft(data);
+      draftRef.current = nextDraft;
+      setDraft(nextDraft);
+      setStatus("saved");
+      setMobileTab("edit");
+      setShowArticleMenu(false);
+      setQuery("");
+      setShowAllArticles(false);
+      setNotice(`已载入《${nextDraft.title}》，编辑后可发布更新。`);
+      setNoticeError(false);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "文章载入失败，请稍后重试。");
+      setNoticeError(true);
+    } finally {
+      setLoadingArticleSlug(null);
+    }
+  }
+
+  useEffect(() => {
+    if (!showArticleMenu) return;
+    function onPointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && !articleMenuRef.current?.contains(event.target)) setShowArticleMenu(false);
+    }
+    function onEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setShowArticleMenu(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [showArticleMenu]);
 
   function insertMarkdown(before: string, after = "", placeholder = "文本") {
     const input = textareaRef.current;
@@ -174,7 +225,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   );
 
   return (
-    <div className="admin-workspace mx-auto w-full max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="admin-workspace mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
       <header className="admin-topbar">
         <div className="min-w-0"><Link href="/" className="text-sm font-semibold tracking-tight">TechAlpaca <span className="font-normal text-[var(--muted)]">/ Studio</span></Link><h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">文章工作台</h1><p className="mt-1 text-sm text-[var(--muted)]">Markdown 写作、即时预览与 GitHub 发布</p></div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3"><button aria-label="立即保存草稿" className="admin-save-indicator" onClick={() => saveDraft(draftRef.current)} title="草稿自动保存在此浏览器；按 Ctrl+S 或点击此处立即保存" type="button"><span className={`admin-save-dot ${status === "saving" ? "is-saving" : ""}`} />{status === "saving" ? "正在保存草稿" : status === "saved" ? "草稿已保存 · Ctrl+S" : "尚未保存，点击保存"}</button><button className="admin-quiet-button" disabled={loggingOut} onClick={logout} type="button"><LogOut className="size-4" /><span className="hidden sm:inline">{loggingOut ? "退出中" : "退出"}</span></button></div>
@@ -182,21 +233,17 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
 
       {notice && <div className={`admin-notice ${noticeError ? "is-error" : ""}`} role={noticeError ? "alert" : "status"}><span>{notice}</span><button aria-label="关闭提示" onClick={() => setNotice("")}><X className="size-4" /></button></div>}
 
-      <div className="admin-layout mt-6 lg:mt-8">
-        <aside className="admin-library">
-          <div className="flex items-center justify-between"><div><p className="admin-eyebrow">LIBRARY</p><h2 className="mt-1 text-lg font-semibold">文章</h2></div><button aria-label="新建文章" className="admin-icon-button" onClick={createArticle} title="新建文章" type="button"><FilePlus2 className="size-4" /></button></div>
-          <label className="admin-search mt-4"><Search className="size-4" /><input aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label>
-          <div className="admin-library-list">
-            <button className={`admin-article-option ${draft.expectedSha === null && !articles.some((article) => article.slug === draft.slug) ? "is-current" : ""}`} onClick={createArticle} type="button"><span className="admin-option-category">新文章</span><span className="admin-option-title">开始一篇新文章</span></button>
-            {visibleArticles.map((article) => <button key={article.slug} className={`admin-article-option ${draft.slug === article.slug ? "is-current" : ""}`} onClick={() => void openArticle(article.slug)} type="button"><span className="admin-option-category">{article.category} <span>·</span> {article.date}</span><span className="admin-option-title">{article.title}</span></button>)}
-            {!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}
-            {filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}
-          </div>
-          <div className="admin-library-footer"><Sparkles className="size-4" /><span>共 {articles.length} 篇文章</span></div>
-        </aside>
-
+      <div className="admin-layout mt-6 lg:mt-8" onClickCapture={guardNavigation}>
         <section className="admin-writing-column">
-          <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}<ChevronDown className="size-3" /></div><div className="flex items-center gap-2"><button className="admin-secondary-button hidden sm:inline-flex" onClick={() => { try { const blob = new Blob([draft.content], { type: "text/markdown;charset=utf-8" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${draft.slug}.md`; link.click(); URL.revokeObjectURL(link.href); } catch { setNotice("下载失败，请重试。"); setNoticeError(true); } }} type="button"><ArrowDownToLine className="size-4" />导出 .md</button><button className="admin-primary-button" onClick={() => setPublishOpen(true)} type="button"><Send className="size-4" /><span>发布</span></button></div></div>
+          <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}</div><div className="flex items-center gap-2">
+            <div className="admin-article-menu-wrap" ref={articleMenuRef}>
+              <button aria-controls="admin-article-menu" aria-expanded={showArticleMenu} aria-haspopup="dialog" className="admin-secondary-button" onClick={() => setShowArticleMenu((current) => !current)} type="button"><BookOpen className="size-4" /><span>文章库</span><ChevronDown className={`size-3 transition-transform ${showArticleMenu ? "rotate-180" : ""}`} /></button>
+              {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog"><label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label><div className="admin-library-list">{visibleArticles.map((article) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={article.slug} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <>{article.category} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div><p className="admin-article-menu-count">共 {articles.length} 篇文章 · 点击载入编辑器</p></div>}
+            </div>
+            <button className="admin-secondary-button hidden sm:inline-flex" onClick={() => { try { const blob = new Blob([draft.content], { type: "text/markdown;charset=utf-8" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${draft.slug}.md`; link.click(); URL.revokeObjectURL(link.href); } catch { setNotice("下载失败，请重试。"); setNoticeError(true); } }} type="button"><ArrowDownToLine className="size-4" />导出 .md</button>
+            <button className="admin-secondary-button" onClick={createArticle} type="button"><FilePlus2 className="size-4" /><span>新建</span></button>
+            <button className="admin-primary-button" onClick={() => setPublishOpen(true)} type="button"><Send className="size-4" /><span>发布</span></button>
+          </div></div>
 
           <div className="admin-meta-card">
             <div className="admin-field-row"><label className="admin-field admin-field-wide"><span>文章标题</span><input maxLength={160} onChange={(event) => update("title", event.target.value)} placeholder="写一个清晰、有吸引力的标题" value={draft.title} /></label><label className="admin-field admin-slug-field"><span>文章路径</span><input autoCapitalize="none" onChange={(event) => update("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-"))} placeholder="article-slug" value={draft.slug} /><small>/article/{draft.slug || "…"}</small></label></div>
@@ -208,7 +255,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
 
           <div className="admin-mobile-tabs" role="tablist" aria-label="正文视图"><button aria-selected={mobileTab === "edit"} onClick={() => setMobileTab("edit")} role="tab" type="button">Markdown</button><button aria-selected={mobileTab === "preview"} onClick={() => setMobileTab("preview")} role="tab" type="button"><Eye className="size-4" />预览</button></div>
           <div className="admin-content-grid">{markdownPanel}
-            <section className={`admin-pane admin-preview-pane ${mobileTab === "preview" ? "flex" : "hidden"} lg:flex`} aria-label="文章实时预览"><div className="admin-pane-header"><div><p className="admin-eyebrow">PREVIEW</p><h2>实时预览</h2></div><span className="admin-preview-badge"><span className="admin-live-dot" />LIVE</span></div><div className="admin-preview-scroll"><article className="admin-preview-article"><p className="admin-eyebrow">{draft.category}{draft.tags.length ? ` / ${draft.tags.slice(0, 2).join(" / ")}` : ""}</p><h1>{draft.title || "文章标题"}</h1><p className="admin-preview-description">{draft.description || "文章摘要将在这里展示。"}</p><div className="admin-preview-byline">{draft.author} <span>·</span> {draft.date}</div>{draft.cover && <Image alt="文章封面预览" className="admin-cover-preview" height={480} src={draft.cover} unoptimized width={960} />}</article><ArticleBody source={draft.content || "开始输入 Markdown，文章预览会即时更新。\n\n## 章节标题\n\n支持 **粗体**、列表、链接、代码和表格。"} headings={[]} /></div><div className="admin-pane-footer"><span>预览经过与正文相同的 HTML 安全清理</span><Link className="admin-quiet-button" href="/blog" target="_blank">查看网站 <ArrowUpRight className="size-3" /></Link></div></section>
+            <section className={`admin-pane admin-preview-pane min-h-[620px] flex-col ${mobileTab === "preview" ? "flex" : "hidden"} lg:flex`} aria-label="文章实时预览"><div className="admin-preview-scroll min-h-0 flex-1"><article className="admin-preview-article"><p className="admin-eyebrow">{draft.category}{draft.tags.length ? ` / ${draft.tags.slice(0, 2).join(" / ")}` : ""}</p><h1>{draft.title || "文章标题"}</h1><p className="admin-preview-description">{draft.description || "文章摘要将在这里展示。"}</p><div className="admin-preview-byline">{draft.author} <span>·</span> {draft.date}</div>{draft.cover && <Image alt="文章封面预览" className="admin-cover-preview" height={480} src={draft.cover} unoptimized width={960} />}</article><ArticleBody source={draft.content || "开始输入 Markdown，文章预览会即时更新。\n\n## 章节标题\n\n支持 **粗体**、列表、链接、代码和表格。"} headings={[]} /></div></section>
           </div>
           <footer className="admin-bottom-row"><Link className="admin-quiet-button" href="/blog"><ArrowLeft className="size-4" />返回网站</Link><span>草稿仅保存在此浏览器，发布后才会写入网站仓库。</span></footer>
         </section>

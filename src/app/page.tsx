@@ -15,7 +15,7 @@ export default function HomePage() {
       <section className="homepage-intro relative flex min-h-[calc(100svh-7rem)] flex-col justify-center overflow-hidden border-b border-[var(--line)] px-4 py-16 sm:min-h-[calc(100svh-5rem)] sm:px-6 sm:py-24" aria-labelledby="homepage-title">
         <div className="home-intro-copy mx-auto w-full max-w-6xl pb-10 sm:pb-14">
           <p className="text-[11px] font-semibold tracking-[0.2em] text-[var(--muted)] sm:text-xs sm:tracking-[0.24em]">AI × ROBOTICS × FINANCE</p>
-          <h1 id="homepage-title" className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.12] tracking-tight sm:mt-6 sm:text-5xl md:text-7xl md:leading-[1.08]">研究技术如何改变产业，也研究钱最终流向哪里。</h1>
+          <h1 id="homepage-title" className="mt-5 max-w-3xl text-3xl font-semibold leading-[1.16] tracking-tight sm:mt-6 sm:text-5xl sm:leading-[1.12] md:text-7xl md:leading-[1.08]">研究技术如何改变产业，也研究钱最终流向哪里。</h1>
           <p className="mt-5 text-base text-[var(--muted)] sm:mt-6 sm:text-lg">Ideas, technology, companies and capital.</p>
           <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm sm:mt-9"><Link className="underline underline-offset-4 decoration-[var(--line)] transition-colors hover:text-[var(--accent)]" href="/blog">阅读文章</Link><Link className="text-[var(--muted)] transition-colors hover:text-[var(--ink)]" href="/about">关于 TechAlpaca</Link></div>
         </div>

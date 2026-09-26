@@ -6,7 +6,6 @@ import { extractArticleHeadings } from "@/modules/content/headings";
 import { ArticleBody } from "@/components/blog/article-body";
 import { ArticleTableOfContents } from "@/components/blog/article-toc";
 import { ArticleEndNavigation } from "@/components/blog/article-end-navigation";
-import { ArticleReadingProgress } from "@/components/blog/article-reading-progress";
 
 export function generateStaticParams() { return getAllArticles().map(({ slug }) => ({ slug })); }
 
@@ -42,12 +41,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const showToc = article.content.length >= 1600 && headings.length >= 3;
 
   return (
-    <>
-    <ArticleReadingProgress />
     <div className={showToc
-      ? "mx-auto grid w-full max-w-[1240px] grid-cols-1 items-stretch gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-14 lg:py-24"
-      : "mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16 md:py-24"}>
-      <article className="mx-auto w-full max-w-3xl min-w-0">
+      ? "mx-auto grid w-full max-w-7xl grid-cols-1 items-stretch gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12 lg:py-24 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-14"
+      : "mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16 md:py-24"}>
+      <article className="mx-auto w-full max-w-4xl min-w-0">
         <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">{article.category.toUpperCase()}</p>
         <h1 className="mt-4 break-words text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">{article.title}</h1>
         <p className="mt-4 text-base leading-7 text-[var(--muted)] sm:mt-6 sm:text-lg sm:leading-8">{article.description}</p>
@@ -58,9 +55,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </article>
       {showToc && <aside className="hidden min-w-0 lg:block"><ArticleTableOfContents headings={headings} /></aside>}
     </div>
-    </>
   );
 }
-
 
 

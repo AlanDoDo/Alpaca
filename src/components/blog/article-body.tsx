@@ -16,6 +16,9 @@ export function ArticleBody({ source, headings }: { source: string; headings: Ar
         components={{
           h2: ({ children }) => <h2 id={headings[headingIndex++]?.id}>{children}</h2>,
           h3: ({ children }) => <h3 id={headings[headingIndex++]?.id}>{children}</h3>,
+          // Markdown images can use arbitrary remote hosts and do not include intrinsic dimensions.
+          // eslint-disable-next-line @next/next/no-img-element
+          img: ({ alt, ...props }) => <img alt={alt ?? ""} decoding="async" loading="lazy" {...props} />,
           a: ({ href, children, ...props }) => {
             if (href?.startsWith("/") && !href.startsWith("//")) {
               return <Link href={href} {...props}>{children}</Link>;

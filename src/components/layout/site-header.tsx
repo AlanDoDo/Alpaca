@@ -9,10 +9,10 @@ const links = [
 export function SiteHeader() {
   return (
     <header className="border-b border-[var(--line)]">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-5">
-        <Link href="/" className="w-fit text-lg font-semibold tracking-tight">TechAlpaca</Link>
-        <nav aria-label="主导航" className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-[var(--muted)] sm:gap-x-4 sm:text-sm md:gap-x-7">
-          {links.map((link) => <Link key={link.href} className="rounded-md px-2 py-2 transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]" href={link.href}>{link.label}</Link>)}
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-5">
+        <Link href="/" className="w-fit shrink-0 text-base font-semibold tracking-tight sm:text-lg">TechAlpaca</Link>
+        <nav aria-label="主导航" className="flex shrink-0 items-center gap-x-0.5 whitespace-nowrap text-[11px] text-[var(--muted)] sm:gap-x-4 sm:text-sm md:gap-x-7">
+          {links.map((link) => <Link key={link.href} className="rounded-md px-1.5 py-2 transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)] sm:px-2" href={link.href}>{link.label}</Link>)}
         </nav>
       </div>
     </header>

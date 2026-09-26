@@ -17,5 +17,5 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-CN"><body><SiteHeader /><main>{children}</main><SiteFooter /><FloatingActionDock /><SiteContextMenu /></body></html>;
+  return <html lang="zh-CN" data-scroll-behavior="smooth"><body><SiteHeader /><main>{children}</main><SiteFooter /><FloatingActionDock /><SiteContextMenu /></body></html>;
 }

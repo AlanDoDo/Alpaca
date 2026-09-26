@@ -38,9 +38,11 @@ export function getArticleBySlug(slug: string): Article | undefined {
 export function searchArticles(query: string): ArticleSummary[] {
   const normalized = query.trim().toLocaleLowerCase();
   if (!normalized) return [];
-  return getAllArticles().filter((article) => {
-    const fullArticle = getArticleBySlug(article.slug);
-    return [article.title, article.description, article.category, ...article.tags, fullArticle?.content ?? ""].join(" ").toLocaleLowerCase().includes(normalized);
-  });
+  if (!fs.existsSync(contentDirectory)) return [];
+  return fs.readdirSync(contentDirectory)
+    .filter((name) => /\.mdx?$/.test(name))
+    .map(readArticle)
+    .sort((a, b) => Number(b.featured) - Number(a.featured) || b.date.localeCompare(a.date))
+    .filter((article) => [article.title, article.description, article.category, ...article.tags, article.content].join(" ").toLocaleLowerCase().includes(normalized))
+    .map(({ slug, title, description, date, category, tags, readingTime, featured, cover }) => ({ slug, title, description, date, category, tags, readingTime, featured, cover }));
 }
-
