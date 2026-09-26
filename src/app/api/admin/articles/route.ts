@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import matter from "gray-matter";
+import { parseFrontmatter } from "@/lib/parse-frontmatter";
+import { readJsonObject, RequestBodyError } from "@/lib/request-json";
 import fs from "node:fs";
 import path from "node:path";
 import { getArticleBySlug } from "@/modules/content";
@@ -43,7 +44,7 @@ function githubFileUrl(owner: string, repo: string, slug: string) {
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "请先登录管理员后台。" }, { status: 401 });
   const slug = request.nextUrl.searchParams.get("slug") ?? "";
-  if (!slugPattern.test(slug)) return NextResponse.json({ error: "文章标识无效。" }, { status: 400 });
+  if (!slugPattern.test(slug) || slug.length > 100) return NextResponse.json({ error: "文章标识无效。" }, { status: 400 });
 
   const config = githubConfig();
   if (config) {
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
         const file = await response.json() as { content?: string; encoding?: string; sha?: string };
         if (!file.content || file.encoding !== "base64" || !file.sha) return NextResponse.json({ error: "暂时无法读取这篇文章。" }, { status: 502 });
         const raw = Buffer.from(file.content.replace(/\n/g, ""), "base64").toString("utf8");
-        const parsed = matter(raw);
+        const parsed = parseFrontmatter(raw);
         return NextResponse.json({ slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: parsed.data.date ?? "", category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
       }
       if (response.status !== 404) return NextResponse.json({ error: "从 GitHub 读取文章失败，请稍后重试。" }, { status: 502 });
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
   const article = getArticleBySlug(slug);
   if (!article) return NextResponse.json({ error: "文章不存在，或 GitHub 尚未配置。" }, { status: 404 });
   const filePath = [".mdx", ".md"].map((extension) => path.join(process.cwd(), "content/blog", slug + extension)).find((candidate) => fs.existsSync(candidate));
-  const parsed = matter(filePath ? fs.readFileSync(filePath, "utf8") : "");
+  const parsed = parseFrontmatter(filePath ? fs.readFileSync(filePath, "utf8") : "");
   return NextResponse.json({ slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
 }
 
@@ -86,9 +87,11 @@ function validateDraft(body: ArticleDraft) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) return { error: "日期格式请使用 YYYY-MM-DD。" };
   if (!category || !categories.includes(category)) return { error: "请选择有效分类。" };
   if (author.length > 80) return { error: "作者名称不能超过 80 个字符。" };
+  if (tags.some((tag) => tag.length > 80)) return { error: "单个标签不能超过 80 个字符。" };
   if (cover && (!/^https:\/\//i.test(cover) || cover.length > 2048)) return { error: "封面请填写有效的 HTTPS 图片地址；留空表示无封面。" };
   if (!content.trim() || Buffer.byteLength(content, "utf8") > maxArticleBytes) return { error: "正文不能为空，且不能超过 500 KB。" };
   if (typeof body.expectedSha !== "string" && body.expectedSha !== null) return { error: "文章版本信息无效，请重新打开文章。" };
+  if (typeof body.expectedSha === "string" && !/^[a-f0-9]{40}$/.test(body.expectedSha)) return { error: "文章版本信息无效，请重新打开文章。" };
   return { value: { slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } };
 }
 
@@ -110,10 +113,12 @@ export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
   if (!authorized(request)) return NextResponse.json({ error: "登录状态已失效，请重新登录。" }, { status: 401 });
   if (!request.headers.get("content-type")?.includes("application/json")) return NextResponse.json({ error: "请求格式无效。" }, { status: 415 });
-  const length = Number(request.headers.get("content-length") ?? "0");
-  if (length > maxArticleBytes + 32_000) return NextResponse.json({ error: "文章内容超过允许大小。" }, { status: 413 });
   let body: ArticleDraft;
-  try { body = await request.json() as ArticleDraft; } catch { return NextResponse.json({ error: "请求内容无效。" }, { status: 400 }); }
+  // JSON escaping can expand Markdown by up to six bytes per source character.
+  try { body = await readJsonObject(request, maxArticleBytes * 6 + 32_000); } catch (error) {
+    const status = error instanceof RequestBodyError ? error.status : 400;
+    return NextResponse.json({ error: status === 413 ? "文章内容超过允许大小。" : "请求内容无效。" }, { status });
+  }
   const validated = validateDraft(body);
   if ("error" in validated) return NextResponse.json({ error: validated.error }, { status: 400 });
 

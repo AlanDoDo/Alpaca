@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import matter from "gray-matter";
+import { parseFrontmatter } from "@/lib/parse-frontmatter";
 import { createFileCollection } from "./file-collection";
 import type { Article, ArticleCategory, ArticleSummary } from "./types";
 export type { Article, ArticleCategory, ArticleSummary } from "./types";
@@ -13,7 +13,7 @@ function isValidDate(value: string) {
 }
 function readArticle(fileName: string): Article {
   const source = fs.readFileSync(path.join(contentDirectory, fileName), "utf8");
-  const { data, content } = matter(source);
+  const { data, content } = parseFrontmatter(source);
   const title = typeof data.title === "string" ? data.title.trim() : "";
   const description = typeof data.description === "string" ? data.description.trim() : "";
   const date = typeof data.date === "string" ? data.date : "";

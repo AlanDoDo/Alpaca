@@ -29,10 +29,10 @@ function subscribe(callback: () => void) {
 }
 
 function getSnapshot() {
-  if (localStorage.getItem(CONFIG_VERSION_KEY) !== CONFIG_VERSION) return DEFAULT_SNAPSHOT;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return DEFAULT_SNAPSHOT;
   try {
+    if (localStorage.getItem(CONFIG_VERSION_KEY) !== CONFIG_VERSION) return DEFAULT_SNAPSHOT;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return DEFAULT_SNAPSHOT;
     return JSON.stringify(parsePlaylist(JSON.parse(stored)) ?? { id: DEFAULT_ID, kind: "playlist" });
   } catch {
     return DEFAULT_SNAPSHOT;
@@ -55,17 +55,17 @@ export function MusicWidget() {
   const [draftId, setDraftId] = useState(DEFAULT_ID);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
-  const [playerActivated, setPlayerActivated] = useState(false);
   useEffect(() => {
-    if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
-    localStorage.setItem(STORAGE_KEY, DEFAULT_SNAPSHOT);
-    localStorage.setItem(CONFIG_VERSION_KEY, CONFIG_VERSION);
-    window.dispatchEvent(new Event(CHANGE_EVENT));
+    try {
+      if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
+      localStorage.setItem(STORAGE_KEY, DEFAULT_SNAPSHOT);
+      localStorage.setItem(CONFIG_VERSION_KEY, CONFIG_VERSION);
+      window.dispatchEvent(new Event(CHANGE_EVENT));
+    } catch { /* Music remains available when browser storage is disabled. */ }
   }, []);
 
   useEffect(() => {
     function openPlayer() {
-      setPlayerActivated(true);
       setHovered(false);
       setManualOpen(true);
     }
@@ -78,7 +78,7 @@ export function MusicWidget() {
   const open = hovered || manualOpen;
 
   function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse") { setPlayerActivated(true); setHovered(true); }
+    if (event.pointerType === "mouse") setHovered(true);
   }
 
   function handlePointerLeave(event: PointerEvent<HTMLDivElement>) {
@@ -86,7 +86,6 @@ export function MusicWidget() {
   }
 
   function toggleManually() {
-    setPlayerActivated(true);
     setHovered(false);
     setManualOpen((current) => !current);
   }
@@ -103,7 +102,10 @@ export function MusicWidget() {
       setError("请输入网易云歌单链接中的纯数字 ID。");
       return;
     }
-    persistSelection({ id, kind: "playlist" });
+    try { persistSelection({ id, kind: "playlist" }); } catch {
+      setError("浏览器禁止保存歌单，请允许此网站使用本地存储后重试。");
+      return;
+    }
     setError("");
     setEditing(false);
   }
@@ -132,11 +134,12 @@ export function MusicWidget() {
           <button type="button" onClick={closeCard} aria-label="收起音乐卡片" className="rounded p-1 text-[var(--muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"><X size={17} /></button>
         </div>
         <div className="p-3">
-          {playerActivated ? <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; clipboard-write" className="block rounded-md border-0" /> : <div className="h-[110px]" />}
+          <iframe title="网易云音乐顺序播放歌单" src={playerUrl} width="100%" height={110} referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" className="block rounded-md border-0" />
           <div className="flex items-center justify-between gap-3 px-1 pt-2 text-xs text-[var(--muted)]">
             <span>歌单 · 按列表顺序播放</span>
             <button type="button" onClick={() => { setDraftId(selection.id); setEditing((current) => !current); setError(""); }} className="shrink-0 hover:text-[var(--ink)]">{editing ? "取消更换" : "更换歌单"}</button>
           </div>
+          <p className="px-1 pt-2 text-[11px] leading-5 text-[var(--muted)]">进入网站会尝试播放音乐。如未响起，请点击播放器的播放按钮。</p>
         </div>
         {editing && (
           <form onSubmit={savePlaylist} className="space-y-3 border-t border-[var(--line)] p-4">
@@ -144,7 +147,6 @@ export function MusicWidget() {
             <input id="netease-playlist-id" aria-label="网易云歌单 ID" inputMode="numeric" pattern="[0-9]+" value={draftId} onChange={(event) => { setDraftId(event.target.value); setError(""); }} placeholder="粘贴网易云歌单链接中的 ID" className="h-10 w-full rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 text-sm outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]" />
             {error && <p role="alert" className="text-xs text-[var(--danger)]">{error}</p>}
             <div className="flex items-center justify-between gap-3"><a href="https://music.163.com/" target="_blank" rel="noreferrer" className="text-xs text-[var(--muted)] underline underline-offset-4 hover:text-[var(--ink)]">打开网易云音乐找歌单</a><button type="submit" className="rounded-md bg-[var(--ink)] px-3 py-2 text-xs font-medium text-[var(--accent-contrast)] transition hover:opacity-80">保存歌单</button></div>
-            <p className="text-[11px] leading-5 text-[var(--muted)]">页面会尝试自动播放；如果浏览器拦截声音，请点击播放器中的播放按钮。</p>
           </form>
         )}
       </section>

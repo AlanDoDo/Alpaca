@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import matter from "gray-matter";
+import { parseFrontmatter } from "@/lib/parse-frontmatter";
 import { createFileCollection } from "./file-collection";
 
 export type FinanceNote = { slug: string; title: string; description: string; section: "投机" | "投资"; topic: string; source: string; content: string; readingTime: number };
@@ -9,7 +9,7 @@ const order = ["trading-system", "asset-allocation", "company-research", "invest
 
 const getNoteFiles = createFileCollection<FinanceNote>(directory, (fileName) => {
     const slug = fileName.replace(/\.mdx?$/, "");
-    const { data, content } = matter(fs.readFileSync(path.join(directory, fileName), "utf8"));
+    const { data, content } = parseFrontmatter(fs.readFileSync(path.join(directory, fileName), "utf8"));
     if (typeof data.title !== "string" || typeof data.description !== "string" || !["投机", "投资"].includes(data.section)) throw new Error(`Invalid finance note: ${slug}`);
     const characters = content.match(/[\u3400-\u9fff]/g)?.length ?? 0;
     return { slug, title: data.title, description: data.description, section: data.section, topic: data.topic ?? "研究笔记", source: data.source ?? "", content, readingTime: Math.max(1, Math.ceil(characters / 400)) };

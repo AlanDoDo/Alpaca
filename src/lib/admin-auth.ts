@@ -13,7 +13,7 @@ export function adminAuthConfigured() {
 }
 
 function signature(expiresAt: string, secret: string) {
-  return createHmac("sha256", secret).update(`techalpaca-admin:${expiresAt}`).digest("base64url");
+  return createHmac("sha256", secret).update(`techalpaca-admin:v2:${expiresAt}:${process.env.ADMIN_EDITOR_PASSWORD ?? ""}`).digest("base64url");
 }
 
 export function verifyAdminPassword(password: string) {
@@ -36,7 +36,8 @@ export function verifyAdminSessionValue(value?: string) {
   if (!secret || !value) return false;
   const [expiresAt, suppliedSignature, extra] = value.split(".");
   if (!expiresAt || !suppliedSignature || extra || !/^\d{10}$/.test(expiresAt)) return false;
-  if (Number(expiresAt) <= Math.floor(Date.now() / 1000)) return false;
+  const now = Math.floor(Date.now() / 1000);
+  if (Number(expiresAt) <= now || Number(expiresAt) > now + SESSION_LIFETIME_SECONDS) return false;
   const expected = Buffer.from(signature(expiresAt, secret));
   const supplied = Buffer.from(suppliedSignature);
   return expected.length === supplied.length && timingSafeEqual(expected, supplied);
