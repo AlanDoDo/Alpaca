@@ -8,7 +8,7 @@
 | --- | --- |
 | Framework Preset | Next.js |
 | Node.js | 24.x（package.json 已声明） |
-| Install Command | npm ci |
+| Install Command | npm install（vercel.json 已声明） |
 | Build Command | npm run build |
 | Output Directory | 使用 Next.js 默认值，不填写 out |
 
@@ -48,5 +48,13 @@ Supabase 尚未接入，无需填写其变量。不要上传 .env.local。Previe
 6. 检查桌面和手机布局。GitHub 发布不会直接改写部署中的文件，需要等待新部署完成。
 
 Vercel 环境变量、域名及实际部署状态需在账户中配置；本清单不代表已经部署。
+
+## 当前项目关联
+
+项目：`techalpaca-projects/alpaca`，正式默认域名：`https://alpaca-murex.vercel.app`。
+GitHub 仓库已连接，生产分支为 `main`。`vercel.json` 固定使用 `npm install`，`.vercelignore` 明确排除本地凭据与构建缓存。
+管理员及 GitHub 发布变量已在用户授权后配置到 Production；实际值不记录在文档中。
+
+2026-09-27：生产部署达到 Ready；首页、About、Research、AI、Finance、长文、sitemap、robots、RSS 和搜索访问正常，未知路径返回 404。管理员登录和 GitHub 文章读取均返回 200。未执行文章发布操作。
 
 参考：https://vercel.com/docs/functions/runtimes/node-js/node-js-versions 、https://vercel.com/docs/environment-variables

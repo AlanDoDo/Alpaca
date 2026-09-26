@@ -1,0 +1,13 @@
+.git
+.vercel
+.next
+node_modules
+.env
+.env.*
+!.env.example
+.codex
+.agents
+.npm-cache
+.migration-cache
+*.log
+*.tsbuildinfo
