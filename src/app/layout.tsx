@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { MusicWidget } from "@/components/layout/music-widget";
-import { BackToPreviousButton } from "@/components/layout/back-to-previous-button";
+import { FloatingActionDock } from "@/components/layout/floating-action-dock";
+import { SiteContextMenu } from "@/components/layout/site-context-menu";
+
+
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -15,7 +17,5 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-CN"><body><SiteHeader /><main>{children}</main><SiteFooter /><MusicWidget /><BackToPreviousButton /></body></html>;
+  return <html lang="zh-CN"><body><SiteHeader /><main>{children}</main><SiteFooter /><FloatingActionDock /><SiteContextMenu /></body></html>;
 }
-
-

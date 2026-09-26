@@ -50,6 +50,11 @@ function persistSelection(selection: MusicSelection) {
 }
 
 export function MusicWidget() {
+  const [hovered, setHovered] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [draftId, setDraftId] = useState(DEFAULT_ID);
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState("");
   useEffect(() => {
     if (localStorage.getItem(CONFIG_VERSION_KEY) === CONFIG_VERSION) return;
     localStorage.setItem(STORAGE_KEY, DEFAULT_SNAPSHOT);
@@ -57,13 +62,17 @@ export function MusicWidget() {
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
+  useEffect(() => {
+    function openPlayer() {
+      setHovered(false);
+      setManualOpen(true);
+    }
+    window.addEventListener("techalpaca:open-music", openPlayer);
+    return () => window.removeEventListener("techalpaca:open-music", openPlayer);
+  }, []);
+
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const selection = parsePlaylist(JSON.parse(snapshot)) ?? { id: DEFAULT_ID, kind: "playlist" as const };
-  const [hovered, setHovered] = useState(false);
-  const [manualOpen, setManualOpen] = useState(false);
-  const [draftId, setDraftId] = useState(DEFAULT_ID);
-  const [editing, setEditing] = useState(false);
-  const [error, setError] = useState("");
   const open = hovered || manualOpen;
 
   function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
@@ -100,7 +109,7 @@ export function MusicWidget() {
 
   return (
     <div
-      className="music-widget-anchor group fixed z-50"
+      className="music-widget-anchor group relative z-50 self-end"
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >
@@ -108,7 +117,7 @@ export function MusicWidget() {
         aria-label="网易云音乐播放器"
         aria-hidden={!open}
         inert={!open}
-        className={`absolute bottom-[calc(100%+0.75rem)] left-0 w-[min(340px,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-[var(--line)] bg-[var(--surface)] shadow-[0_18px_50px_rgba(18,22,28,0.16)] transition-[opacity,transform] duration-200 ${
+        className={`absolute bottom-0 right-[calc(100%+0.75rem)] w-[min(340px,calc(100vw-6rem))] overflow-y-auto rounded-xl border border-[var(--line)] bg-[var(--surface)] shadow-[0_18px_50px_rgba(18,22,28,0.16)] transition-[opacity,transform] duration-200 ${
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
         } max-h-[min(70dvh,28rem)]`}
       >

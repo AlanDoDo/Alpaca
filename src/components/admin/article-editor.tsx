@@ -23,12 +23,14 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [notice, setNotice] = useState("");
   const [noticeError, setNoticeError] = useState(false);
   const [query, setQuery] = useState("");
+  const [showAllArticles, setShowAllArticles] = useState(false);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
+  const visibleArticles = showAllArticles ? filteredArticles : filteredArticles.slice(0, 6);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -141,11 +143,12 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
       <div className="admin-layout mt-6 lg:mt-8">
         <aside className="admin-library">
           <div className="flex items-center justify-between"><div><p className="admin-eyebrow">LIBRARY</p><h2 className="mt-1 text-lg font-semibold">文章</h2></div><button aria-label="新建文章" className="admin-icon-button" onClick={createArticle} title="新建文章" type="button"><FilePlus2 className="size-4" /></button></div>
-          <label className="admin-search mt-4"><Search className="size-4" /><input aria-label="搜索文章" onChange={(event) => setQuery(event.target.value)} placeholder="搜索标题或分类" value={query} /></label>
+          <label className="admin-search mt-4"><Search className="size-4" /><input aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label>
           <div className="admin-library-list">
             <button className={`admin-article-option ${draft.expectedSha === null && !articles.some((article) => article.slug === draft.slug) ? "is-current" : ""}`} onClick={createArticle} type="button"><span className="admin-option-category">新文章</span><span className="admin-option-title">开始一篇新文章</span></button>
-            {filteredArticles.map((article) => <button key={article.slug} className={`admin-article-option ${draft.slug === article.slug ? "is-current" : ""}`} onClick={() => void openArticle(article.slug)} type="button"><span className="admin-option-category">{article.category} <span>·</span> {article.date}</span><span className="admin-option-title">{article.title}</span></button>)}
+            {visibleArticles.map((article) => <button key={article.slug} className={`admin-article-option ${draft.slug === article.slug ? "is-current" : ""}`} onClick={() => void openArticle(article.slug)} type="button"><span className="admin-option-category">{article.category} <span>·</span> {article.date}</span><span className="admin-option-title">{article.title}</span></button>)}
             {!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}
+            {filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}
           </div>
           <div className="admin-library-footer"><Sparkles className="size-4" /><span>共 {articles.length} 篇文章</span></div>
         </aside>

@@ -86,7 +86,7 @@ export default function AboutPage() {
       </section>
 
       <section className="grid gap-3 border-b border-[var(--line)] py-7 sm:gap-8 sm:py-10 md:grid-cols-[12rem_1fr] md:gap-12">
-        <h2 className="text-sm font-semibold tracking-wide">一点期待</h2>
+        <h2 className="text-base font-semibold leading-6 tracking-tight text-[var(--ink)] sm:text-lg md:pt-1 md:text-xl">一点期待</h2>
         <div>
           <p className="leading-8 text-[var(--muted)]">希望把这里慢慢做成一个长期更新的个人空间。它既能服务当下的记录，也能在以后回看时，成为一个足够清晰的个人索引。</p>
         </div>
