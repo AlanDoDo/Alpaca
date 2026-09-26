@@ -57,4 +57,12 @@ GitHub 仓库已连接，生产分支为 `main`。`vercel.json` 固定使用 `np
 
 2026-09-27：生产部署达到 Ready；首页、About、Research、AI、Finance、长文、sitemap、robots、RSS 和搜索访问正常，未知路径返回 404。管理员登录和 GitHub 文章读取均返回 200。未执行文章发布操作。
 
+### 自定义域名
+
+2026-09-27：`alandodo.cn` 与 `www.alandodo.cn` 已通过 Vercel 所有权验证，腾讯云 DNSPod 提供解析。正式主域名改为 `https://www.alandodo.cn`，根域名跳转到 www；原 `alpaca-murex.vercel.app` 保留作为默认域名。
+
+Production 环境变量 `NEXT_PUBLIC_SITE_URL=https://www.alandodo.cn`。修改此值后需重新部署才能更新 canonical、RSS、robots 与 sitemap。本地开发地址仍可使用 localhost。
+
+绑定时根域名和 www 均使用 A 记录 `216.198.79.1`，Vercel 配置检查认可此解析。将来迁移时应以项目域名设置中最新推荐值为准，不盲目沿用此地址。TXT 所有权验证记录按 Vercel 当前提示配置，避免复制旧账户的验证值。
+
 参考：https://vercel.com/docs/functions/runtimes/node-js/node-js-versions 、https://vercel.com/docs/environment-variables
