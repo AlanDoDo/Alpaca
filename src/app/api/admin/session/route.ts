@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, adminAuthConfigured, adminSessionCookieOptions, createAdminSession, verifyAdminPassword } from "@/lib/admin-auth";
+import { isSameOriginRequest } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 
-function sameOrigin(request: NextRequest) {
-  return request.headers.get("origin") === new URL(request.url).origin;
-}
 
 export async function GET() {
   return NextResponse.json({ configured: adminAuthConfigured() }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
   if (!adminAuthConfigured()) return NextResponse.json({ error: "后台尚未配置。请在服务器设置管理员密码和至少 32 位的会话密钥。" }, { status: 503 });
   if (!request.headers.get("content-type")?.includes("application/json")) return NextResponse.json({ error: "请求格式无效。" }, { status: 415 });
 
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!sameOrigin(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
   const response = NextResponse.json({ ok: true });
   response.cookies.delete(ADMIN_COOKIE);
   return response;

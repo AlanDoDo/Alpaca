@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { getArticleBySlug } from "@/modules/content";
 import { adminAuthConfigured, verifyAdminSessionValue, ADMIN_COOKIE } from "@/lib/admin-auth";
+import { isSameOriginRequest } from "@/lib/request-origin";
 import type { ArticleCategory } from "@/modules/content/types";
 
 export const runtime = "nodejs";
@@ -106,7 +107,7 @@ function frontmatter(value: ValidatedDraft) {
 }
 
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "请求来源校验失败。" }, { status: 403 });
   if (!authorized(request)) return NextResponse.json({ error: "登录状态已失效，请重新登录。" }, { status: 401 });
   if (!request.headers.get("content-type")?.includes("application/json")) return NextResponse.json({ error: "请求格式无效。" }, { status: 415 });
   const length = Number(request.headers.get("content-length") ?? "0");
