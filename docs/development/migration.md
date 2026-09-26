@@ -23,7 +23,7 @@
 
 ## 环境恢复
 
-要求 Node.js 20.9+ 与 npm：
+要求 Node.js 24.x 与 npm：
 
 ```powershell
 npm install

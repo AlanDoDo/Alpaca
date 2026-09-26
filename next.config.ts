@@ -3,6 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   poweredByHeader: false,
+  // File-based articles must be bundled with the corresponding server functions.
+  outputFileTracingIncludes: {
+    "/api/search": ["./content/blog/**/*"],
+    "/api/context-menu": ["./content/blog/**/*"],
+    "/api/admin/articles": ["./content/blog/**/*"],
+    "/admin/articles": ["./content/blog/**/*"],
+    "/blog": ["./content/blog/**/*"],
+    "/forum": ["./content/blog/**/*"],
+    "/search": ["./content/blog/**/*"],
+    "/feed.xml": ["./content/blog/**/*"],
+  },
   async headers() {
     return [{ source: "/images/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] }];
   },

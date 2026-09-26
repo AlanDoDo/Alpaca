@@ -10,7 +10,7 @@ TechAlpaca 是一个围绕 AI、机器人、金融与个人思考的个人内容
 
 ## 本地开发
 
-需要 Node.js 20.9 或更高版本和 npm。
+使用 Node.js 24.x 和 npm，与 Vercel 生产运行时保持一致。
 
 ```bash
 npm install
@@ -84,6 +84,8 @@ npm run build     # 生产构建
 设置后重启 npm run dev，再打开 http://localhost:3000/admin/articles 。未配置 GitHub 凭据时，编辑与草稿仍可用，但发布会说明缺少配置。
 
 ### Vercel 配置
+
+首次上线请按照 [Vercel 上线填写清单](docs/operations/vercel-launch.md) 配置框架、运行时、站点地址和后台凭据。
 
 在 Vercel 项目 Settings → Environment Variables 中配置相同的 ADMIN_EDITOR_PASSWORD、ADMIN_SESSION_SECRET、GITHUB_TOKEN、GITHUB_OWNER、GITHUB_REPO 和 GITHUB_BRANCH。至少应用到 Production；如果要在 Preview 试用，也需配置 Preview。保存后重新部署。管理员密码和 GitHub Token 都是服务端变量，不要添加 NEXT_PUBLIC_ 前缀。
 

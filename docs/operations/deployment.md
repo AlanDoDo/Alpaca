@@ -2,7 +2,7 @@
 
 ## 本地准备
 
-1. 安装 Node.js 20.9+ 和 npm。
+1. 安装 Node.js 24.x 和 npm。
 2. 运行 `npm install`。
 3. 复制 `.env.example` 到 `.env.local`。
 4. 设置 `NEXT_PUBLIC_SITE_URL=http://localhost:3000`。
@@ -11,6 +11,8 @@
 当前静态内容版本不依赖 Supabase 密钥。接入 Auth/社区后，创建 Supabase 项目并配置 URL、anon key；service role key 仅用于明确需要绕开 RLS 的服务端任务。
 
 ## Vercel
+
+首次上线的具体填写内容见 [Vercel 上线填写清单](vercel-launch.md)。
 
 1. 将代码推送到 GitHub 仓库并在 Vercel 导入。
 2. 使用 Next.js 默认框架预设和 `npm run build`。
@@ -39,4 +41,4 @@
 - 页面 metadata、canonical、robots、sitemap 和 RSS 已逐项核实。
 - 375px 和桌面宽度下导航、长标题和正文可用。
 - 环境变量分环境配置，错误日志没有敏感值。
-- Supabase 表启用 RLS，匿名与普通用户策略经验证。
+- 后续接入 Supabase 时，再验证表的 RLS 和匿名与普通用户策略；当前文件博客无需 Supabase。
