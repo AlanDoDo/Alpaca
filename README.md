@@ -18,7 +18,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-打开 http://localhost:3000。正式文章放在 `content/blog/*.md` 或 `*.mdx`；正文按安全的 Markdown/GFM 语法渲染，原始 HTML 会先经过清理，不执行 MDX JSX。
+打开 http://localhost:3000 。正式文章放在 `content/blog/*.md` 或 `*.mdx`；正文按安全的 Markdown/GFM 语法渲染，原始 HTML 会先经过清理，不执行 MDX JSX。
 
 ## 文档索引
 
@@ -81,7 +81,7 @@ npm run build     # 生产构建
 - GITHUB_TOKEN：GitHub Fine-grained personal access token，仅授予目标仓库 Contents 读写权限。
 - GITHUB_OWNER、GITHUB_REPO、GITHUB_BRANCH：目标仓库所有者、仓库名和发布分支（例如 main）。
 
-设置后重启 npm run dev，再打开 http://localhost:3000/admin/articles。未配置 GitHub 凭据时，编辑与草稿仍可用，但发布会说明缺少配置。
+设置后重启 npm run dev，再打开 http://localhost:3000/admin/articles 。未配置 GitHub 凭据时，编辑与草稿仍可用，但发布会说明缺少配置。
 
 ### Vercel 配置
 
