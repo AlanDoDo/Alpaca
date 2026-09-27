@@ -5,7 +5,7 @@ import type { ArticleSummary } from "@/modules/content";
 
 export function ArticleRow({ article }: { article: ArticleSummary }) {
   return (
-    <article className="grid gap-2 border-b border-[var(--line)] py-5 sm:py-6 md:grid-cols-[8rem_1fr] md:gap-4">
+    <article className="ink-article-row grid gap-2 border-b border-[var(--line)] py-5 sm:py-6 md:grid-cols-[8rem_1fr] md:gap-4">
       <p className="text-[11px] font-semibold tracking-wide text-[var(--muted)] sm:text-xs">{isRoboticsArticle(article) ? researchCategories.find((item) => item.id === researchTopic(article))?.title : article.category.toUpperCase()}</p>
       <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">

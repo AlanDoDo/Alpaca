@@ -1,35 +1,42 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArticleRow } from "@/components/blog/article-row";
+import { InkArt } from "@/components/visual/ink-art";
+import { redirect } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
+import { JournalGrid } from "@/components/blog/journal-grid";
+import { JournalSearch } from "@/components/blog/journal-search";
 import { ArticlePagination } from "@/components/blog/article-pagination";
-import { getAllArticles } from "@/modules/content";
-
-export const metadata: Metadata = { title: "Blog", description: "TechAlpaca 的文章与研究。" };
-const categories = ["AI", "机器人", "产业", "编程", "工程技术", "金融", "设计", "杂谈"];
-const articlesPerPage = 8;
-
-type BlogSearchParams = { category?: string | string[]; page?: string | string[] };
-
+import { getAllArticles, getArticleBySlug } from "@/modules/content";
+import { isRoboticsArticle } from "@/modules/content/research";
+import { journalExcerpt, journalTopic, journalTopics } from "@/modules/content/journal";
+export const metadata: Metadata = {
+  title: "Notes", description: "随笔思考、行业思考、工具分享：记录研究之外的经历与想法。", alternates: { canonical: "/blog" },
+};
+type BlogSearchParams = { category?: string | string[]; topic?: string | string[]; page?: string | string[] };
+const first = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
 export default async function BlogPage({ searchParams }: { searchParams: Promise<BlogSearchParams> }) {
   const params = await searchParams;
-  const category = Array.isArray(params.category) ? params.category[0] : params.category;
-  const requestedPage = Array.isArray(params.page) ? params.page[0] : params.page;
-  const matchingArticles = getAllArticles().filter((article) => !category || article.category === category);
-  const pageCount = Math.max(1, Math.ceil(matchingArticles.length / articlesPerPage));
-  const pageNumber = Math.min(pageCount, Math.max(1, Number.parseInt(requestedPage ?? "1", 10) || 1));
-  const articles = matchingArticles.slice((pageNumber - 1) * articlesPerPage, pageNumber * articlesPerPage);
-
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 md:py-24">
-      <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">TECHALPACA / JOURNAL</p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:mt-4 sm:text-5xl">文章</h1>
-      <nav aria-label="文章分类" className="mt-6 flex flex-wrap gap-x-4 gap-y-2 border-b border-[var(--line)] pb-4 text-sm text-[var(--muted)] sm:mt-8 sm:gap-x-5 sm:pb-5">
-        <Link className="py-1 hover:text-[var(--ink)]" href="/blog">全部</Link>
-        {categories.map((item) => <Link className="py-1 hover:text-[var(--ink)]" key={item} href={`/blog?category=${encodeURIComponent(item)}`}>{item}</Link>)}
-      </nav>
-      {category && <p className="mt-5 text-sm text-[var(--muted)]">{category} · {matchingArticles.length} 篇文章</p>}
-      <div className="mt-2 sm:mt-4">{articles.map((article) => <ArticleRow key={article.slug} article={article} />)}</div>
-      <ArticlePagination currentPage={pageNumber} pageCount={pageCount} category={category} />
-    </div>
-  );
+  const category = first(params.category);
+  const requestedTopic = first(params.topic);
+  if (requestedTopic === "archive" || requestedTopic === "thinking") redirect("/forum?topic=programming");
+  const normalizedTopic = requestedTopic === "life" ? "essays" : requestedTopic === "work" ? "industry" : requestedTopic === "reading" ? "tools" : requestedTopic;
+  const topic = journalTopics.some((item) => item.id === normalizedTopic) ? normalizedTopic! : "all";
+  const all = getAllArticles().filter((article) => !isRoboticsArticle(article)).sort((a, b) => b.date.localeCompare(a.date));
+  const matching = all.filter((article) => (!category || article.category === category) && (topic === "all" || journalTopic(article) === topic));
+  const pageCount = Math.max(1, Math.ceil(matching.length / 12));
+  const pageNumber = Math.min(pageCount, Math.max(1, Number.parseInt(first(params.page) ?? "1", 10) || 1));
+  const visible = matching.slice((pageNumber - 1) * 12, pageNumber * 12);
+  return <div className="journal-page mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-14">
+    <header className="journal-header ink-page-heading ink-heading-notes"><InkArt /><p className="journal-eyebrow">TECHALPACA / NOTES</p><h1>Notes</h1><p>记录个人思考、行业观察，以及值得分享的工具与实践。</p></header>
+    <div className="journal-filter-bar"><nav aria-label="Notes 分类" className="journal-filters"><Link href="/blog" aria-current={!category && topic === "all" ? "page" : undefined}>全部</Link>{journalTopics.map((item) => <Link key={item.id} href={`/blog?topic=${item.id}`} aria-current={!category && topic === item.id ? "page" : undefined}>{item.title}</Link>)}</nav><JournalSearch /></div>
+    <div className="journal-archive-heading"><span>{category ?? journalTopics.find((item) => item.id === topic)?.title ?? "全部 Notes"} · {matching.length} 篇</span>{category && <Link href="/blog">返回 Notes</Link>}</div>
+    {visible.length > 0 ? <JournalGrid items={visible.map((article, index) => {
+      const body = getArticleBySlug(article.slug)?.content ?? "";
+      const excerpt = journalExcerpt(body, article.description);
+      const label = journalTopics.find((item) => item.id === journalTopic(article))!.title;
+      return { article, excerpt: excerpt.text, long: excerpt.long, label, priority: index === 0 };
+    })} /> : <div className="journal-empty"><p>这里还没有 Notes。</p><span>慢慢记录，慢慢积累。</span></div>}
+    <ArticlePagination currentPage={pageNumber} pageCount={pageCount} category={category} topic={topic} />
+    <footer className="journal-page-footer"><span>片刻值得留下，想法可以慢慢生长。</span><div><Link href="/forum">Research <ArrowUpRight size={13} /></Link><Link href="/ai">AI 研究 <ArrowUpRight size={13} /></Link><Link href="/finance">金融研究 <ArrowUpRight size={13} /></Link></div></footer>
+  </div>;
 }

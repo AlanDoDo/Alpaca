@@ -47,7 +47,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <div className={showToc
       ? "mx-auto grid w-full max-w-7xl grid-cols-1 items-stretch gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12 lg:py-24 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-14"
       : "mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16 md:py-24"}>
-      <article className="mx-auto w-full max-w-4xl min-w-0">
+      <article className="ink-reading mx-auto w-full max-w-4xl min-w-0">
         <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">{article.category.toUpperCase()}</p>
         <h1 className="mt-4 break-words text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">{article.title}</h1>
         <p className="mt-4 text-base leading-7 text-[var(--muted)] sm:mt-6 sm:text-lg sm:leading-8">{article.description}</p>

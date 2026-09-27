@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { InkArt } from "@/components/visual/ink-art";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -67,8 +68,10 @@ const bookCategories = [
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 md:py-24">
+      <header className="ink-page-heading ink-heading-about"><InkArt />
       <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">ABOUT / TECHALPACA</p>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">关于我</h1>
+      </header>
       <section className="mt-8 grid gap-6 border-b border-[var(--line)] pb-10 sm:mt-10 sm:gap-8 sm:pb-12 md:grid-cols-[12rem_1fr] md:gap-12">
         <Image
           src="/images/techalpaca-avatar.png"
@@ -88,7 +91,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section aria-labelledby="about-explore-title" className="border-b border-[var(--line)] py-8 sm:py-12">
+      <section data-ink-reveal aria-labelledby="about-explore-title" className="border-b border-[var(--line)] py-8 sm:py-12">
         <h2 id="about-explore-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">继续探索</h2>
         <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--muted)]">以机器人为工作主线，也关注智能的演进与市场的变化。这里记录我的学习、实践，以及尚在形成的判断。</p>
         <nav aria-label="更多研究领域" className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2">
@@ -96,7 +99,7 @@ export default function AboutPage() {
             { href: "/ai", label: "AI 研究", eyebrow: "ARTIFICIAL INTELLIGENCE", description: "从模型原理到工具实践，探索 AI 如何走进真实工作。" },
             { href: "/finance", label: "金融笔记", eyebrow: "FINANCE", description: "梳理交易与投资的思考，在波动中建立自己的判断。" },
           ].map((area) => (
-            <Link key={area.href} href={area.href} className="group rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)] sm:p-6">
+            <Link key={area.href} href={area.href} className="ink-link-card group rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)] sm:p-6">
               <p className="text-[10px] font-semibold tracking-[0.16em] text-[var(--muted)] sm:text-xs">{area.eyebrow}</p>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <h3 className="text-xl font-semibold text-[var(--ink)]">{area.label}</h3>
@@ -108,7 +111,7 @@ export default function AboutPage() {
         </nav>
       </section>
 
-      <section className="pt-12">
+      <section data-ink-reveal className="ink-section pt-12">
         <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">BOOKSHELF</p>
         <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">图书推荐</h2>
         <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">先分享两本会反复翻阅的书，更多书单按主题收在下面。</p>

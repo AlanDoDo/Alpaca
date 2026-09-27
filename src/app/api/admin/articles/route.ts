@@ -4,6 +4,7 @@ import { readJsonObject, RequestBodyError } from "@/lib/request-json";
 import fs from "node:fs";
 import path from "node:path";
 import { isRoboticsArticle, researchCategories, researchTopic } from "@/modules/content/research";
+import { journalTopics } from "@/modules/content/journal";
 import { getArticleBySlug } from "@/modules/content";
 import { adminAuthConfigured, verifyAdminSessionValue, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { isSameOriginRequest } from "@/lib/request-origin";
@@ -17,11 +18,11 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const maxArticleBytes = 500_000;
 
 type ArticleDraft = {
-  researchTopic?: unknown; contentType?: unknown; id?: unknown; aliases?: unknown; slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
+  notesTopic?: unknown; researchTopic?: unknown; contentType?: unknown; id?: unknown; aliases?: unknown; slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
   tags?: unknown; author?: unknown; featured?: unknown; cover?: unknown; content?: unknown; expectedSha?: unknown;
 };
 
-type ValidatedDraft = { researchTopic?: string; contentType: "blog"; id: string; aliases: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+type ValidatedDraft = { notesTopic?: string; researchTopic?: string; contentType: "blog"; id: string; aliases: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 function authorized(request: NextRequest) {
   return adminAuthConfigured() && verifyAdminSessionValue(request.cookies.get(ADMIN_COOKIE)?.value);
 }
@@ -59,7 +60,8 @@ export async function GET(request: NextRequest) {
         if (!file.content || file.encoding !== "base64" || !file.sha) return NextResponse.json({ error: "暂时无法读取这篇文章。" }, { status: 502 });
         const raw = Buffer.from(file.content.replace(/\n/g, ""), "base64").toString("utf8");
         const parsed = parseFrontmatter(raw);
-        return NextResponse.json({ researchTopic: (parsed.data.researchTopic || parsed.data.category === "机器人") ? researchTopic({ researchTopic: parsed.data.researchTopic, title: parsed.data.title ?? "", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [] }) : undefined, contentType, id: parsed.data.id ?? `${contentType}:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: typeof parsed.data.date === "string" ? parsed.data.date : new Date().toISOString().slice(0, 10), category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
+        const classification = { notesTopic: parsed.data.notesTopic, researchTopic: parsed.data.researchTopic, category: parsed.data.category, title: parsed.data.title ?? "", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [] };
+        return NextResponse.json({ notesTopic: parsed.data.notesTopic, researchTopic: isRoboticsArticle(classification) ? researchTopic(classification) : undefined, contentType, id: parsed.data.id ?? `${contentType}:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: parsed.data.title ?? "", description: parsed.data.description ?? "", date: typeof parsed.data.date === "string" ? parsed.data.date : new Date().toISOString().slice(0, 10), category: parsed.data.category ?? "机器人", tags: Array.isArray(parsed.data.tags) ? parsed.data.tags : [], author: parsed.data.author ?? "TechAlpaca", featured: parsed.data.featured === true, cover: parsed.data.cover ?? "", content: parsed.content.trimStart(), expectedSha: file.sha });
       }
       if (response.status !== 404) return NextResponse.json({ error: "从 GitHub 读取文章失败，请稍后重试。" }, { status: 502 });
     } catch {
@@ -71,13 +73,16 @@ export async function GET(request: NextRequest) {
   if (!article) return NextResponse.json({ error: "文章不存在，或 GitHub 尚未配置。" }, { status: 404 });
   const filePath = [".mdx", ".md"].map((extension) => path.join(process.cwd(), "content/blog", slug + extension)).find((candidate) => fs.existsSync(candidate));
   const parsed = parseFrontmatter(filePath ? fs.readFileSync(filePath, "utf8") : "");
-  return NextResponse.json({ researchTopic: isRoboticsArticle(article) ? researchTopic(article) : undefined, contentType, id: parsed.data.id ?? `blog:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
+  return NextResponse.json({ notesTopic: parsed.data.notesTopic, researchTopic: isRoboticsArticle(article) ? researchTopic(article) : undefined, contentType, id: parsed.data.id ?? `blog:${slug}`, aliases: Array.isArray(parsed.data.aliases) ? parsed.data.aliases : [], slug, title: article.title, description: article.description, date: article.date, category: article.category, tags: article.tags, author: parsed.data.author ?? "TechAlpaca", featured: article.featured, cover: article.cover ?? "", content: article.content, expectedSha: null });
 }
 
 function validateDraft(body: ArticleDraft) {
   const contentType = body.contentType === undefined ? "blog" : body.contentType;
   if (contentType !== "blog") return { error: "内容类型无效。" };
   const topic = typeof body.researchTopic === "string" && body.researchTopic ? body.researchTopic : undefined;
+  const notesTopic = typeof body.notesTopic === "string" && body.notesTopic ? body.notesTopic : undefined;
+  if (notesTopic && !journalTopics.some((item) => item.id === notesTopic)) return { error: "Notes 分类无效。" };
+  if (notesTopic && topic) return { error: "请只选择 Research 或 Notes 的一个分类。" };
   if (topic && !researchCategories.some((item) => item.id === topic)) return { error: "机器人方向无效。" };
   const aliases = Array.isArray(body.aliases) ? body.aliases.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
   if (aliases.length > 20 || aliases.some((item) => item.length > 160)) return { error: "别名最多 20 个，每个不能超过 160 字。" };
@@ -104,13 +109,14 @@ function validateDraft(body: ArticleDraft) {
   if (typeof body.expectedSha === "string" && !/^[a-f0-9]{40}$/.test(body.expectedSha)) return { error: "文章版本信息无效，请重新打开文章。" };
   const id = `${contentType}:${slug}`;
   if (body.id !== undefined && body.id !== id) return { error: "内容标识不匹配，请重新打开文章。" };
-  return { value: { researchTopic: topic, contentType, id, aliases, slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } satisfies ValidatedDraft };
+  return { value: { notesTopic, researchTopic: topic, contentType, id, aliases, slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } satisfies ValidatedDraft };
 }
 
 function frontmatter(value: ValidatedDraft) {
   const fields = [
     `id: ${JSON.stringify(value.id)}`,
     `aliases: ${JSON.stringify(value.aliases)}`,
+    ...(value.notesTopic ? [`notesTopic: ${JSON.stringify(value.notesTopic)}`] : []),
     ...(value.researchTopic ? [`researchTopic: ${JSON.stringify(value.researchTopic)}`] : []),
     `title: ${JSON.stringify(value.title)}`,
     `description: ${JSON.stringify(value.description)}`,

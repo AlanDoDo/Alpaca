@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { InkArt } from "@/components/visual/ink-art";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { ArrowDown, ArrowLeft, ArrowUpRight, BrainCircuit, Layers3, Lightbulb, Workflow } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUpRight, Layers3, Lightbulb, Workflow } from "lucide-react";
 import { getAllArticles, type ArticleSummary } from "@/modules/content";
 
 export const metadata: Metadata = {
@@ -33,12 +34,12 @@ export default function AiPage() {
   const remaining = articles.filter((article) => article.slug !== featured?.slug);
   return <div className="ai-page mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-16">
     <Link href="/about" className="finance-back"><ArrowLeft size={15} aria-hidden="true" />关于我</Link>
-    <header className="ai-page-header"><p className="finance-eyebrow">TECHALPACA / AI NOTEBOOK</p><h1>理解智能，<br className="sm:hidden" />也探索它的可能。</h1><p>从模型原理到实际应用，记录学习、实践与思考。<br className="hidden sm:block" />让技术成为解决问题的方法。</p><span className="ai-article-count">{articles.length} 篇文章 · 持续记录</span></header>
+    <header className="ai-page-header ink-page-heading ink-heading-ai"><InkArt /><p className="finance-eyebrow">TECHALPACA / AI NOTEBOOK</p><h1>理解智能，<br className="sm:hidden" />也探索它的可能。</h1><p>从模型原理到实际应用，记录学习、实践与思考。<br className="hidden sm:block" />让技术成为解决问题的方法。</p><span className="ai-article-count">{articles.length} 篇文章 · 持续记录</span></header>
     <nav className="ai-topic-nav" aria-label="AI 文章主题">{topics.map(({ id, name, description, icon: Icon }) => <a key={id} href={`#${id}`}><span className="ai-topic-nav-title"><Icon size={19} aria-hidden="true" /><strong>{name}</strong><ArrowDown size={15} aria-hidden="true" /></span><span>{description}</span></a>)}</nav>
-    {featured ? <section className="ai-featured" aria-label="重点文章"><div className="ai-featured-copy"><p className="finance-eyebrow">FEATURED / 重点阅读</p><h2><Link href={`/article/${featured.slug}`}>{featured.title}</Link></h2><p>{featured.description}</p><div className="ai-featured-bottom"><span>{featured.date} · {featured.readingTime} 分钟阅读</span><Link href={`/article/${featured.slug}`}>阅读全文 <ArrowUpRight size={17} aria-hidden="true" /></Link></div></div><div className="ai-featured-art" aria-hidden="true"><span className="ai-orbit ai-orbit-one" /><span className="ai-orbit ai-orbit-two" /><span className="ai-core"><BrainCircuit size={45} strokeWidth={1} /></span><span className="ai-art-label">LEARN · THINK · BUILD</span></div></section> : <p className="research-empty">AI 文章正在整理中。</p>}
+    {featured ? <section data-ink-reveal className="ai-featured" aria-label="重点文章"><div className="ai-featured-copy"><p className="finance-eyebrow">FEATURED / 重点阅读</p><h2><Link href={`/article/${featured.slug}`}>{featured.title}</Link></h2><p>{featured.description}</p><div className="ai-featured-bottom"><span>{featured.date} · {featured.readingTime} 分钟阅读</span><Link href={`/article/${featured.slug}`}>阅读全文 <ArrowUpRight size={17} aria-hidden="true" /></Link></div></div><div className="ai-featured-art" aria-hidden="true"><InkArt variant="fragment" /><span className="ai-art-label">LEARN · THINK · BUILD</span></div></section> : <p className="research-empty">AI 文章正在整理中。</p>}
     <div className="ai-topics">{topics.map(({ id, name, english, description }, index) => {
       const items = remaining.filter((article) => topicFor(article) === id);
-      return <section className="ai-topic-section" id={id} key={id}><header><div><p className="finance-eyebrow">0{index + 1} / {english}</p><h2>{name}<span>{items.length} 篇</span></h2><p>{description}</p></div></header><div className="ai-article-grid">{items.slice(0, 4).map((article) => <AiArticleCard key={article.slug} article={article} />)}</div>{items.length > 4 && <details className="ai-more-articles"><summary>展开其余 {items.length - 4} 篇文章 <ArrowDown size={15} aria-hidden="true" /></summary><div className="ai-article-grid">{items.slice(4).map((article) => <AiArticleCard key={article.slug} article={article} />)}</div></details>}{items.length === 0 && <p className="research-empty">这个主题的文章正在整理中。</p>}</section>;
+      return <section data-ink-reveal className="ai-topic-section ink-section" id={id} key={id}><header><div><p className="finance-eyebrow">0{index + 1} / {english}</p><h2>{name}<span>{items.length} 篇</span></h2><p>{description}</p></div></header><div className="ai-article-grid">{items.slice(0, 4).map((article) => <AiArticleCard key={article.slug} article={article} />)}</div>{items.length > 4 && <details className="ai-more-articles"><summary>展开其余 {items.length - 4} 篇文章 <ArrowDown size={15} aria-hidden="true" /></summary><div className="ai-article-grid">{items.slice(4).map((article) => <AiArticleCard key={article.slug} article={article} />)}</div></details>}{items.length === 0 && <p className="research-empty">这个主题的文章正在整理中。</p>}</section>;
     })}</div>
     <footer className="ai-page-footer"><p>保持好奇，把理解变成实践。</p><Link href="/forum">继续探索机器人研究 <ArrowUpRight size={16} aria-hidden="true" /></Link></footer>
   </div>;

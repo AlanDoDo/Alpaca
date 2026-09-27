@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/blog", label: "Blog" },
   { href: "/forum", label: "Research" },
+  { href: "/blog", label: "Notes" },
   { href: "/about", label: "About" },
 ];
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-[var(--line)]">
+    <header className="site-header border-b border-[var(--line)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-5">
         <Link href="/" className="w-fit shrink-0 text-base font-semibold tracking-tight sm:text-lg">TechAlpaca</Link>
         <nav aria-label="主导航" className="flex shrink-0 items-center gap-x-0.5 whitespace-nowrap text-xs text-[var(--muted)] sm:gap-x-4 sm:text-sm md:gap-x-7">

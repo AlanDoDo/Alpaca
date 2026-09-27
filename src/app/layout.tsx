@@ -6,7 +6,9 @@ import { FloatingActionDock } from "@/components/layout/floating-action-dock";
 import { SiteContextMenu } from "@/components/layout/site-context-menu";
 
 
+import { InkMotion } from "@/components/visual/ink-motion";
 import "./globals.css";
+import "./ink.css";
 
 const siteUrl = getSiteUrl();
 export const metadata: Metadata = {
@@ -18,5 +20,5 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-CN" data-scroll-behavior="smooth"><body><SiteHeader /><main>{children}</main><SiteFooter /><FloatingActionDock /><SiteContextMenu /></body></html>;
+  return <html lang="zh-CN" data-scroll-behavior="smooth" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `try{document.documentElement.dataset.theme=localStorage.getItem("techalpaca-theme")==="dark"?"dark":"light"}catch{document.documentElement.dataset.theme="light"}` }} /></head><body><SiteHeader /><main>{children}</main><SiteFooter /><FloatingActionDock /><SiteContextMenu /><InkMotion /></body></html>;
 }

@@ -7,7 +7,7 @@ export function getConnectedDocuments(): ConnectedDocument[] {
   const blogs: ConnectedDocument[] = getAllArticles().map((article) => ({ ...article, id: article.id ?? `blog:${article.slug}`, href: `/article/${article.slug}`, contentType: "blog", aliases: article.aliases ?? [], content: getArticleBySlug(article.slug)?.content ?? "" }));
   return blogs;
 }
-function summary(document: ConnectedDocument): ArticleSummary { return { slug: document.slug, id: document.id, aliases: document.aliases, title: document.title, description: document.description, date: document.date, category: document.category, tags: document.tags, readingTime: document.readingTime, featured: document.featured, cover: document.cover, href: document.href, contentType: document.contentType, researchTopic: document.researchTopic }; }
+function summary(document: ConnectedDocument): ArticleSummary { return { slug: document.slug, id: document.id, aliases: document.aliases, title: document.title, description: document.description, date: document.date, category: document.category, tags: document.tags, readingTime: document.readingTime, featured: document.featured, cover: document.cover, href: document.href, contentType: document.contentType, researchTopic: document.researchTopic, notesTopic: document.notesTopic }; }
 export function contentSummaries(): ArticleSummary[] {
   return getConnectedDocuments().map(summary);
 }

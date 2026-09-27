@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // File-based articles must be bundled with the corresponding server functions.
   outputFileTracingIncludes: {
+    "/api/journal/[slug]": ["./content/blog/**/*"],
     "/api/search": ["./content/blog/**/*"],
     "/api/context-menu": ["./content/blog/**/*"],
     "/api/admin/articles": ["./content/blog/**/*"],

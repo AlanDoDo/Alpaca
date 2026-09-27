@@ -2,7 +2,8 @@
 
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { ArticleBody } from "@/components/blog/article-body";
-import { researchCategories } from "@/modules/content/research";
+import { isRoboticsArticle, researchCategories, researchTopic } from "@/modules/content/research";
+import { journalTopic, journalTopics } from "@/modules/content/journal";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
 import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, Link2, X } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +11,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "编程", "工程技术", "设计", "杂谈"];
-type Draft = { researchTopic?: string; contentType?: "blog"; id?: string; aliases?: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+type Draft = { notesTopic?: string; researchTopic?: string; contentType?: "blog"; id?: string; aliases?: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 type Status = "saved" | "saving" | "changed";
 const localDate = () => { const date = new Date(); return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-"); };
 const blankDraft = (slug = "article-muhzgyj2"): Draft => ({ researchTopic: "control", slug, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
@@ -33,6 +34,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [notice, setNotice] = useState("");
   const [noticeError, setNoticeError] = useState(false);
   const [query, setQuery] = useState("");
+  const [librarySection, setLibrarySection] = useState<"all" | "research" | "notes">("all");
   const [showAllArticles, setShowAllArticles] = useState(false);
   const [showArticleMenu, setShowArticleMenu] = useState(false);
   const [loadingArticleSlug, setLoadingArticleSlug] = useState<string | null>(null);
@@ -44,8 +46,18 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const articleMenuRef = useRef<HTMLDivElement>(null);
   const draftReadyRef = useRef(false);
   const draftRef = useRef(draft);
-  const filteredArticles = useMemo(() => articles.filter((article) => `${article.title} ${article.category} ${article.slug} ${"博客文章"}`.toLowerCase().includes(query.toLowerCase())), [articles, query]);
+  const libraryArticles = useMemo(() => articles.map((article) => {
+    const research = isRoboticsArticle(article);
+    const section = research ? "research" : "notes";
+    const topic = research ? researchCategories.find((item) => item.id === researchTopic(article))!.title : journalTopics.find((item) => item.id === journalTopic(article))!.title;
+    return { article, section, topic, label: research ? "Research" : "Notes" };
+  }), [articles]);
+  const researchCount = libraryArticles.filter((item) => item.section === "research").length;
+  const filteredArticles = useMemo(() => libraryArticles.filter((item) => (librarySection === "all" || item.section === librarySection) && `${item.article.title} ${item.article.category} ${item.article.slug} ${item.label} ${item.topic}`.toLowerCase().includes(query.trim().toLowerCase())), [libraryArticles, librarySection, query]);
   const visibleArticles = showAllArticles ? filteredArticles : filteredArticles.slice(0, 6);
+  const draftIsResearch = isRoboticsArticle(draft);
+  const draftSection = draftIsResearch ? "Research" : "Notes";
+  const draftTopic = draftIsResearch ? researchCategories.find((item) => item.id === researchTopic(draft))!.title : journalTopics.find((item) => item.id === journalTopic(draft))!.title;
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -213,7 +225,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
 
   function exportDraft() {
     try {
-      const fields = { id: draft.id ?? `${draft.contentType ?? "blog"}:${draft.slug}`, aliases: draft.aliases ?? [], ...(draft.researchTopic ? { researchTopic: draft.researchTopic } : {}), title: draft.title, description: draft.description, date: draft.date, category: draft.category, tags: draft.tags, author: draft.author, featured: draft.featured, ...(draft.cover ? { cover: draft.cover } : {}) };
+      const fields = { ...(draft.notesTopic ? { notesTopic: draft.notesTopic } : {}), id: draft.id ?? `${draft.contentType ?? "blog"}:${draft.slug}`, aliases: draft.aliases ?? [], ...(draft.researchTopic ? { researchTopic: draft.researchTopic } : {}), title: draft.title, description: draft.description, date: draft.date, category: draft.category, tags: draft.tags, author: draft.author, featured: draft.featured, ...(draft.cover ? { cover: draft.cover } : {}) };
       const markdown = `---\n${Object.entries(fields).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n")}\n---\n\n${draft.content}`;
       const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
       const link = document.createElement("a");
@@ -258,10 +270,17 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
 
       <div className="admin-layout mt-6 lg:mt-8" onClickCapture={guardNavigation}>
         <section className="admin-writing-column">
-          <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}</div><div className="flex items-center gap-2">
+          <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}<span>· {draftSection} / {draftTopic}</span></div><div className="flex items-center gap-2">
             <div className="admin-article-menu-wrap" ref={articleMenuRef}>
               <button aria-controls="admin-article-menu" aria-expanded={showArticleMenu} aria-haspopup="dialog" className="admin-secondary-button" onClick={() => setShowArticleMenu((current) => !current)} type="button"><BookOpen className="size-4" /><span>文章库</span><ChevronDown className={`size-3 transition-transform ${showArticleMenu ? "rotate-180" : ""}`} /></button>
-              {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog"><label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题或分类" value={query} /></label><div className="admin-library-list">{visibleArticles.map((article) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={`${article.contentType}:${article.slug}`} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <>{article.category} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div><p className="admin-article-menu-count">共 {articles.length} 篇文章 · 点击载入编辑器</p></div>}
+              {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog">
+                <div className="admin-library-sections" role="group" aria-label="文章所属板块">
+                  {([{ id: "all", title: "全部", count: articles.length }, { id: "research", title: "Research", count: researchCount }, { id: "notes", title: "Notes", count: articles.length - researchCount }] as const).map((section) => <button type="button" key={section.id} aria-pressed={librarySection === section.id} onClick={() => { setLibrarySection(section.id); setShowAllArticles(false); }}>{section.title}<span>{section.count}</span></button>)}
+                </div>
+                <label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题、分类或板块" value={query} /></label>
+                <div className="admin-library-list">{visibleArticles.map(({ article, label, topic }) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={`${article.contentType}:${article.slug}`} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <><strong>{label}</strong> <span>·</span> {topic} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">该板块没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div>
+                <p className="admin-article-menu-count">匹配 {filteredArticles.length} 篇文章 · 点击载入编辑器</p>
+              </div>}
             </div>
             <button className="admin-secondary-button" onClick={exportDraft} type="button"><ArrowDownToLine className="size-4" />导出 .md</button>
             <button className="admin-secondary-button" onClick={createArticle} type="button"><FilePlus2 className="size-4" /><span>新建</span></button>
@@ -275,7 +294,8 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
           </div></div>
 
           <div className="admin-meta-card">
-            <label className="admin-field mb-4"><span>Research 分类 <em>可选</em></span><select value={draft.researchTopic ?? ""} onChange={(event) => update("researchTopic", event.target.value)}><option value="">不指定（机器人分类自动归类）</option>{researchCategories.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select><small>选择方向后，这篇文章也会出现在 Research；主分类和标签保持独立。</small></label>
+            <div className="admin-section-summary"><strong>{draftSection}</strong><span>{draftTopic}</span><small>发布后展示的板块与分类</small></div>
+            <label className="admin-field mb-4"><span>所属板块与分类</span><select aria-label="所属板块与分类" value={draft.notesTopic ? `notes:${draft.notesTopic}` : draft.researchTopic ?? ""} onChange={(event) => { const value = event.target.value; update("notesTopic", value.startsWith("notes:") ? value.slice(6) : undefined); update("researchTopic", value.startsWith("notes:") ? "" : value); }}><option value="">自动判断所属板块</option><optgroup label="Research">{researchCategories.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</optgroup><optgroup label="Notes">{journalTopics.map((item) => <option key={item.id} value={`notes:${item.id}`}>{item.title}</option>)}</optgroup></select><small>选择 Notes 分类后只在 Notes 展示；选择 Research 方向后只在 Research 展示。自动模式根据文章原分类判断。</small></label>
             <p className="mb-4 text-xs leading-6 text-[var(--muted)]">双向链接写法：<code>[[blog:stm32|STM32 学习笔记]]</code>，也可以填写文章标题。发布后自动生成反向引用。</p>
             <div className="admin-field-row"><label className="admin-field admin-field-wide"><span>文章标题</span><input maxLength={160} onChange={(event) => update("title", event.target.value)} placeholder="写一个清晰、有吸引力的标题" value={draft.title} /></label><label className="admin-field admin-slug-field"><span>文章路径</span><input disabled={Boolean(draft.expectedSha || draft.id)} autoCapitalize="none" onChange={(event) => update("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-{2,}/g, "-"))} placeholder="article-slug" value={draft.slug} /><small>/article/{draft.slug || "…"}</small></label></div>
             <label className="admin-field mt-4"><span>文章摘要</span><textarea maxLength={320} onChange={(event) => update("description", event.target.value)} placeholder="用一两句话概括文章内容" rows={2} value={draft.description} /><small className="text-right">{draft.description.length}/320</small></label>

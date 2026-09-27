@@ -6,15 +6,18 @@ export const researchCategories = [
   { id: "perception", title: "感知与定位" },
   { id: "navigation", title: "规划与导航" },
   { id: "control", title: "运动与控制" },
-  { id: "learning", title: "机器人学习" },
+  { id: "learning", title: "具身智能" },
   { id: "systems", title: "系统与工程" },
+  { id: "programming", title: "编程" },
 ] as const;
 export type ResearchTopic = (typeof researchCategories)[number]["id"];
-export function isRoboticsArticle(article: ArticleSummary) {
-  return researchCategories.some((item) => item.id === article.researchTopic) || article.researchTopic === "hardware" || article.category === "机器人" || (article.category === "产业" && /机器人|具身智能/.test(`${article.title} ${article.tags.join(" ")}`));
+export function isRoboticsArticle(article: Pick<ArticleSummary, "title" | "tags" | "category" | "researchTopic" | "notesTopic">) {
+  if (["essays", "industry", "tools"].includes(article.notesTopic ?? "")) return false;
+  return researchCategories.some((item) => item.id === article.researchTopic) || article.researchTopic === "hardware" || article.category === "机器人" || article.category === "编程" || /编程自学网站/.test(article.title) || (article.category === "产业" && /机器人|具身智能/.test(`${article.title} ${article.tags.join(" ")}`));
 }
-export function researchTopic(article: Pick<ArticleSummary, "title" | "tags" | "researchTopic">): ResearchTopic {
+export function researchTopic(article: Pick<ArticleSummary, "title" | "tags" | "researchTopic"> & { category?: string }): ResearchTopic {
   if (researchCategories.some((item) => item.id === article.researchTopic)) return article.researchTopic as ResearchTopic;
+  if (article.category === "编程" || /编程自学网站/.test(article.title)) return "programming";
   const text = `${article.title} ${article.tags.join(" ")}`;
   if (/产业|行业|公司|市场|白皮书|融资|商业/.test(text)) return "industry";
   if (/具身|VLA|强化学习|模仿学习|世界模型|Transformer/i.test(text)) return "learning";
