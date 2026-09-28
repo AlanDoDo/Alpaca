@@ -24,7 +24,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   const pageCount = Math.max(1, Math.ceil(matching.length / 6));
   const currentPage = Math.min(pageCount, Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1));
   const visible = matching.slice((currentPage - 1) * 6, currentPage * 6);
-  return <div className="research-page mx-auto max-w-6xl px-4 pb-10 pt-9 sm:px-6 sm:pt-14">
+  return <div className="research-page site-shell pb-10 pt-9 sm:pt-14">
     <header className="research-hero research-hero-compact ink-page-heading ink-heading-research"><InkArt />
       <p className="research-eyebrow">TECHALPACA <span>/</span> ROBOTICS RESEARCH</p>
       <h1>机器人研究</h1>

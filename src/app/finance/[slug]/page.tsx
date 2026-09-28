@@ -7,6 +7,7 @@ import { extractArticleHeadings } from "@/modules/content/headings";
 import { ArticleBody } from "@/components/blog/article-body";
 import { ArticleTableOfContents } from "@/components/blog/article-toc";
 import { getFinanceImageDimensions } from "@/modules/content/image-metadata";
+import { ArticleReadingProgress } from "@/components/blog/article-reading-progress";
 
 export function generateStaticParams() { return getFinanceNotes().map(({ slug }) => ({ slug })); }
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -23,12 +24,13 @@ export default async function FinanceNotePage({ params }: { params: Promise<{ sl
   const showToc = headings.length >= 3 && note.content.length >= 1600;
   const sectionId = note.section === "投机" ? "speculation" : "investment";
   const related = getFinanceNotes().filter((item) => item.section === note.section && item.slug !== slug).slice(0, 3);
-  return <div className={showToc ? "mx-auto grid max-w-7xl items-stretch gap-10 px-5 py-10 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12" : "mx-auto max-w-4xl px-5 py-10 sm:px-6 sm:py-16"}>
-    <article className="min-w-0"><Link href={`/finance#${sectionId}`} className="finance-back"><ArrowLeft size={15} aria-hidden="true" />金融 / {note.section}</Link><header className="finance-reading-header"><p className="finance-eyebrow">{note.topic} / PERSONAL NOTES</p><h1>{note.title}</h1><p>{note.description}</p><div><span>TechAlpaca</span><span>{note.readingTime} 分钟阅读</span><span>个人研究笔记</span></div></header>
+  return <><ArticleReadingProgress /><div className={`site-shell article-page-shell ${showToc ? "grid grid-cols-1 items-stretch gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10 2xl:grid-cols-[minmax(0,1fr)_320px] 2xl:gap-12" : ""}`}>
+    <article className="ink-reading mx-auto w-full max-w-4xl min-w-0" data-reading-content><Link href={`/finance#${sectionId}`} className="finance-back"><ArrowLeft size={15} aria-hidden="true" />金融 / {note.section}</Link><header className="finance-reading-header"><p className="finance-eyebrow">{note.topic} / PERSONAL NOTES</p><h1>{note.title}</h1><p>{note.description}</p><div><span>TechAlpaca</span><span>{note.readingTime} 分钟阅读</span><span>个人研究笔记</span></div></header>
       <p className="finance-source-note">整理自《{note.source.replace(/\.md$/, "")}》。以下保留学习笔记与摘录的原始观点；其中的行情、财务数据、概率及配置示例并未作为当前结论核验。</p>
+      {showToc && <details className="article-toc-mobile lg:hidden"><summary>文章目录 <span>{headings.length} 个章节</span></summary><nav aria-label="文章目录"><ol>{headings.map((heading) => <li className={heading.level === 3 ? "article-toc-subitem" : ""} key={heading.id}><a href={`#${heading.id}`}>{heading.title}</a></li>)}</ol></nav></details>}
       <ArticleBody source={note.content} headings={headings} images={getFinanceImageDimensions(note.content)} />
       <footer className="finance-reading-footer"><Link href={`/finance#${sectionId}`} className="finance-back"><ArrowLeft size={15} aria-hidden="true" />返回{note.section}笔记</Link>{related.length > 0 && <div className="mt-8"><p className="finance-eyebrow">继续阅读</p>{related.map((item) => <Link key={item.slug} href={`/finance/${item.slug}`} className="finance-related-link">{item.title}<ArrowUpRight size={17} aria-hidden="true" /></Link>)}</div>}</footer>
     </article>
     {showToc && <aside className="hidden min-w-0 lg:block"><ArticleTableOfContents headings={headings} /></aside>}
-  </div>;
+  </div></>;
 }

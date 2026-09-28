@@ -12,9 +12,9 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="homepage-intro relative flex min-h-[calc(100svh-7rem)] flex-col justify-center overflow-hidden border-b border-[var(--line)] px-4 py-16 sm:min-h-[calc(100svh-5rem)] sm:px-6 sm:py-24" aria-labelledby="homepage-title">
+      <section className="homepage-intro relative flex min-h-[calc(100svh-7rem)] flex-col justify-center overflow-hidden border-b border-[var(--line)] py-16 sm:min-h-[calc(100svh-5rem)] sm:py-24" aria-labelledby="homepage-title">
         <InkArt variant="hero" />
-        <div className="home-intro-copy mx-auto w-full max-w-6xl pb-10 sm:pb-14">
+        <div className="home-intro-copy site-shell pb-10 sm:pb-14">
           <p className="text-[11px] font-semibold tracking-[0.2em] text-[var(--muted)] sm:text-xs sm:tracking-[0.24em]">AI × ROBOTICS × FINANCE</p>
           <h1 id="homepage-title" className="mt-5 max-w-3xl text-3xl font-semibold leading-[1.16] tracking-tight sm:mt-6 sm:text-5xl sm:leading-[1.12] md:text-7xl md:leading-[1.08]">研究技术如何改变产业，也研究钱最终流向哪里。</h1>
           <p className="mt-5 text-base text-[var(--muted)] sm:mt-6 sm:text-lg">Ideas, technology, companies and capital.</p>
@@ -25,7 +25,7 @@ export default function HomePage() {
         </a>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="site-shell">
         <section data-ink-reveal id="latest" className="ink-section py-9 sm:py-12 md:py-16">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-7">
             <div><p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">LATEST</p><h2 className="mt-2 text-2xl font-semibold tracking-tight sm:mt-3 sm:text-3xl">最近更新</h2></div>

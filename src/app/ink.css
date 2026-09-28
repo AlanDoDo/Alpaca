@@ -37,10 +37,10 @@
 .ink-art-image { object-fit: contain; filter: var(--ink-art-filter); }
 .ink-art[data-ink-running="true"] .ink-art-motion { animation-play-state: running; }
 :root[data-ink-paused="true"] .ink-art-motion { animation-play-state: paused; }
-.ink-art--hero .ink-art-motion--hero { z-index: 2; animation: taichi-drift 18s ease-in-out infinite paused; }
+.ink-art--hero .ink-art-motion--hero { z-index: 2; animation: taichi-drift 30s ease-in-out infinite paused; }
 @keyframes taichi-drift {
-  0%,100% { transform: translate3d(0,0,0) rotate(-.35deg) scale(1); }
-  50% { transform: translate3d(0,-5px,0) rotate(.35deg) scale(1.006); }
+  0%,100% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(0,-2px,0) scale(1.002); }
 }
 @keyframes ink-breathe {
   0%,100% { transform: translate3d(0,0,0) scale(1); }
@@ -57,7 +57,7 @@
   translate: calc(0px - var(--hero-composition-shift)) 0;
 }
 .home-intro-copy { position: relative; z-index: 1; }
-.home-intro-copy h1 { text-wrap: pretty; }
+.home-intro-copy h1 { text-wrap: pretty; font-weight: 700; }
 .ink-art--hero {
   z-index: 0; left: calc(50% + 160px); top: 70px; width: 790px; height: 790px;
   opacity: var(--ink-art-opacity);
@@ -97,6 +97,7 @@
 .ink-heading-ai { padding-bottom: 16px; }
 .ink-heading-ai .ink-art { top: -120px; width: 430px; height: 430px; transform: rotate(80deg); }
 .ink-heading-ai h1, .ink-heading-ai > p { max-width: 72%; }
+.ink-page-heading h1 { font-weight: 650; }
 .ink-art--fragment { width: 380px; height: 380px; opacity: var(--ink-wash-opacity); overflow: hidden; }
 .ai-featured-art { isolation: isolate; overflow: hidden; background: var(--paper); }
 .ai-featured-art .ink-art--fragment { inset: -30px -35px auto auto; opacity: .42; transform: rotate(32deg); }
@@ -130,7 +131,18 @@
 [data-ink-visible="true"], [data-ink-reveal]:focus-within { opacity: 1; translate: none; }
 .ink-link-card { transition: border-color 240ms ease,background-color 240ms ease,transform 300ms var(--ink-ease); }
 .ink-link-card svg { transition: transform 300ms var(--ink-ease); }
-.ink-article-row { position: relative; }
+.ink-article-row { position: relative; isolation: isolate; }
+.ink-article-row::before {
+  content: ""; position: absolute; z-index: 0; left: -10px; top: 18%; width: 3.5rem; height: 64%;
+  border-radius: 50%; background: color-mix(in srgb,var(--ink) 11%,transparent);
+  filter: blur(18px); opacity: 0; transform: scale(.72); transform-origin: left center;
+  transition: opacity 420ms var(--ink-ease),transform 520ms var(--ink-ease); pointer-events: none;
+}
+.ink-article-row h2, .ink-article-row h3 { font-weight: 600; transition: translate 420ms var(--ink-ease),color 260ms ease; }
+.ink-article-row > * { position: relative; z-index: 1; }
+.ink-article-row > p:first-child { font-weight: 550; letter-spacing: .045em; }
+.ink-article-row > div > div:first-child { font-weight: 550; letter-spacing: .045em; }
+.research-recommendation-copy h2 a,.ai-article-card h3 a,.finance-note-link h3,.article-related-title { transition:translate 350ms var(--ink-ease),color 220ms ease; }
 .ink-article-row::after {
   content: ""; position: absolute; bottom: -1px; left: 0; height: 1px; width: 100%;
   background: var(--ink); transform: scaleX(0); transform-origin: left; opacity: .5;
@@ -143,6 +155,11 @@
   .ink-link-card:hover { transform: translateY(-3px); }
   .ink-link-card:hover svg { transform: translate(2px,-2px); }
   .ink-article-row:is(:hover,:focus-within)::after { transform: scaleX(1); }
+  .ink-article-row:is(:hover,:focus-within)::before { opacity: .58; transform: scale(1); }
+  .ink-article-row:is(:hover,:focus-within) :is(h2,h3) { translate: 2px 0; }
+  .journal-card h2 a { transition: translate 350ms var(--ink-ease); }
+  .journal-card:hover h2 a { translate: 1px 0; }
+  .research-recommendation-card:hover h2 a,.ai-article-card:hover h3 a,.finance-note-link:hover h3,.article-related-link:hover .article-related-title { translate: 2px 0; }
   .journal-card:hover { box-shadow: 0 8px 28px color-mix(in srgb,var(--ink) 5%,transparent); }
 }
 @media (max-width: 767px) {
@@ -172,5 +189,5 @@
   html { scroll-behavior: auto; }
   .ink-art-motion,.home-intro-copy,.home-scroll-arrow svg { animation: none !important; }
   [data-ink-reveal] { opacity: 1 !important; translate: none !important; transition: none; }
-  .ink-link-card,.ink-link-card svg,.ink-article-row::after,.site-header nav a::after { transition: none; transform: none; }
+  .ink-link-card,.ink-link-card svg,.ink-article-row::before,.ink-article-row::after,.ink-article-row h2,.ink-article-row h3,.journal-card h2 a,.research-recommendation-copy h2 a,.ai-article-card h3 a,.finance-note-link h3,.article-related-title,.article-toc-mobile summary::after,.site-header nav a::after { transition: none; transform: none; translate: none; }
 }

@@ -32,7 +32,7 @@ export default function AiPage() {
   const articles = getAllArticles().filter((article) => article.category === "AI").sort((a, b) => b.date.localeCompare(a.date));
   const featured = articles.find((article) => article.featured) ?? articles[0];
   const remaining = articles.filter((article) => article.slug !== featured?.slug);
-  return <div className="ai-page mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-16">
+  return <div className="ai-page site-shell py-10 sm:py-16">
     <Link href="/about" className="finance-back"><ArrowLeft size={15} aria-hidden="true" />关于我</Link>
     <header className="ai-page-header ink-page-heading ink-heading-ai"><InkArt /><p className="finance-eyebrow">TECHALPACA / AI NOTEBOOK</p><h1>理解智能，<br className="sm:hidden" />也探索它的可能。</h1><p>从模型原理到实际应用，记录学习、实践与思考。<br className="hidden sm:block" />让技术成为解决问题的方法。</p><span className="ai-article-count">{articles.length} 篇文章 · 持续记录</span></header>
     <nav className="ai-topic-nav" aria-label="AI 文章主题">{topics.map(({ id, name, description, icon: Icon }) => <a key={id} href={`#${id}`}><span className="ai-topic-nav-title"><Icon size={19} aria-hidden="true" /><strong>{name}</strong><ArrowDown size={15} aria-hidden="true" /></span><span>{description}</span></a>)}</nav>

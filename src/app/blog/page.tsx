@@ -26,7 +26,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const pageCount = Math.max(1, Math.ceil(matching.length / 12));
   const pageNumber = Math.min(pageCount, Math.max(1, Number.parseInt(first(params.page) ?? "1", 10) || 1));
   const visible = matching.slice((pageNumber - 1) * 12, pageNumber * 12);
-  return <div className="journal-page mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-14">
+  return <div className="journal-page site-shell py-9 sm:py-14">
     <header className="journal-header ink-page-heading ink-heading-notes"><InkArt /><p className="journal-eyebrow">TECHALPACA / NOTES</p><h1>Notes</h1><p>记录个人思考、行业观察，以及值得分享的工具与实践。</p></header>
     <div className="journal-filter-bar"><nav aria-label="Notes 分类" className="journal-filters"><Link href="/blog" aria-current={!category && topic === "all" ? "page" : undefined}>全部</Link>{journalTopics.map((item) => <Link key={item.id} href={`/blog?topic=${item.id}`} aria-current={!category && topic === item.id ? "page" : undefined}>{item.title}</Link>)}</nav><JournalSearch /></div>
     <div className="journal-archive-heading"><span>{category ?? journalTopics.find((item) => item.id === topic)?.title ?? "全部 Notes"} · {matching.length} 篇</span>{category && <Link href="/blog">返回 Notes</Link>}</div>

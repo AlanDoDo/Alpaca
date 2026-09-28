@@ -67,7 +67,7 @@ const bookCategories = [
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 md:py-24">
+    <div className="site-shell about-page py-12 sm:py-16 md:py-24">
       <header className="ink-page-heading ink-heading-about"><InkArt />
       <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">ABOUT / TECHALPACA</p>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">关于我</h1>

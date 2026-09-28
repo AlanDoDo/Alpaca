@@ -29,7 +29,7 @@ function NotebookSection({ notes, section, id, subtitle, quote }: { notes: Finan
 
 export default function FinancePage() {
   const notes = getFinanceNotes();
-  return <div className="finance-page mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-16">
+  return <div className="finance-page site-shell py-10 sm:py-16">
     <Link className="finance-back" href="/about"><ArrowLeft size={15} aria-hidden="true" />关于我</Link>
     <header className="finance-hero">
       <div className="finance-hero-copy"><p className="finance-eyebrow">TECHALPACA / FINANCIAL NOTEBOOK</p><h1>面对波动，<br />也面对时间。</h1><p className="finance-hero-description">投机研究价格与执行，投资研究资产与价值。<br className="hidden sm:block" />把每一次思考留下来，让判断经得起回看。</p><nav aria-label="金融板块" className="finance-section-nav"><a href="#speculation">投机 <ArrowDown size={15} aria-hidden="true" /></a><a href="#investment">投资 <ArrowDown size={15} aria-hidden="true" /></a><span>{notes.length} 篇个人笔记</span></nav></div>
