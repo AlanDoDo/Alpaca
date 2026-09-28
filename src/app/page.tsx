@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { getAllArticles } from "@/modules/content";
 import { isRoboticsArticle } from "@/modules/content/research";
 import { HomeArticleRow } from "@/components/blog/home-article-row";
+import { InkFish } from "@/components/visual/ink-fish";
 
 export default function HomePage() {
   const articles = getAllArticles();
@@ -14,6 +15,7 @@ export default function HomePage() {
     <>
       <section className="homepage-intro relative flex min-h-[calc(100svh-7rem)] flex-col justify-center overflow-hidden border-b border-[var(--line)] py-16 sm:min-h-[calc(100svh-5rem)] sm:py-24" aria-labelledby="homepage-title">
         <InkArt variant="hero" />
+        <InkFish />
         <div className="home-intro-copy site-shell pb-10 sm:pb-14">
           <p className="text-[11px] font-semibold tracking-[0.2em] text-[var(--muted)] sm:text-xs sm:tracking-[0.24em]">AI × ROBOTICS × FINANCE</p>
           <h1 id="homepage-title" className="mt-5 max-w-3xl text-3xl font-semibold leading-[1.16] tracking-tight sm:mt-6 sm:text-5xl sm:leading-[1.12] md:text-7xl md:leading-[1.08]">研究技术如何改变产业，也研究钱最终流向哪里。</h1>

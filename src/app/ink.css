@@ -62,6 +62,8 @@
   z-index: 0; left: calc(50% + 160px); top: 70px; width: 790px; height: 790px;
   opacity: var(--ink-art-opacity);
 }
+.ink-fish-scene { position:absolute; z-index:1; inset:0; overflow:hidden; pointer-events:none; user-select:none; }
+.ink-fish-canvas { display:block; width:100%; height:100%; filter:var(--ink-art-filter); opacity:calc(var(--ink-art-opacity) * .88); }
 .home-scroll-arrow { z-index: 2; }
 .home-intro-copy a:first-child { text-decoration-color: var(--muted); }
 @media (min-width: 768px) and (max-width: 1799px) {
@@ -164,6 +166,7 @@
 }
 @media (max-width: 767px) {
   .homepage-intro { min-height: 0; padding: 46px 22px 76px; }
+  .ink-fish-scene { z-index:0; }
   .home-intro-copy { order: 0; padding-bottom: 0; }
   .home-intro-copy h1 { font-size: clamp(2rem,8.4vw,3.25rem); line-height: 1.2; max-width: 34rem; }
   .home-intro-copy > p:not(:first-child) { max-width: 26rem; font-size: 14px; line-height: 1.8; }
