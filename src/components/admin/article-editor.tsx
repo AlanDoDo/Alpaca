@@ -217,7 +217,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
       const data = await response.json() as { ok?: boolean; error?: string; expectedSha?: string };
       if (!response.ok) throw new Error(data.error ?? "发布失败，请稍后重试。");
       if (data.expectedSha) setDraft((current) => ({ ...current, expectedSha: data.expectedSha ?? current.expectedSha }));
-      setPublishOpen(false); setNotice("已提交到 GitHub，Vercel 将自动开始部署。文章将在部署完成后更新到网站。"); setNoticeError(false);
+      setPublishOpen(false); setNotice("发布成功！文章已提交到 GitHub，Vercel 正在自动部署；稍后会更新到网站。"); setNoticeError(false);
       saveDraft({ ...draft, expectedSha: data.expectedSha ?? draft.expectedSha });
     } catch (error) { setNotice(error instanceof Error ? error.message : "发布失败，请稍后重试。"); setNoticeError(true); }
     finally { setPublishing(false); }

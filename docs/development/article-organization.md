@@ -7,7 +7,7 @@ Notes 与 Research 互斥。每篇文章明确保存 researchTopic 或 notesTopi
 | Notes / 工具分享 | 10 |
 | Notes / 行业思考 | 4 |
 | Notes / 随笔思考 | 8 |
-| Research / 产业与应用 | 1 |
+| Research / 产业与应用 | 2 |
 | Research / 具身智能 | 4 |
 | Research / 感知与定位 | 2 |
 | Research / 电子与嵌入式 | 6 |
@@ -100,6 +100,7 @@ Notes 与 Research 互斥。每篇文章明确保存 researchTopic 或 notesTopi
 | C 语言基础 | Research | 编程 | c-language |
 | C语言基础 | Research | 编程 | csdn |
 | 2024人形机器人产业链白皮书 | Research | 产业与应用 | 2024-03-06-post |
+| 机器人为什么能“听懂、想明白、动起来”？ | Research | 产业与应用 | article-muk5ujq5 |
 | 桌面小屏幕方案分析 | Research | 电子与嵌入式 | 2023-05-22-post |
 | 嵌入式开发入门 | Research | 电子与嵌入式 | 2023-07-01-post |
 | STM32+ESP8266-小白物联网智能家居项目 | Research | 电子与嵌入式 | 2024-03-13-demo |
