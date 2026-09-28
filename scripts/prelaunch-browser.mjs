@@ -13,11 +13,30 @@ const browser = await chromium.launch({ headless: true, executablePath });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 const errors = [];
+const consoleErrors = [];
+const externalConsoleErrors = [];
+const localHttpErrors = [];
+let currentRoute = "";
+const baseUrl = new URL(base);
 page.on("pageerror", (error) => errors.push(error.message));
+page.on("console", (message) => {
+  if (message.type() !== "error") return;
+  const entry = { route: currentRoute, message: message.text(), url: message.location().url };
+  let isExternal = false;
+  try { isExternal = Boolean(entry.url) && new URL(entry.url).host !== baseUrl.host; } catch {}
+  (isExternal ? externalConsoleErrors : consoleErrors).push(entry);
+});
+page.on("response", (response) => {
+  if (response.status() < 400) return;
+  try {
+    if (new URL(response.url()).host === baseUrl.host) localHttpErrors.push({ route: currentRoute, status: response.status(), url: response.url() });
+  } catch {}
+});
 const output = ".next/qa";
 fs.mkdirSync(output, { recursive: true });
 const results = [];
 async function open(route) {
+  currentRoute = route;
   const response = await page.goto(base + route, { waitUntil: "domcontentloaded" });
   assert.equal(response.status(), 200, route);
   await page.waitForTimeout(550);
@@ -25,6 +44,31 @@ async function open(route) {
   results.push(`Page ${route}: OK`);
 }
 try {
+  await open("/");
+  await page.locator(".floating-dock-trigger").hover();
+  const musicCapsule = page.locator(".music-capsule");
+  await musicCapsule.waitFor({ state: "visible" });
+  await musicCapsule.hover();
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "true", "Hover should expand the music capsule");
+  const musicPanel = page.locator("#music-player-panel");
+  const iframeBox = await musicPanel.locator("iframe").boundingBox();
+  assert(iframeBox, "NetEase player iframe should be mounted in the opened panel");
+  currentRoute = "/ [music iframe hover]";
+  await page.mouse.move(iframeBox.x + Math.min(70, iframeBox.width / 2), iframeBox.y + Math.min(55, iframeBox.height / 2));
+  await page.waitForTimeout(600);
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "true", "Player must remain open while the pointer is inside its iframe");
+  await page.mouse.move(420, 420);
+  await page.waitForTimeout(600);
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "false", "Player should collapse after the pointer leaves the capsule and panel");
+  results.push("Music capsule hover, iframe hover retention, and auto-collapse: OK");
+  await musicCapsule.hover();
+  await page.getByRole("button", { name: "收起播放器" }).click();
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "false", "Close button should collapse the player immediately");
+  await musicCapsule.click();
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "true", "Click should open the player");
+  await page.keyboard.press("Escape");
+  assert.equal(await musicCapsule.getAttribute("aria-expanded"), "false", "Escape should close the player");
+  results.push("Music capsule click, close button, and Escape: OK");
   for (const route of ["/", "/blog", "/forum", "/ai", "/finance", "/about"]) await open(route);
   await open("/blog");
   assert.equal(await page.locator(".journal-filters a").count(), 4);
@@ -121,7 +165,10 @@ try {
   assert.equal(invalid.status(), 400, "Conflicting sections must be rejected");
   results.push("Admin login, section selector, Notes library filter, mobile layout, publishing guards: OK");
   assert.equal(errors.length, 0, `Browser runtime errors: ${errors.join("; ")}`);
-  fs.writeFileSync(path.join(output, "prelaunch-results.json"), JSON.stringify({ base, results, runtimeErrors: errors, realPublication: false }, null, 2));
+  assert.equal(consoleErrors.length, 0, `First-party browser console errors: ${consoleErrors.map((entry) => `${entry.route}: ${entry.message} (${entry.url})`).join("; ")}`);
+  assert.equal(localHttpErrors.length, 0, `First-party HTTP errors: ${localHttpErrors.map((entry) => `${entry.status} ${entry.url}`).join("; ")}`);
+  results.push(`First-party browser console/HTTP errors: none${externalConsoleErrors.length ? `; external iframe/resource console messages: ${externalConsoleErrors.length}` : ""}`);
+  fs.writeFileSync(path.join(output, "prelaunch-results.json"), JSON.stringify({ base, results, runtimeErrors: errors, consoleErrors, externalConsoleErrors, localHttpErrors, realPublication: false }, null, 2));
   console.log(results.join("\n"));
 } finally {
   await browser.close();
