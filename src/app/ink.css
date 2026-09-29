@@ -64,6 +64,58 @@
 }
 .ink-fish-scene { position:absolute; z-index:1; inset:0; overflow:hidden; pointer-events:none; user-select:none; }
 .ink-fish-canvas { display:block; width:100%; height:100%; filter:var(--ink-art-filter); opacity:calc(var(--ink-art-opacity) * .88); }
+.about-calligraphy { display:flex; justify-content:center; align-items:center; min-height:0; overflow:visible; background:transparent; }
+.about-calligraphy-image { display:block; width:min(100%,27rem); height:auto; max-width:100%; object-fit:contain; background:transparent; filter:var(--ink-art-filter); opacity:.84; animation: calligraphy-write 2400ms cubic-bezier(.22,.68,.18,1) both; }
+.about-side-ink { display:none; }
+.about-calligraphy-stroke { position:absolute; left:50%; bottom:-1.8rem; width:min(82%,23rem); height:1rem; overflow:visible; color:var(--ink); transform:translateX(-50%); pointer-events:none; }
+.about-calligraphy-stroke .about-brush-body { fill:currentColor; opacity:0; clip-path:inset(0 100% 0 0); animation:about-brush-body 1900ms cubic-bezier(.22,.68,.18,1) 1100ms both; }
+.about-calligraphy-stroke .about-brush-fiber { stroke:currentColor; stroke-linecap:round; stroke-width:.8; stroke-dasharray:460; stroke-dashoffset:460; opacity:0; }
+.about-calligraphy-stroke .about-brush-fiber:nth-of-type(2) { stroke-width:.72; animation:about-ink-stroke-light 1900ms cubic-bezier(.22,.68,.18,1) 1250ms both; }
+.about-calligraphy-stroke .about-brush-fiber:nth-of-type(3) { stroke-width:.55; animation:about-ink-stroke-light 1700ms cubic-bezier(.22,.68,.18,1) 1450ms both; }
+.about-calligraphy-stroke .about-brush-fiber:nth-of-type(4) { stroke-width:.48; animation:about-ink-stroke-light 1500ms cubic-bezier(.22,.68,.18,1) 1600ms both; }
+.about-page { position:relative; isolation:isolate; }
+.about-page > :not(.about-side-ink) { position:relative; z-index:1; }
+.about-side-ink { z-index:0; width:clamp(10rem,12vw,16rem); height:clamp(10rem,12vw,16rem); opacity:.075; }
+.about-side-ink .ink-art-motion { animation:about-margin-wash 30s ease-in-out infinite paused; }
+.about-side-ink.ink-art[data-ink-running="true"] .ink-art-motion { animation-play-state:running; }
+.about-side-ink-left { top:clamp(12rem,22vh,21rem); left:calc(42rem - 50vw); transform:rotate(-28deg); }
+.about-side-ink-right { top:clamp(20rem,38vh,34rem); right:calc(42rem - 50vw); transform:rotate(24deg) scaleX(-1); }
+@media (max-width: 639px) {
+  .about-intro { grid-template-columns:minmax(0,1fr); align-items:start; }
+  .about-intro > img { grid-column:1; width:9rem; }
+  .about-intro > div { grid-column:1; min-width:0; }
+  .about-intro .about-calligraphy { grid-column:1; grid-row:auto; }
+  .about-intro .about-calligraphy-image { width:min(100%,27rem); height:auto; }
+}
+@keyframes calligraphy-write {
+  0% { clip-path:inset(0 100% 0 0); opacity:.42; transform:translateX(-8px); }
+  100% { clip-path:inset(0); opacity:.84; transform:translateX(0); }
+}
+@media (min-width: 640px) {
+  .about-intro .about-calligraphy { position:absolute; left:50%; bottom:3rem; width:min(70vw,27rem); transform:translateX(-50%); }
+}
+@media (min-width: 1440px) {
+  .about-intro .about-calligraphy { left:50%; bottom:3.5rem; width:min(27rem,30vw); transform:translateX(-50%); }
+}
+@media (min-width: 1600px) {
+  .about-side-ink { display:block; }
+}
+@keyframes about-margin-wash {
+  0%,100% { opacity:.55; transform:translate3d(0,0,0) scale(.98); }
+  50% { opacity:1; transform:translate3d(0,-10px,0) scale(1.025); }
+}
+@keyframes about-ink-stroke-light { to { stroke-dashoffset:0; opacity:.2; } }
+@keyframes about-brush-body { 0% { clip-path:inset(0 100% 0 0); opacity:0; } 100% { clip-path:inset(0); opacity:.3; } }
+@media (max-width: 767px) {
+  .about-side-ink { display:none; }
+  .about-calligraphy-stroke { bottom:-1.25rem; width:75%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-calligraphy-image { animation:none; clip-path:none; }
+  .about-side-ink .ink-art-motion { animation:none !important; transform:none; }
+  .about-calligraphy-stroke .about-brush-body { animation:none !important; clip-path:none; opacity:.3; }
+  .about-calligraphy-stroke .about-brush-fiber { animation:none !important; stroke-dashoffset:0; opacity:.2; }
+}
 .home-scroll-arrow { z-index: 2; }
 .home-intro-copy a:first-child { text-decoration-color: var(--muted); }
 @media (min-width: 768px) and (max-width: 1799px) {

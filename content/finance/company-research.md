@@ -98,7 +98,7 @@ ROE：高毛利、高周转、高杠杆
 
 ## 财报交易系统
 
-![公司研究与财报分析附图](/images/finance/company-research/file-20260823235646544.png)
+![公司研究与财报分析附图](/images/finance/company-research/file-20260823235646544.webp)
 
 ## 财报分析
 

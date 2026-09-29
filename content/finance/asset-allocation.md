@@ -73,7 +73,7 @@ source: "资金分配.md"
 指数投资看起来简单，但真正困难的，从来不是选择一只基金，而是**在市场上涨时不盲目追高，在市场下跌时不轻易放弃。**
 
 
-![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260813195058920.png)
+![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260813195058920.webp)
 
 **定期（如每季度）再平衡**，保持各资产比例稳定。
 
@@ -95,8 +95,8 @@ source: "资金分配.md"
 
 ### 红利低波
 
-![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260814141546991.png)
-![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260814142205700.png)
+![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260814141546991.webp)
+![资金分配与再平衡笔记附图](/images/finance/asset-allocation/file-20260814142205700.webp)
 
 ## 100万投资方案
 

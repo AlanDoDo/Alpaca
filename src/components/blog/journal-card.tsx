@@ -1,6 +1,7 @@
 "use client";
 import { startTransition, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { ArticleSummary } from "@/modules/content/types";
@@ -57,8 +58,17 @@ export function JournalCard({ article, excerpt, long, label, priority }: { artic
   }, [article.slug, active, long, source, retry]);
   return <article ref={cardRef} className="journal-card" onPointerEnter={() => setActive(true)} onFocusCapture={() => setActive(true)}>
     {article.cover && !imageFailed && <Link href={`/article/${article.slug}`} className="journal-card-cover" aria-label={`阅读：${article.title}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={article.cover} alt="" loading={priority ? "eager" : "lazy"} decoding="async" onError={() => setImageFailed(true)} />
+      <Image
+        src={article.cover}
+        alt=""
+        width={960}
+        height={540}
+        sizes="(min-width: 1280px) 380px, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, calc(100vw - 2rem)"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        unoptimized={article.cover.includes("techalpaca.vercel.app")}
+        onError={() => setImageFailed(true)}
+      />
     </Link>}
     <div className="journal-card-copy">
       <div className="journal-card-meta"><time dateTime={article.date}>{article.date.replaceAll("-", ".")}</time><span>{label}</span></div>

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   title: { default: "TechAlpaca — AI × Robotics × Finance", template: "%s — TechAlpaca" },
   description: "研究技术如何改变产业，也研究钱最终流向哪里。",
-  openGraph: { type: "website", siteName: "TechAlpaca", title: "TechAlpaca — AI × Robotics × Finance", description: "Ideas, technology, companies and capital.", images: [{ url: "/images/techalpaca-avatar.png", width: 480, height: 480, alt: "TechAlpaca" }] },
+  openGraph: { type: "website", siteName: "TechAlpaca", title: "TechAlpaca — AI × Robotics × Finance", description: "Ideas, technology, companies and capital.", images: [{ url: "/images/techalpaca-avatar.webp", width: 640, height: 625, alt: "TechAlpaca" }] },
   twitter: { card: "summary_large_image" },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

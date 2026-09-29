@@ -68,16 +68,19 @@ const bookCategories = [
 export default function AboutPage() {
   return (
     <div className="site-shell about-page py-12 sm:py-16 md:py-24">
+      <InkArt variant="wash" className="about-side-ink about-side-ink-left" />
+      <InkArt variant="wash" className="about-side-ink about-side-ink-right" />
       <header className="ink-page-heading ink-heading-about"><InkArt />
       <p className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)]">ABOUT / TECHALPACA</p>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">关于我</h1>
       </header>
-      <section className="mt-8 grid gap-6 border-b border-[var(--line)] pb-10 sm:mt-10 sm:gap-8 sm:pb-12 md:grid-cols-[12rem_1fr] md:gap-12">
+      <section className="about-intro relative mt-8 grid gap-6 border-b border-[var(--line)] pb-10 sm:mt-10 sm:min-h-[26rem] sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center sm:gap-8 sm:pb-28 lg:min-h-[34rem] lg:gap-12 lg:pb-36">
         <Image
-          src="/images/techalpaca-avatar.png"
+          src="/images/techalpaca-avatar.webp"
           alt="TechAlpaca 的头像：戴着蓝色科技风眼镜的白色羊驼"
           width={480}
           height={480}
+          sizes="(max-width: 639px) 144px, 192px"
           priority
           className="aspect-square w-36 rounded-2xl object-cover sm:w-48"
         />
@@ -89,6 +92,28 @@ export default function AboutPage() {
           <p className="mt-3 leading-8 text-[var(--muted)]">AI+机器人行业，保持好奇，独立思考，长期主义🤔</p>
           <p className="mt-2 leading-8 text-[var(--muted)]">想看见更大的世界，先认识更多的人💪</p>
         </div>
+        <figure className="about-calligraphy">
+          <Image
+            src="/images/ink/about-calligraphy.webp"
+            alt="所有的伟大，源自一次勇敢的开始。"
+            width={2130}
+            height={281}
+            sizes="(max-width: 639px) calc(100vw - 2rem), 432px"
+            className="about-calligraphy-image"
+          />
+          <svg className="about-calligraphy-stroke" viewBox="0 0 420 24" fill="none" aria-hidden="true">
+            <defs>
+              <filter id="about-ink-edge" x="-2%" y="-60%" width="104%" height="220%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.08 0.55" numOctaves="2" seed="7" result="grain" />
+                <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.4" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </defs>
+            <path className="about-brush-body" d="M4 15.5C18 13.7 34 9.1 57 9.2C83 9.3 109 13.1 137 12.1C169 10.9 196 7.6 224 8.3C252 9 279 13.4 307 12.3C347 10.7 379 4.5 416 4.1C408 7.9 398 9.5 385 11.8C354 17.2 330 17.6 301 15.6C269 13.4 242 12.7 214 14.6C181 16.8 156 19 127 17.5C94 15.9 72 14.7 49 17.7C30 20.1 15 18.9 4 15.5Z" filter="url(#about-ink-edge)" />
+            <path className="about-brush-fiber" d="M19 14.1C57 10.1 82 12.6 116 14.1C154 15.7 176 11.8 211 11.3C242 10.9 267 14.9 298 14.8C337 14.7 366 9.5 400 6.4" />
+            <path className="about-brush-fiber" d="M41 17.3C77 14.7 103 16.5 132 16.6M157 17.4C181 17.9 197 15.1 219 14.9M260 15.4C281 16.2 300 17.1 322 15.5" />
+            <path className="about-brush-fiber" d="M74 10.2C95 10.8 108 12.4 126 12.7M232 9.3C248 9.7 261 11.8 275 12.1M343 11.1C356 9.9 367 7.9 378 7.2" />
+          </svg>
+        </figure>
       </section>
 
       <section data-ink-reveal aria-labelledby="about-explore-title" className="border-b border-[var(--line)] py-8 sm:py-12">

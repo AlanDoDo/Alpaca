@@ -25,6 +25,20 @@ export function InkFish() {
     let inView = true;
     let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const frameInterval = 1000 / 30;
+    type Point = { x: number; y: number };
+    type MotionPhase = "swim" | "fade-out" | "hidden" | "fade-in";
+    let phase: MotionPhase = "swim";
+    let phaseStarted = 0;
+    let swimDuration = 16000;
+    let pathStart: Point | null = null;
+    let pathEnd: Point | null = null;
+    let previousMobile: boolean | null = null;
+
+    const randomBetween = (min: number, max: number) => min + Math.random() * (max - min);
+    const randomPoint = (mobile: boolean): Point => ({
+      x: width * randomBetween(mobile ? 0.61 : 0.62, mobile ? 0.84 : 0.88),
+      y: height * randomBetween(mobile ? 0.72 : 0.34, mobile ? 0.9 : 0.73),
+    });
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
@@ -44,32 +58,69 @@ export function InkFish() {
       const mobile = width < 768;
       const fishWidth = Math.min(width * (mobile ? 0.56 : 0.32), mobile ? 270 : 480);
       const fishHeight = fishWidth * image.naturalHeight / image.naturalWidth;
-      const t = time * 0.0001;
-      const pointAt = (at: number) => {
-        const x = still
-          ? width * (mobile ? 0.68 : 0.72)
-          : width * (mobile
-            ? 0.66 + 0.17 * Math.sin(at * 0.75) + 0.045 * Math.sin(at * 1.31 + 1.4)
-            : 0.7 + 0.17 * Math.sin(at * 0.75) + 0.05 * Math.sin(at * 1.31 + 1.4));
-        const y = still
-          ? height * (mobile ? 0.84 : 0.64)
-          : height * (mobile
-            ? 0.84 + 0.045 * Math.sin(at * 0.55 + 1.2) + 0.02 * Math.sin(at * 1.1)
-            : 0.54 + 0.16 * Math.sin(at * 0.55 + 1.2) + 0.055 * Math.sin(at * 1.17));
-        return { x, y };
+      if (still) {
+        pathStart = null;
+        pathEnd = null;
+      } else if (previousMobile !== mobile) {
+        phase = "swim";
+        phaseStarted = time;
+        swimDuration = randomBetween(14000, 21000);
+        pathStart = randomPoint(mobile);
+        pathEnd = randomPoint(mobile);
+        previousMobile = mobile;
+      }
+
+      if (!still) {
+        if (!pathStart || !pathEnd) {
+          pathStart = randomPoint(mobile);
+          pathEnd = randomPoint(mobile);
+          phaseStarted = time;
+        }
+        if (phase === "swim" && time - phaseStarted >= swimDuration) {
+          phase = "fade-out";
+          phaseStarted = time;
+        } else if (phase === "fade-out" && time - phaseStarted >= 1500) {
+          phase = "hidden";
+          phaseStarted = time;
+          pathStart = randomPoint(mobile);
+          pathEnd = randomPoint(mobile);
+        } else if (phase === "hidden" && time - phaseStarted >= 250) {
+          phase = "fade-in";
+          phaseStarted = time;
+        } else if (phase === "fade-in" && time - phaseStarted >= 1700) {
+          phase = "swim";
+          phaseStarted = time;
+          swimDuration = randomBetween(14000, 21000);
+        }
+      }
+
+      const currentPhaseProgress = (time - phaseStarted) / (phase === "fade-out" ? 1500 : phase === "fade-in" ? 1700 : swimDuration);
+      const progress = Math.min(1, Math.max(0, currentPhaseProgress));
+      const pointAt = (): Point => {
+        if (still) return { x: width * (mobile ? 0.68 : 0.72), y: height * (mobile ? 0.84 : 0.64) };
+        const start = pathStart ?? randomPoint(mobile);
+        const end = pathEnd ?? start;
+        if (phase === "fade-out" || phase === "hidden") return end;
+        if (phase === "fade-in") return start;
+        const eased = progress * progress * (3 - 2 * progress);
+        const arc = Math.sin(progress * Math.PI) * height * (mobile ? 0.018 : 0.045);
+        return { x: start.x + (end.x - start.x) * eased, y: start.y + (end.y - start.y) * eased + arc };
       };
 
-      const point = pointAt(t);
-      const next = pointAt(t + 0.01);
-      const dx = next.x - point.x;
-      const dy = next.y - point.y;
+      const point = pointAt();
+      const dx = (pathEnd?.x ?? point.x) - (pathStart?.x ?? point.x);
+      const dy = (pathEnd?.y ?? point.y) - (pathStart?.y ?? point.y);
       const facing = dx >= 0 ? 1 : -1;
       const angle = dx >= 0 ? Math.atan2(dy, dx) : -Math.atan2(dy, -dx);
       const edgeDistance = Math.min(point.x, width - point.x);
       const edgeFade = Math.min(1, Math.max(0.12, edgeDistance / (fishWidth * 0.32)));
+      const fadeCurve = progress * progress * (3 - 2 * progress);
+      const transitionAlpha = still ? 1 : phase === "fade-out" ? 1 - fadeCurve : phase === "hidden" ? 0 : phase === "fade-in" ? fadeCurve : 1;
+
+      if (transitionAlpha <= 0.005) return;
 
       context.save();
-      context.globalAlpha = still ? 0.5 : edgeFade * 0.92;
+      context.globalAlpha = still ? 0.5 : edgeFade * 0.92 * transitionAlpha;
       context.translate(point.x, point.y);
       context.rotate(still ? 0 : Math.max(-0.3, Math.min(0.3, angle)));
       context.scale(facing, 1);
