@@ -1,12 +1,14 @@
 ---
 id: "blog:kinematics"
-date: "2026-09-27"
-aliases: ["运动学", "knowledge:kinematics"]
+aliases: ["运动学","knowledge:kinematics"]
+researchTopic: "control"
 title: "机器人运动学"
 description: "从坐标变换到正逆运动学、四元数与雅可比矩阵。"
-researchTopic: "control"
+date: "2026-09-27"
 category: "机器人"
-source: "运动学.md"
+tags: []
+author: "TechAlpaca"
+featured: false
 ---
 
 https://www.bilibili.com/video/BV1oa4y1v7TY/?spm_id_from=333.337.search-card.all.click&vd_source=5b692f8be609178b27207d56f3ad73b0
@@ -655,13 +657,8 @@ $$\boldsymbol{J}_i = \begin{bmatrix}\boldsymbol{z}_i \\\boldsymbol{0}_{3×1}\end
 仅保留$x,y$线速度和$z$轴角速度，旋转/移动关节公式简化：
 - 旋转关节：$\boldsymbol{J}_i = \begin{bmatrix}\boldsymbol{z}_z \times (\boldsymbol{p}-\boldsymbol{p}_i)_{xy} \\\boldsymbol{z}_z\end{bmatrix}$（$\boldsymbol{z}_z=[0,0,1]^T$，取叉乘的$x,y$分量）
 - 移动关节：
-$$
-\boldsymbol{J}_i = \begin{bmatrix}
-\boldsymbol{z}_i \big|_{x} \\
-\boldsymbol{z}_i \big|_{y} \\
-0
-\end{bmatrix}
-$$（取$\boldsymbol{z}_i$的$x,y$分量）
+
+$$\boldsymbol{J}_i = \begin{bmatrix} \boldsymbol{z}_i \big|_{x} \\ \boldsymbol{z}_i \big|_{y} \\ 0 \end{bmatrix}$$（取$\boldsymbol{z}_i$的$x,y$分量）
 
 四、微分法（解析法）构建雅可比矩阵（代码编写首选）
 
@@ -675,14 +672,7 @@ $$J_{ij} = \frac{\partial X_i(\boldsymbol{q})}{\partial q_j}$$
  2. 矩阵整体公式
 末端位姿向量$\boldsymbol{X}(\boldsymbol{q})=[x,y,z,\phi_x,\phi_y,\phi_z]^T$（$\phi$为姿态角），雅可比为$\boldsymbol{X}$对关节变量$\boldsymbol{q}$的**偏导数矩阵**：
 
-$$\boldsymbol{J}(\boldsymbol{q}) = \frac{\partial \boldsymbol{X}(\boldsymbol{q})}{\partial \boldsymbol{q}} = \begin{bmatrix}
-\frac{\partial x}{\partial q_1} & \frac{\partial x}{\partial q_2} & ... & \frac{\partial x}{\partial q_n} \\
-\frac{\partial y}{\partial q_1} & \frac{\partial y}{\partial q_2} & ... & \frac{\partial y}{\partial q_n} \\
-\frac{\partial z}{\partial q_1} & \frac{\partial z}{\partial q_2} & ... & \frac{\partial z}{\partial q_n} \\
-\frac{\partial \phi_x}{\partial q_1} & \frac{\partial \phi_x}{\partial q_2} & ... & \frac{\partial \phi_x}{\partial q_n} \\
-\frac{\partial \phi_y}{\partial q_1} & \frac{\partial \phi_y}{\partial q_2} & ... & \frac{\partial \phi_y}{\partial q_n} \\
-\frac{\partial \phi_z}{\partial q_1} & \frac{\partial \phi_z}{\partial q_2} & ... & \frac{\partial \phi_z}{\partial q_n}
-\end{bmatrix}$$
+$$\boldsymbol{J}(\boldsymbol{q}) = \frac{\partial \boldsymbol{X}(\boldsymbol{q})}{\partial \boldsymbol{q}} = \begin{bmatrix}\frac{\partial x}{\partial q_1} & \frac{\partial x}{\partial q_2} & \dots & \frac{\partial x}{\partial q_n} \\ \frac{\partial y}{\partial q_1} & \frac{\partial y}{\partial q_2} & \dots & \frac{\partial y}{\partial q_n} \\ \frac{\partial z}{\partial q_1} & \frac{\partial z}{\partial q_2} & \dots & \frac{\partial z}{\partial q_n} \\ \frac{\partial \phi_x}{\partial q_1} & \frac{\partial \phi_x}{\partial q_2} & \dots & \frac{\partial \phi_x}{\partial q_n} \\ \frac{\partial \phi_y}{\partial q_1} & \frac{\partial \phi_y}{\partial q_2} & \dots & \frac{\partial \phi_y}{\partial q_n} \\ \frac{\partial \phi_z}{\partial q_1} & \frac{\partial \phi_z}{\partial q_2} & \dots & \frac{\partial \phi_z}{\partial q_n}\end{bmatrix}$$
 
 五、雅可比逆/伪逆公式（控制核心，关节速度求解）
 
@@ -716,11 +706,7 @@ $$\boldsymbol{F} = (\boldsymbol{J}^T)^\dagger \cdot \boldsymbol{\tau}$$
 
 $x=l_1\cos\theta_1+l_2\cos(\theta_1+\theta_2)$，$y=l_1\sin\theta_1+l_2\sin(\theta_1+\theta_2)$：
 
-$$\boldsymbol{J}(\theta_1,\theta_2) = \begin{bmatrix}
--l_1\sin\theta_1-l_2\sin(\theta_1+\theta_2) & -l_2\sin(\theta_1+\theta_2) \\
-l_1\cos\theta_1+l_2\cos(\theta_1+\theta_2) & l_2\cos(\theta_1+\theta_2) \\
-1 & 1
-\end{bmatrix}$$
+$$\boldsymbol{J}(\theta_1,\theta_2) = \begin{bmatrix} -l_1\sin\theta_1-l_2\sin(\theta_1+\theta_2) & -l_2\sin(\theta_1+\theta_2) \\ l_1\cos\theta_1+l_2\cos(\theta_1+\theta_2) & l_2\cos(\theta_1+\theta_2) \\ 1 & 1 \end{bmatrix}$$
 
 **奇异位形**：$\theta_2=0°$（机械臂伸直），雅可比前2行前2列行列式为0，末端无法沿x轴负方向运动。
 
@@ -739,7 +725,3 @@ l_1\cos\theta_1+l_2\cos(\theta_1+\theta_2) & l_2\cos(\theta_1+\theta_2) \\
 以**参数** $t∈[0,1]$ 为核心（t 从 0 到 1 遍历曲线全程），通过**伯恩斯坦基函数**将若干控制点的位置加权融合，最终生成一条**光滑、连续、无折角**的曲线，且曲线始终落在**控制点构成的凸包**内（不会超出控制点的包围区域）
 
 ![](/images/robotics/2e82fd16c3e3815d.webp)
-
-## 相关学习
-
-- [[blog:reinforcement-learning|强化学习理论基础]]
