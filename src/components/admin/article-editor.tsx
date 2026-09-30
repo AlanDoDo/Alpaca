@@ -5,7 +5,7 @@ import { ArticleBody } from "@/components/blog/article-body";
 import { isRoboticsArticle, researchCategories, researchTopic } from "@/modules/content/research";
 import { journalTopic, journalTopics } from "@/modules/content/journal";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
-import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, Link2, X } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Heading3, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, ListOrdered, ListTodo, Link2, Minus, Strikethrough, Table2, ImagePlus, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -210,6 +210,62 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     requestAnimationFrame(() => { input.focus(); input.setSelectionRange(start + before.length, start + before.length + selection.length); });
   }
 
+  function prefixMarkdownLines(prefix: string) {
+    const input = textareaRef.current;
+    if (!input) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const lineStart = draft.content.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+    const selectedEnd = draft.content.indexOf("\n", end);
+    const lineEnd = selectedEnd === -1 ? draft.content.length : selectedEnd;
+    const block = draft.content.slice(lineStart, lineEnd) || "内容";
+    const nextBlock = block.split("\n").map((line) => `${prefix}${line}`).join("\n");
+    update("content", `${draft.content.slice(0, lineStart)}${nextBlock}${draft.content.slice(lineEnd)}`);
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(lineStart, lineStart + nextBlock.length);
+    });
+  }
+
+  function insertBlock(template: string, selectOffset = template.length) {
+    const input = textareaRef.current;
+    if (!input) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const needsLeadingBreak = start > 0 && draft.content[start - 1] !== "\n";
+    const prefix = needsLeadingBreak ? "\n\n" : "";
+    const insertion = `${prefix}${template}`;
+    const next = `${draft.content.slice(0, start)}${insertion}${draft.content.slice(end)}`;
+    update("content", next);
+    requestAnimationFrame(() => {
+      input.focus();
+      const cursor = start + prefix.length + selectOffset;
+      input.setSelectionRange(cursor, cursor);
+    });
+  }
+
+  function handleEditorKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing) return;
+    const modifier = event.ctrlKey || event.metaKey;
+    if (modifier && !event.shiftKey) {
+      const key = event.key.toLowerCase();
+      if (key === "b" || key === "i" || key === "k") {
+        event.preventDefault();
+        if (key === "b") insertMarkdown("**", "**");
+        if (key === "i") insertMarkdown("*", "*");
+        if (key === "k") insertMarkdown("[", "](https://)", "链接文字");
+        return;
+      }
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      insertMarkdown("  ", "", "");
+    }
+  }
+
+  const wordCount = draft.content.trim() ? draft.content.trim().split(/\s+/u).length : 0;
+  const readingMinutes = Math.max(1, Math.ceil(wordCount / 300));
+
   async function publish() {
     setPublishing(true); setNotice("");
     try {
@@ -243,19 +299,17 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const markdownPanel = (
     <section className={`admin-pane min-h-[620px] flex-col ${mobileTab === "edit" ? "flex" : "hidden"} lg:flex`} aria-label="Markdown 编辑器">
       <div className="admin-pane-header"><div><p className="admin-eyebrow">WRITE</p><h2>Markdown</h2></div><span className="admin-mono">{draft.content.length.toLocaleString()} 字符</span></div>
-      <div className="admin-toolbar" aria-label="Markdown 格式工具">
-        <button title="二级标题" onClick={() => insertMarkdown("## ", "", "章节标题")}><Heading2 /></button>
-        <span />
-        <button title="粗体" onClick={() => insertMarkdown("**", "**")}><Bold /></button>
-        <button title="斜体" onClick={() => insertMarkdown("*", "*")}><Italic /></button>
-        <button title="引用" onClick={() => insertMarkdown("> ", "", "引用内容")}><Quote /></button>
-        <button title="行内代码" onClick={() => insertMarkdown("`", "`", "code")}><Code2 /></button>
-        <button title="无序列表" onClick={() => insertMarkdown("- ", "", "列表内容")}><List /></button>
-        <button title="链接" onClick={() => insertMarkdown("[", "](https://)", "链接文字")}><Link2 /></button>
-        <button title="文章双向链接" aria-label="插入文章双向链接" onClick={() => insertMarkdown("[[", "]]", "blog:stm32|STM32 学习笔记")}><BookOpen /></button>
+      <div className="admin-toolbar" role="toolbar" aria-label="Markdown 格式工具">
+        <div className="admin-toolbar-group" aria-label="标题"><button type="button" title="二级标题" aria-label="插入二级标题" onClick={() => prefixMarkdownLines("## ")}><Heading2 /></button><button type="button" title="三级标题" aria-label="插入三级标题" onClick={() => prefixMarkdownLines("### ")}><Heading3 /></button></div>
+        <span aria-hidden="true" />
+        <div className="admin-toolbar-group" aria-label="文字样式"><button type="button" title="粗体 · Ctrl/⌘ B" aria-label="粗体" onClick={() => insertMarkdown("**", "**")}><Bold /></button><button type="button" title="斜体 · Ctrl/⌘ I" aria-label="斜体" onClick={() => insertMarkdown("*", "*")}><Italic /></button><button type="button" title="删除线" aria-label="删除线" onClick={() => insertMarkdown("~~", "~~")}><Strikethrough /></button><button type="button" title="行内代码" aria-label="行内代码" onClick={() => insertMarkdown("`", "`", "code")}><Code2 /></button></div>
+        <span aria-hidden="true" />
+        <div className="admin-toolbar-group" aria-label="内容块"><button type="button" title="引用" aria-label="引用" onClick={() => prefixMarkdownLines("> ")}><Quote /></button><button type="button" title="无序列表" aria-label="无序列表" onClick={() => prefixMarkdownLines("- ")}><List /></button><button type="button" title="有序列表" aria-label="有序列表" onClick={() => prefixMarkdownLines("1. ")}><ListOrdered /></button><button type="button" title="任务清单" aria-label="任务清单" onClick={() => prefixMarkdownLines("- [ ] ")}><ListTodo /></button><button type="button" title="分隔线" aria-label="插入分隔线" onClick={() => insertBlock("---\n\n")}><Minus /></button></div>
+        <span aria-hidden="true" />
+        <div className="admin-toolbar-group" aria-label="插入内容"><button type="button" title="链接 · Ctrl/⌘ K" aria-label="插入链接" onClick={() => insertMarkdown("[", "](https://)", "链接文字")}><Link2 /></button><button type="button" title="图片" aria-label="插入图片 Markdown" onClick={() => insertMarkdown("![", "](图片地址)", "图片描述")}><ImagePlus /></button><button type="button" title="代码块" aria-label="插入代码块" onClick={() => insertBlock("```语言\n代码\n```", 3)}><Code2 /></button><button type="button" title="表格" aria-label="插入表格" onClick={() => insertBlock("| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |\n", 0)}><Table2 /></button><button type="button" title="文章双向链接" aria-label="插入文章双向链接" onClick={() => insertMarkdown("[[", "]]", "blog:stm32|STM32 学习笔记")}><BookOpen /></button></div>
       </div>
-      <textarea ref={textareaRef} aria-label="文章 Markdown 正文" className="admin-markdown-textarea" onChange={(event) => update("content", event.target.value)} placeholder={"从这里开始写作…\n\n支持 Markdown 与 GFM：标题、列表、链接、代码、表格和引用。"} spellCheck value={draft.content} />
-      <div className="admin-pane-footer"><span>支持标准 Markdown 与 GitHub Flavored Markdown</span><button className="admin-quiet-button" type="button" disabled={!draft.content} onClick={() => { if (window.confirm("确定清空正文吗？建议先导出 Markdown 备份。")) update("content", ""); }}>清空正文</button></div>
+      <textarea ref={textareaRef} aria-label="文章 Markdown 正文" className="admin-markdown-textarea" onChange={(event) => update("content", event.target.value)} onKeyDown={handleEditorKeyDown} placeholder={"从这里开始写作…\n\n支持标题、列表、链接、代码、表格、任务清单和文章双向链接。"} spellCheck value={draft.content} />
+      <div className="admin-pane-footer"><span>{wordCount.toLocaleString()} 词 · 约 {readingMinutes} 分钟阅读 · Tab 缩进 · Ctrl/⌘ B/I/K 格式快捷键</span><button className="admin-quiet-button" type="button" disabled={!draft.content} onClick={() => { if (window.confirm("确定清空正文吗？建议先导出 Markdown 备份。")) update("content", ""); }}>清空正文</button></div>
     </section>
   );
 

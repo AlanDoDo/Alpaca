@@ -228,6 +228,7 @@
   .ink-art--hero .ink-art-motion--hero { animation-duration: 24s; }
   .ink-art-motion { animation: none; }
   .ink-page-heading .ink-art--wash { width: 210px; height: 210px; right: -65px; top: -50px; opacity: .18; }
+  .resources-hero>.resources-taiji.ink-art--hero { position:absolute; inset:auto -3.4rem auto auto; top:50%; width:14rem; height:auto; margin:0; order:initial; transform:translateY(-50%); opacity:.22; }
   :root[data-theme="dark"] .ink-page-heading .ink-art--wash { opacity: .2; }
   .ink-heading-notes { padding-top: 4px; padding-bottom: 24px; }
   .ink-heading-research { padding: 8px 0 24px; }
