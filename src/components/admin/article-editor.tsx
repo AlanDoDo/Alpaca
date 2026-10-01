@@ -2,10 +2,11 @@
 
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { ArticleBody } from "@/components/blog/article-body";
+import { ResourceManager } from "@/components/admin/resource-manager";
 import { isRoboticsArticle, researchCategories, researchTopic } from "@/modules/content/research";
 import { journalTopic, journalTopics } from "@/modules/content/journal";
 import type { ArticleCategory, ArticleSummary } from "@/modules/content/types";
-import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading2, Heading3, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, ListOrdered, ListTodo, Link2, Minus, Strikethrough, Table2, ImagePlus, X } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, Bold, Check, ChevronDown, Code2, Eye, FilePlus2, Heading1, Heading2, Heading3, Italic, LoaderCircle, LogOut, Quote, Search, Send, BookOpen, List, ListOrdered, ListTodo, Link2, Minus, Strikethrough, Table2, ImagePlus, X, Undo2, Redo2, Maximize2, Minimize2, Smile } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,7 +15,8 @@ const categories: ArticleCategory[] = ["AI", "机器人", "金融", "产业", "�
 type Draft = { notesTopic?: string; researchTopic?: string; contentType?: "blog"; id?: string; aliases?: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
 type Status = "saved" | "saving" | "changed";
 const localDate = () => { const date = new Date(); return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-"); };
-const blankDraft = (slug = "article-muhzgyj2"): Draft => ({ researchTopic: "control", slug, title: "", description: "", date: localDate(), category: "机器人", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
+type WorkspaceSection = "research" | "notes" | "resources";
+const blankDraft = (slug = "article-muhzgyj2", section: "research" | "notes" = "research"): Draft => ({ ...(section === "research" ? { researchTopic: "control" } : { notesTopic: "tools" }), slug, title: "", description: "", date: localDate(), category: section === "research" ? "机器人" : "杂谈", tags: [], author: "TechAlpaca", featured: false, cover: "", content: "", expectedSha: null });
 
 function draftKey(slug: string) { return `techalpaca:article-draft:${slug || "new"}`; }
 
@@ -34,15 +36,19 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const [notice, setNotice] = useState("");
   const [noticeError, setNoticeError] = useState(false);
   const [query, setQuery] = useState("");
-  const [librarySection, setLibrarySection] = useState<"all" | "research" | "notes">("all");
+  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("research");
   const [showAllArticles, setShowAllArticles] = useState(false);
   const [showArticleMenu, setShowArticleMenu] = useState(false);
   const [loadingArticleSlug, setLoadingArticleSlug] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+  const [historyAvailability, setHistoryAvailability] = useState({ canUndo: false, canRedo: false });
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const historyRef = useRef<{ undo: string[]; redo: string[] }>({ undo: [], redo: [] });
   const articleMenuRef = useRef<HTMLDivElement>(null);
   const draftReadyRef = useRef(false);
   const draftRef = useRef(draft);
@@ -53,7 +59,9 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     return { article, section, topic, label: research ? "Research" : "Notes" };
   }), [articles]);
   const researchCount = libraryArticles.filter((item) => item.section === "research").length;
-  const filteredArticles = useMemo(() => libraryArticles.filter((item) => (librarySection === "all" || item.section === librarySection) && `${item.article.title} ${item.article.category} ${item.article.slug} ${item.label} ${item.topic}`.toLowerCase().includes(query.trim().toLowerCase())), [libraryArticles, librarySection, query]);
+  const notesCount = libraryArticles.length - researchCount;
+  const articleSection = workspaceSection === "resources" ? "research" : workspaceSection;
+  const filteredArticles = useMemo(() => libraryArticles.filter((item) => item.section === articleSection && `${item.article.title} ${item.article.category} ${item.article.slug} ${item.label} ${item.topic}`.toLowerCase().includes(query.trim().toLowerCase())), [libraryArticles, articleSection, query]);
   const visibleArticles = showAllArticles ? filteredArticles : filteredArticles.slice(0, 6);
   const draftIsResearch = isRoboticsArticle(draft);
   const draftSection = draftIsResearch ? "Research" : "Notes";
@@ -67,8 +75,10 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
         if (latest) {
           const restored = JSON.parse(latest) as Draft;
           if (restored.slug === latestSlug && typeof restored.content === "string") {
+            const section = isRoboticsArticle(restored) ? "research" : "notes";
             draftRef.current = restored;
             setDraft(restored);
+            setWorkspaceSection(section);
           }
         }
       } catch { /* Ignore invalid browser draft data. */ }
@@ -81,6 +91,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     try {
       window.localStorage.setItem(draftKey(value.slug), JSON.stringify({ ...value, localSavedAt: new Date().toISOString() }));
       window.localStorage.setItem("techalpaca:article-draft:latest", value.slug);
+      window.localStorage.setItem(`techalpaca:article-draft:latest:${isRoboticsArticle(value) ? "research" : "notes"}`, value.slug);
       setStatus("saved");
       return true;
     } catch {
@@ -135,7 +146,41 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     saveDraft(draftRef.current);
   }
 
-  function update<K extends keyof Draft>(key: K, value: Draft[K]) { setStatus("saving"); setDraft((current) => { const next = { ...current, [key]: value }; draftRef.current = next; return next; }); }
+  function update<K extends keyof Draft>(key: K, value: Draft[K]) {
+    setStatus("saving");
+    const current = draftRef.current;
+    if (key === "content" && current.content !== value) {
+      const undo = historyRef.current.undo;
+      undo.push(current.content);
+      if (undo.length > 100) undo.shift();
+      historyRef.current.redo = [];
+      setHistoryAvailability({ canUndo: undo.length > 0, canRedo: false });
+    }
+    const next = { ...current, [key]: value };
+    draftRef.current = next;
+    setDraft(next);
+  }
+
+  function restoreContent(direction: "undo" | "redo") {
+    const history = historyRef.current;
+    const source = direction === "undo" ? history.undo : history.redo;
+    if (!source.length) return;
+    const current = draftRef.current.content;
+    const nextContent = source.pop()!;
+    (direction === "undo" ? history.redo : history.undo).push(current);
+    setHistoryAvailability({ canUndo: history.undo.length > 0, canRedo: history.redo.length > 0 });
+    setStatus("saving");
+    const next = { ...draftRef.current, content: nextContent };
+    draftRef.current = next;
+    setDraft(next);
+    requestAnimationFrame(() => {
+      const input = textareaRef.current;
+      if (!input) return;
+      input.focus();
+      const cursor = Math.min(nextContent.length, input.selectionStart);
+      input.setSelectionRange(cursor, cursor);
+    });
+  }
 
   function loadLocalDraft(base: Draft) {
     try {
@@ -148,13 +193,40 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
     return base;
   }
 
-  function createArticle() {
+  function createArticle(newDraftId: string) {
     if (!saveDraft(draftRef.current)) return;
     setNotice("");
-    const nextDraft = loadLocalDraft({ ...blankDraft(`article-${Date.now().toString(36)}`), contentType: "blog", researchTopic: "control" });
+    clearEditorHistory();
+    const section = workspaceSection === "notes" ? "notes" : "research";
+    const nextDraft = loadLocalDraft({ ...blankDraft(newDraftId, section), contentType: "blog" });
     draftRef.current = nextDraft;
     setDraft(nextDraft);
     setMobileTab("edit");
+  }
+
+  function clearEditorHistory() {
+    historyRef.current = { undo: [], redo: [] };
+    setHistoryAvailability({ canUndo: false, canRedo: false });
+  }
+
+  function switchWorkspaceSection(section: WorkspaceSection, newDraftId: string) {
+    if (section === workspaceSection) return;
+    if (!saveDraft(draftRef.current)) return;
+    setNotice("");
+    setShowArticleMenu(false);
+    setShowEmojiPicker(false);
+    if (section !== "resources") {
+      const latestSlug = window.localStorage.getItem(`techalpaca:article-draft:latest:${section}`);
+      let nextDraft = blankDraft(newDraftId, section);
+      if (latestSlug) nextDraft = loadLocalDraft({ ...nextDraft, slug: latestSlug });
+      clearEditorHistory();
+      draftRef.current = nextDraft;
+      setDraft(nextDraft);
+      setMobileTab("edit");
+    }
+    setWorkspaceSection(section);
+    setShowAllArticles(false);
+    setQuery("");
   }
 
   async function editArticle(slug: string, contentType: "blog" = "blog") {
@@ -166,6 +238,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
       const data = await response.json() as Draft & { error?: string };
       if (!response.ok) throw new Error(data.error ?? "文章载入失败，请稍后重试。");
       const nextDraft = loadLocalDraft(data);
+      clearEditorHistory();
       draftRef.current = nextDraft;
       setDraft(nextDraft);
       setStatus("saved");
@@ -247,6 +320,16 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   function handleEditorKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.nativeEvent.isComposing) return;
     const modifier = event.ctrlKey || event.metaKey;
+    if (modifier && event.key.toLowerCase() === "z") {
+      event.preventDefault();
+      restoreContent(event.shiftKey ? "redo" : "undo");
+      return;
+    }
+    if (modifier && event.key.toLowerCase() === "y") {
+      event.preventDefault();
+      restoreContent("redo");
+      return;
+    }
     if (modifier && !event.shiftKey) {
       const key = event.key.toLowerCase();
       if (key === "b" || key === "i" || key === "k") {
@@ -269,7 +352,7 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   async function publish() {
     setPublishing(true); setNotice("");
     try {
-      const response = await fetch("/api/admin/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...draft, expectedSha: draft.expectedSha }) });
+      const response = await fetch("/api/admin/articles", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...draft, expectedSha: draft.expectedSha, forceOverwrite: true }) });
       const data = await response.json() as { ok?: boolean; error?: string; expectedSha?: string };
       if (!response.ok) throw new Error(data.error ?? "发布失败，请稍后重试。");
       if (data.expectedSha) setDraft((current) => ({ ...current, expectedSha: data.expectedSha ?? current.expectedSha }));
@@ -299,15 +382,6 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
   const markdownPanel = (
     <section className={`admin-pane min-h-[620px] flex-col ${mobileTab === "edit" ? "flex" : "hidden"} lg:flex`} aria-label="Markdown 编辑器">
       <div className="admin-pane-header"><div><p className="admin-eyebrow">WRITE</p><h2>Markdown</h2></div><span className="admin-mono">{draft.content.length.toLocaleString()} 字符</span></div>
-      <div className="admin-toolbar" role="toolbar" aria-label="Markdown 格式工具">
-        <div className="admin-toolbar-group" aria-label="标题"><button type="button" title="二级标题" aria-label="插入二级标题" onClick={() => prefixMarkdownLines("## ")}><Heading2 /></button><button type="button" title="三级标题" aria-label="插入三级标题" onClick={() => prefixMarkdownLines("### ")}><Heading3 /></button></div>
-        <span aria-hidden="true" />
-        <div className="admin-toolbar-group" aria-label="文字样式"><button type="button" title="粗体 · Ctrl/⌘ B" aria-label="粗体" onClick={() => insertMarkdown("**", "**")}><Bold /></button><button type="button" title="斜体 · Ctrl/⌘ I" aria-label="斜体" onClick={() => insertMarkdown("*", "*")}><Italic /></button><button type="button" title="删除线" aria-label="删除线" onClick={() => insertMarkdown("~~", "~~")}><Strikethrough /></button><button type="button" title="行内代码" aria-label="行内代码" onClick={() => insertMarkdown("`", "`", "code")}><Code2 /></button></div>
-        <span aria-hidden="true" />
-        <div className="admin-toolbar-group" aria-label="内容块"><button type="button" title="引用" aria-label="引用" onClick={() => prefixMarkdownLines("> ")}><Quote /></button><button type="button" title="无序列表" aria-label="无序列表" onClick={() => prefixMarkdownLines("- ")}><List /></button><button type="button" title="有序列表" aria-label="有序列表" onClick={() => prefixMarkdownLines("1. ")}><ListOrdered /></button><button type="button" title="任务清单" aria-label="任务清单" onClick={() => prefixMarkdownLines("- [ ] ")}><ListTodo /></button><button type="button" title="分隔线" aria-label="插入分隔线" onClick={() => insertBlock("---\n\n")}><Minus /></button></div>
-        <span aria-hidden="true" />
-        <div className="admin-toolbar-group" aria-label="插入内容"><button type="button" title="链接 · Ctrl/⌘ K" aria-label="插入链接" onClick={() => insertMarkdown("[", "](https://)", "链接文字")}><Link2 /></button><button type="button" title="图片" aria-label="插入图片 Markdown" onClick={() => insertMarkdown("![", "](图片地址)", "图片描述")}><ImagePlus /></button><button type="button" title="代码块" aria-label="插入代码块" onClick={() => insertBlock("```语言\n代码\n```", 3)}><Code2 /></button><button type="button" title="表格" aria-label="插入表格" onClick={() => insertBlock("| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |\n", 0)}><Table2 /></button><button type="button" title="文章双向链接" aria-label="插入文章双向链接" onClick={() => insertMarkdown("[[", "]]", "blog:stm32|STM32 学习笔记")}><BookOpen /></button></div>
-      </div>
       <textarea ref={textareaRef} aria-label="文章 Markdown 正文" className="admin-markdown-textarea" onChange={(event) => update("content", event.target.value)} onKeyDown={handleEditorKeyDown} placeholder={"从这里开始写作…\n\n支持标题、列表、链接、代码、表格、任务清单和文章双向链接。"} spellCheck value={draft.content} />
       <div className="admin-pane-footer"><span>{wordCount.toLocaleString()} 词 · 约 {readingMinutes} 分钟阅读 · Tab 缩进 · Ctrl/⌘ B/I/K 格式快捷键</span><button className="admin-quiet-button" type="button" disabled={!draft.content} onClick={() => { if (window.confirm("确定清空正文吗？建议先导出 Markdown 备份。")) update("content", ""); }}>清空正文</button></div>
     </section>
@@ -320,24 +394,29 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3"><button aria-label="立即保存草稿" className="admin-save-indicator" onClick={() => saveDraft(draftRef.current)} title="草稿自动保存在此浏览器；按 Ctrl+S 或点击此处立即保存" type="button"><span className={`admin-save-dot ${status === "saving" ? "is-saving" : ""}`} />{status === "saving" ? "正在保存草稿" : status === "saved" ? "草稿已保存 · Ctrl+S" : "尚未保存，点击保存"}</button><button className="admin-quiet-button" disabled={loggingOut} onClick={logout} type="button"><LogOut className="size-4" /><span className="hidden sm:inline">{loggingOut ? "退出中" : "退出"}</span></button></div>
       </header>
 
+      <nav aria-label="工作台板块" className="admin-workspace-tabs" role="tablist">
+        {([
+          { id: "research", label: "Research", count: researchCount },
+          { id: "notes", label: "Notes", count: notesCount },
+          { id: "resources", label: "Resources", count: null },
+        ] as const).map((section) => <button id={`workspace-${section.id}-tab`} key={section.id} aria-selected={workspaceSection === section.id} className="admin-workspace-tab" onClick={() => switchWorkspaceSection(section.id, `article-${Date.now().toString(36)}`)} role="tab" type="button"><span>{section.label}</span>{section.count !== null && <small>{section.count}</small>}</button>)}
+      </nav>
+
       {notice && <div className={`admin-notice ${noticeError ? "is-error" : ""}`} role={noticeError ? "alert" : "status"}><span>{notice}</span><button aria-label="关闭提示" onClick={() => setNotice("")}><X className="size-4" /></button></div>}
 
-      <div className="admin-layout mt-6 lg:mt-8" onClickCapture={guardNavigation}>
+      {workspaceSection === "resources" ? <section aria-labelledby="workspace-resources-tab" className="admin-workspace-panel" role="tabpanel"><ResourceManager /></section> : <section aria-labelledby={`workspace-${workspaceSection}-tab`} className="admin-workspace-panel" role="tabpanel"><div className="admin-layout mt-6 lg:mt-8" onClickCapture={guardNavigation}>
         <section className="admin-writing-column">
           <div className="admin-editor-actions"><div className="flex min-w-0 items-center gap-2 text-xs text-[var(--muted)]"><span className="admin-live-dot" />{draft.expectedSha ? "已发布文章" : "新建草稿"}<span>· {draftSection} / {draftTopic}</span></div><div className="flex items-center gap-2">
             <div className="admin-article-menu-wrap" ref={articleMenuRef}>
               <button aria-controls="admin-article-menu" aria-expanded={showArticleMenu} aria-haspopup="dialog" className="admin-secondary-button" onClick={() => setShowArticleMenu((current) => !current)} type="button"><BookOpen className="size-4" /><span>文章库</span><ChevronDown className={`size-3 transition-transform ${showArticleMenu ? "rotate-180" : ""}`} /></button>
               {showArticleMenu && <div aria-label="文章库" className="admin-article-menu" id="admin-article-menu" role="dialog">
-                <div className="admin-library-sections" role="group" aria-label="文章所属板块">
-                  {([{ id: "all", title: "全部", count: articles.length }, { id: "research", title: "Research", count: researchCount }, { id: "notes", title: "Notes", count: articles.length - researchCount }] as const).map((section) => <button type="button" key={section.id} aria-pressed={librarySection === section.id} onClick={() => { setLibrarySection(section.id); setShowAllArticles(false); }}>{section.title}<span>{section.count}</span></button>)}
-                </div>
                 <label className="admin-search"><Search className="size-4" /><input autoFocus aria-label="搜索文章" onChange={(event) => { setQuery(event.target.value); setShowAllArticles(false); }} placeholder="搜索标题、分类或板块" value={query} /></label>
                 <div className="admin-library-list">{visibleArticles.map(({ article, label, topic }) => <button aria-busy={loadingArticleSlug === article.slug} className="admin-article-option" disabled={loadingArticleSlug !== null} key={`${article.contentType}:${article.slug}`} onClick={() => void editArticle(article.slug)} type="button"><span className="admin-option-category">{loadingArticleSlug === article.slug ? "正在载入文章…" : <><strong>{label}</strong> <span>·</span> {topic} <span>·</span> {article.date}</>}</span><span className="admin-option-title">{article.title}</span></button>)}{!filteredArticles.length && <p className="px-3 py-5 text-sm text-[var(--muted)]">该板块没有匹配的文章</p>}{filteredArticles.length > 6 && <button className="admin-library-more" onClick={() => setShowAllArticles((current) => !current)} type="button">{showAllArticles ? "收起文章" : `显示其余 ${filteredArticles.length - 6} 篇`}<ChevronDown className={showAllArticles ? "rotate-180" : ""} /></button>}</div>
                 <p className="admin-article-menu-count">匹配 {filteredArticles.length} 篇文章 · 点击载入编辑器</p>
               </div>}
             </div>
             <button className="admin-secondary-button" onClick={exportDraft} type="button"><ArrowDownToLine className="size-4" />导出 .md</button>
-            <button className="admin-secondary-button" onClick={createArticle} type="button"><FilePlus2 className="size-4" /><span>新建</span></button>
+            <button className="admin-secondary-button" onClick={() => createArticle(`article-${Date.now().toString(36)}`)} type="button"><FilePlus2 className="size-4" /><span>新建</span></button>
             <button className="admin-primary-button" onClick={() => {
               if (!draft.title.trim() || !draft.description.trim() || !draft.content.trim() || !draft.slug) {
                 setNotice("发布前请填写标题、摘要、文章路径和正文。"); setNoticeError(true); return;
@@ -358,15 +437,35 @@ export function ArticleEditor({ articles }: { articles: ArticleSummary[] }) {
             <label className="admin-featured-toggle"><input checked={draft.featured} onChange={(event) => update("featured", event.target.checked)} type="checkbox" /><span>设为首页精选</span><small>精选文章会优先展示</small></label>
           </div>
 
-          <div className="admin-mobile-tabs" role="tablist" aria-label="正文视图"><button aria-selected={mobileTab === "edit"} onClick={() => setMobileTab("edit")} role="tab" type="button">Markdown</button><button aria-selected={mobileTab === "preview"} onClick={() => setMobileTab("preview")} role="tab" type="button"><Eye className="size-4" />预览</button></div>
-          <div className="admin-content-grid">{markdownPanel}
+          <div className={`admin-editor-surface ${isEditorFullscreen ? "is-fullscreen" : ""}`}>
+            <div className="admin-mobile-tabs" role="tablist" aria-label="正文视图"><button aria-selected={mobileTab === "edit"} onClick={() => setMobileTab("edit")} role="tab" type="button">Markdown</button><button aria-selected={mobileTab === "preview"} onClick={() => setMobileTab("preview")} role="tab" type="button"><Eye className="size-4" />预览</button></div>
+            <div className="admin-editor-toolbar-wrap">
+              <div className="admin-toolbar" role="toolbar" aria-label="Markdown 格式工具" onMouseDown={(event) => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
+                <div className="admin-toolbar-group admin-toolbar-emoji"><button type="button" title="插入表情" aria-label="插入表情" aria-expanded={showEmojiPicker} onClick={() => setShowEmojiPicker((open) => !open)}><Smile /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group" aria-label="标题"><button type="button" title="一级标题" aria-label="插入一级标题" onClick={() => prefixMarkdownLines("# ")}><Heading1 /></button><button type="button" title="二级标题" aria-label="插入二级标题" onClick={() => prefixMarkdownLines("## ")}><Heading2 /></button><button type="button" title="三级标题" aria-label="插入三级标题" onClick={() => prefixMarkdownLines("### ")}><Heading3 /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group" aria-label="文字样式"><button type="button" title="粗体 · Ctrl/⌘ B" aria-label="粗体" onClick={() => insertMarkdown("**", "**")}><Bold /></button><button type="button" title="斜体 · Ctrl/⌘ I" aria-label="斜体" onClick={() => insertMarkdown("*", "*")}><Italic /></button><button type="button" title="删除线" aria-label="删除线" onClick={() => insertMarkdown("~~", "~~")}><Strikethrough /></button><button type="button" title="行内代码" aria-label="行内代码" onClick={() => insertMarkdown("`", "`", "代码")}><Code2 /></button><button type="button" title="链接 · Ctrl/⌘ K" aria-label="插入链接" onClick={() => insertMarkdown("[", "](https://)", "链接文字")}><Link2 /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group" aria-label="内容块"><button type="button" title="无序列表" aria-label="无序列表" onClick={() => prefixMarkdownLines("- ")}><List /></button><button type="button" title="有序列表" aria-label="有序列表" onClick={() => prefixMarkdownLines("1. ")}><ListOrdered /></button><button type="button" title="任务清单" aria-label="任务清单" onClick={() => prefixMarkdownLines("- [ ] ")}><ListTodo /></button><button type="button" title="引用" aria-label="引用" onClick={() => prefixMarkdownLines("> ")}><Quote /></button><button type="button" title="分隔线" aria-label="插入分隔线" onClick={() => insertBlock("---\n\n")}><Minus /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group" aria-label="插入内容"><button type="button" title="代码块" aria-label="插入代码块" onClick={() => insertBlock("```语言\n代码\n```", 12)}><Code2 /></button><button type="button" title="图片链接" aria-label="插入图片 Markdown" onClick={() => insertMarkdown("![", "](图片地址)", "图片描述")}><ImagePlus /></button><button type="button" title="表格" aria-label="插入表格" onClick={() => insertBlock("| 列一 | 列二 |\n| --- | --- |\n| 内容 | 内容 |\n", 0)}><Table2 /></button><button type="button" title="文章双向链接" aria-label="插入文章双向链接" onClick={() => insertMarkdown("[[", "]]", "blog:stm32|STM32 学习笔记")}><BookOpen /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group" aria-label="编辑历史"><button type="button" title="撤销 · Ctrl/⌘ Z" aria-label="撤销" disabled={!historyAvailability.canUndo} onClick={() => restoreContent("undo")}><Undo2 /></button><button type="button" title="重做 · Ctrl/⌘ Shift Z" aria-label="重做" disabled={!historyAvailability.canRedo} onClick={() => restoreContent("redo")}><Redo2 /></button></div>
+                <span aria-hidden="true" />
+                <div className="admin-toolbar-group"><button type="button" title={isEditorFullscreen ? "退出专注模式" : "专注写作"} aria-label={isEditorFullscreen ? "退出专注模式" : "专注写作"} aria-pressed={isEditorFullscreen} onClick={() => setIsEditorFullscreen((fullscreen) => !fullscreen)}>{isEditorFullscreen ? <Minimize2 /> : <Maximize2 />}</button></div>
+              </div>
+              {showEmojiPicker && <div className="admin-emoji-picker" role="group" aria-label="选择表情">{["😀", "🙂", "😊", "🎉", "💡", "✅", "⚠️", "❤️", "🚀", "🤖", "📌", "✨"].map((emoji) => <button key={emoji} type="button" aria-label={`插入${emoji}`} onClick={() => { insertBlock(emoji, emoji.length); setShowEmojiPicker(false); }}>{emoji}</button>)}</div>}
+            </div>
+            <div className="admin-content-grid">{markdownPanel}
             <section className={`admin-pane admin-preview-pane min-h-[620px] flex-col ${mobileTab === "preview" ? "flex" : "hidden"} lg:flex`} aria-label="文章实时预览"><div className="admin-preview-scroll min-h-0 flex-1"><article className="admin-preview-article"><p className="admin-eyebrow">{draft.category}{draft.tags.length ? ` / ${draft.tags.slice(0, 2).join(" / ")}` : ""}</p><h1>{draft.title || "文章标题"}</h1><p className="admin-preview-description">{draft.description || "文章摘要将在这里展示。"}</p><div className="admin-preview-byline">{draft.author} <span>·</span> {draft.date}</div>{draft.cover && <Image alt="文章封面预览" className="admin-cover-preview" height={480} src={draft.cover} unoptimized width={960} />}</article>{previewBody}</div></section>
+            </div>
+            <footer className="admin-bottom-row"><Link className="admin-quiet-button" href="/blog"><ArrowLeft className="size-4" />返回网站</Link><span>草稿仅保存在此浏览器，发布后才会写入网站仓库。</span></footer>
           </div>
-          <footer className="admin-bottom-row"><Link className="admin-quiet-button" href="/blog"><ArrowLeft className="size-4" />返回网站</Link><span>草稿仅保存在此浏览器，发布后才会写入网站仓库。</span></footer>
         </section>
-      </div>
+      </div></section>}
 
-      {publishOpen && <div className="admin-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !publishing) setPublishOpen(false); }}><section aria-labelledby="publish-title" aria-modal="true" className="admin-confirm-modal" role="dialog"><button aria-label="关闭" className="admin-modal-close" disabled={publishing} onClick={() => setPublishOpen(false)} type="button"><X className="size-4" /></button><div className="admin-confirm-icon"><Send className="size-5" /></div><p className="admin-eyebrow mt-6">PUBLISH ARTICLE</p><h2 className="mt-2 text-2xl font-semibold" id="publish-title">发布到 TechAlpaca？</h2><p className="mt-3 text-sm leading-6 text-[var(--muted)]">这会将 <strong className="text-[var(--ink)]">{draft.slug}.mdx</strong> 提交到 GitHub，并触发 Vercel 自动部署。网站文章将在部署完成后更新。</p><div className="admin-publish-summary"><span>{draft.category} · {draft.date}</span><strong>{draft.title || "未命名文章"}</strong></div><div className="mt-6 flex justify-end gap-3"><button className="admin-secondary-button" disabled={publishing} onClick={() => setPublishOpen(false)} type="button">继续编辑</button><button className="admin-primary-button" disabled={publishing} onClick={() => void publish()} type="button">{publishing ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}{publishing ? "正在发布…" : "确认发布"}</button></div></section></div>}
+      {publishOpen && <div className="admin-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !publishing) setPublishOpen(false); }}><section aria-labelledby="publish-title" aria-modal="true" className="admin-confirm-modal" role="dialog"><button aria-label="关闭" className="admin-modal-close" disabled={publishing} onClick={() => setPublishOpen(false)} type="button"><X className="size-4" /></button><div className="admin-confirm-icon"><Send className="size-5" /></div><p className="admin-eyebrow mt-6">PUBLISH ARTICLE</p><h2 className="mt-2 text-2xl font-semibold" id="publish-title">确认覆盖并发布？</h2><p className="mt-3 text-sm leading-6 text-[var(--muted)]">将用当前编辑器内容覆盖 GitHub 上 <strong className="text-[var(--ink)]">{draft.slug}.mdx</strong> 的最新版本。GitHub 上尚未合并的修改会被替换；发布后会触发 Vercel 自动部署。</p><div className="admin-publish-summary"><span>{draft.category} · {draft.date}</span><strong>{draft.title || "未命名文章"}</strong></div><div className="mt-6 flex justify-end gap-3"><button className="admin-secondary-button" disabled={publishing} onClick={() => setPublishOpen(false)} type="button">继续编辑</button><button className="admin-primary-button" disabled={publishing} onClick={() => void publish()} type="button">{publishing ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}{publishing ? "正在覆盖发布…" : "确认覆盖并发布"}</button></div></section></div>}
     </div>
   );
 }

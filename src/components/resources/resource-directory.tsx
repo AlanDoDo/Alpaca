@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ArrowUpRight, Search } from "lucide-react";
-import { resources, resourceCategories, type ResourceKind } from "@/modules/content/resources";
+import { resources as initialResources, resourceCategories, type ResourceKind } from "@/modules/content/resources";
 
 const allCategories = ["全部", ...resourceCategories] as const;
 const kindStyles: Record<ResourceKind, string> = { 网站: "resource-kind-site", 开源项目: "resource-kind-open", 数据集: "resource-kind-data" };
@@ -22,13 +22,13 @@ function ResourceIcon({ name, url }: { name: string; url: string }) {
 export function ResourceDirectory() {
   const [category, setCategory] = useState<string>("全部");
   const [query, setQuery] = useState("");
-  const filtered = useMemo(() => resources.filter((item) => {
+  const filtered = useMemo(() => initialResources.filter((item) => {
     const categoryMatches = category === "全部" || item.category === category;
     const queryMatches = `${item.name} ${item.category} ${item.kind} ${item.description} ${item.language ?? ""}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
     return categoryMatches && queryMatches;
   }), [category, query]);
   const groups = resourceCategories.map((name) => ({ name, items: filtered.filter((resource) => resource.category === name) })).filter((group) => group.items.length > 0);
-  const categoryCount = (name: string) => name === "全部" ? resources.length : resources.filter((resource) => resource.category === name).length;
+  const categoryCount = (name: string) => name === "全部" ? initialResources.length : initialResources.filter((resource) => resource.category === name).length;
 
   return <div className="resource-directory-layout">
     <aside className="resource-sidebar">

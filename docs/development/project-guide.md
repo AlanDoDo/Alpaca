@@ -1,6 +1,6 @@
 # TechAlpaca 开发与运维手册
 
-更新：2026-09-27。本文是当前项目的统一入口；历史性能数据和规划文档不代表实时运行状态。
+更新：2026-10-02。本文是当前项目的统一入口；历史性能数据和规划文档不代表实时运行状态。
 
 ## 1. 当前项目
 
@@ -14,7 +14,7 @@
 | 域名解析 | 腾讯云 DNSPod |
 | 本地工作区 | `F:\software\Alpaca` |
 | 技术栈 | Node.js 24.x、Next.js 16.3.6、React 19、TypeScript、Tailwind CSS 4 |
-| 内容快照 | 96 篇博客文章、4 篇金融笔记；以实际文件为准 |
+| 内容快照 | 106 篇博客文章、4 篇金融笔记、13 项公开资源（2026-10-02）；以实际文件为准 |
 
 网站定位是机器人研究与个人写作，AI 和金融为独立辅助内容。尚未接入普通用户系统、社区写入、评论、Supabase 数据库、封面文件上传。
 
@@ -31,9 +31,10 @@
 | `/finance/[slug]` | 金融笔记阅读 | `src/modules/content/finance.ts` |
 | `/about` | 个人介绍、AI/金融入口与书单 | `src/app/about/page.tsx` |
 | `/admin/login` | 管理员登录 | `src/lib/admin-auth.ts` |
-| `/admin/articles` | 文章工作台、文章库与 Markdown 编辑 | `src/components/admin/article-editor.tsx` |
+| `/admin/articles` | Research、Notes、Resources 工作台，文章库与 Markdown 编辑 | `src/components/admin/article-editor.tsx`、`src/components/admin/resource-manager.tsx` |
 | `/api/admin/session` | 登录、配置状态与退出 | `src/app/api/admin/session/route.ts` |
 | `/api/admin/articles` | 后台读取、GitHub 发布 | `src/app/api/admin/articles/route.ts` |
+| `/api/resources` | 读取资源、管理员向 GitHub 添加网站 | `src/app/api/resources/route.ts` |
 | `/api/search` | 关键词搜索，最多 10 个结果 | `src/app/api/search/route.ts` |
 | `/sitemap.xml`、`/robots.txt`、`/feed.xml` | 搜索索引与 RSS | `src/lib/site-url.ts` 统一站点地址 |
 
@@ -80,7 +81,9 @@ Production 的三个凭据已保存为 Vercel Secret。新电脑需登录有权�
 - 博客源文件：`content/blog/*.md`、`*.mdx`；金融笔记：`content/finance/`；图片：`public/images/`。
 - 后台文章库按钮位于导出左侧，选择文章后载入编辑，不跳转阅读页面。
 - 草稿保存在当前浏览器 localStorage，不能跨浏览器或设备恢复。更换域名也会切换存储空间；迁移前从旧域名导出未发布草稿。
-- 正式文章读取优先使用 GitHub 最新版本；发布按 `expectedSha` 检查冲突。冲突时保留草稿，重新读取并人工合并，不强制覆盖。
+- 正式文章读取优先使用 GitHub 最新版本。普通编辑按 `expectedSha` 检查冲突；发布确认框明确说明覆盖后，管理员可以用当前编辑器内容覆盖 GitHub 的最新版本。覆盖发布前请确认当前草稿包含需要保留的修改。
+- Resources 工作台卡片用于管理资源指南中的网站；它要求管理员会话及服务端 GitHub 写入配置，并将数据更新到 `src/modules/content/resources-data.json`。资源页面只展示资源，不提供写入入口。
+- 添加资源仅允许 HTTPS 网站地址和已配置的分类；保存会提交 GitHub 并触发 Vercel 部署。发布完成后新资源进入公开资源指南。
 - `.mdx` 只是文件扩展名，正文不执行 JSX。元数据限制 YAML/JSON，JavaScript 引擎禁用；HTML 经 sanitize 清理。
 - 发布正文不超过 500 KB；标题 160 字符、摘要 320 字符、作者及单个标签 80 字符，标签最多 20 个。封面输入 HTTPS 地址，不提供本地上传接口。
 - 新增金融笔记还需维护 `src/modules/content/finance.ts` 的展示顺序，否则不会出现在金融列表。后台发布接口目前只写博客目录。
@@ -128,7 +131,7 @@ Vercel 使用 Next.js 预设、Node.js 24.x、`npm install` 与 `npm run build`�
 | `ERR_TOO_MANY_REDIRECTS` | 检查根/www 是否循环跳转、子域名是否仍绑定其他账户 |
 | 登录 403 | 检查来源 URL 是否同源、是否使用正确部署；不要删除 Origin 校验 |
 | 登录 429 | 应用按来源每实例最多 10 次 / 15 分钟，等待窗口结束 |
-| 发布 409 | GitHub SHA 已变化，保留草稿后重新加载合并 |
+| 发布 409 | 文章在最后一次版本检查后又发生变化；保留草稿，重新载入最新版本并合并后重试 |
 | 发布 502 | 检查 GitHub 网络、Token 有效期与 Contents 权限，不打印 Token |
 | 发布后页面未更新 | 查看 GitHub 文件提交及 Vercel 最新构建状态，等 Ready 后刷新 |
 | build `ERR_INVALID_URL` | 核查 Production 站点 URL；`getSiteUrl()` 已有空值/格式回退保护 |

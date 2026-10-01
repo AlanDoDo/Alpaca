@@ -2,7 +2,7 @@
 
 ## 当前已实现保护
 
-管理员是服务端密码登录与 HMAC 签名 Cookie，不依赖 Supabase。HttpOnly、生产 Secure、SameSite Strict 会话有效 8 小时；密码或会话密钥变化使旧会话失效。后台禁止缓存，写接口校验同源和授权，登录/发布按实际请求流字节限制大小，发布校验 slug、字段和 GitHub SHA。
+管理员是服务端密码登录与 HMAC 签名 Cookie，不依赖 Supabase。HttpOnly、生产 Secure、SameSite Strict 会话有效 8 小时；密码或会话密钥变化使旧会话失效。后台禁止缓存，写接口校验同源和授权，登录/发布按实际请求流字节限制大小，发布校验 slug、字段和 GitHub SHA。资源管理的 GitHub 读取和写入均要求有效管理员会话；写入还校验同源、HTTPS URL、分类、长度及重复网址。
 
 登录限制为每来源每实例 10 次 / 15 分钟，冷启动会重置，实例间不共享。Vercel 登录监测规则为 50 次 / 60 秒且仅记录，不宣称已实现分布式防爆破。详细安全审计、维护限制与凭据轮换见 [安全记录](../operations/security-review.md)。
 

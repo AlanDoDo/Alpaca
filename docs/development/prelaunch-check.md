@@ -50,3 +50,14 @@
 开发模式曾捕获网易云 iframe 内部访问父窗口产生的跨域异常，属于第三方播放器脚本；最终生产复测未出现该异常。其稳定性仍依赖网易云服务及浏览器播放策略。
 
 现有 content/finance/trading-system.md 修改由此前工作保留，此轮未更改其内容。
+
+## 2026-10-02 发布前复查
+
+- `npm run lint`、`npm run typecheck`、`npm run content:audit` 和 `npm run build` 均通过；本地内容审计为 106 篇文章、84 个本地图片引用，资源清单含 GitHub 最新收录的 13 项资源。
+- `node scripts/security-check.mjs` 通过；`npm audit --omit=dev --audit-level=high` 未发现生产依赖已知漏洞。
+- 生产模式浏览器检查通过：首页、Notes、Research、AI、Finance、About、Resources、STM32 文章详情均在 1440px 和 390px 视口打开，无横向溢出。全部 106 个文章阅读地址返回 200。
+- 后台验证登录、文章分区切换、Notes 文章库、资源管理卡片和添加表单；资源列表读取要求管理员会话，匿名读取返回 401。检查没有提交文章或网站，不调用 GitHub 写入。
+- 浏览器未发现站内运行时、控制台或 HTTP 错误。网易云播放器第三方脚本仍会报告跨域 iframe、加速度计权限和遥测连接消息；这些来自 `music.163.com` / `music.126.net`，不影响站内交互检查。
+- Git 忽略规则排除 `.env.local`、`.vercel`、`.next`、依赖目录、本机日志与缓存；Git 跟踪文件扫描未发现环境凭据文件。
+
+这次本地复查不代表 GitHub 推送或 Vercel 生产部署已经完成。线上状态以最新生产部署 Ready 和正式域名检查为准。

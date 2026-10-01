@@ -1,33 +1,42 @@
 # 开发文档
 
-这组文档是 TechAlpaca 的工程入口。实现以可维护的内容产品为起点，依赖明确的模块接口逐步扩展；阶段计划和当前完成状态分开记录。
+按任务进入对应文档。产品状态、路由、环境变量和运维信息以[项目与运维手册](development/project-guide.md)为准；历史记录用于说明变更背景，不代表当前线上状态。
 
-| 文档 | 说明 |
-| --- | --- |
-| [开发与运维手册](development/project-guide.md) | 当前线上状态、路由、环境恢复、发布、域名及故障排查的统一入口 |
-| [Codex 接手摘要](../CODEX_HANDOFF.md) | 新任务优先阅读的当前状态与用户偏好 |
-| [产品需求](product/requirements.md) | 用户、页面、范围与验收标准 |
-| [模块架构](architecture/modules.md) | 目录布局、依赖方向、各模块责任 |
-| [数据模型](architecture/data-model.md) | PostgreSQL 表、身份映射与迁移规则 |
-| [安全基线](architecture/security.md) | Auth、RLS、输入验证和秘密管理 |
-| [开发流程](development/workflow.md) | 分支、编码约定、质量门槛 |
-| [文章写作与维护](development/content-authoring.md) | Frontmatter、草稿、封面和内容审计 |
-| [项目迁移](development/migration.md) | 新电脑环境恢复、Git 安全目录、文章工作流与 Codex 接手步骤 |
-| [部署指南](operations/deployment.md) | Supabase 与 Vercel 配置步骤 |
-| [Vercel 上线记录](operations/vercel-launch.md) | 项目关联、生产变量、腾讯云域名绑定 |
-| [安全维护记录](operations/security-review.md) | 当前认证保护、限流边界与凭据轮换 |
-| [访问与性能排查](operations/connectivity.md) | 连接超时、默认域名可达性及音乐加载 |
-| [性能记录](development/performance.md) | 文件缓存、图片、搜索与首屏优化的历史测量 |
-| [金融内容维护](development/finance-notebook.md) | 金融笔记来源、目录与维护方式 |
-| [产品路线图](product/roadmap.md) | MVP 到开放社交协议的阶段边界 |
-| [ADR](adr/README.md) | 重要技术决定及其背景 |
+## 开始开发
 
-## 约定
+- [项目与运维手册](development/project-guide.md)：路由、模块、环境恢复、发布、线上排查
+- [开发流程](development/workflow.md)：分支、实现约定与质量检查
+- [迁移与交接](development/migration.md)：在新设备恢复工作区和内容
+- [Codex 交接摘要](../CODEX_HANDOFF.md)：工作区现状和协作约定
 
-- 每个业务能力放入 `src/modules/<module>`，由模块公开入口暴露服务和类型。
-- 页面路由负责组合和参数解析，业务逻辑由模块实现。
-- 文章正文保存在 Git；数据库保存用户生成内容和关系数据。
-- Supabase 接入之前，未实现的能力以明确的占位页呈现，不使用假数据冒充持久化功能。
-- 任何新增数据表都要同时写迁移、索引、约束和 RLS 策略。
-- 当前状态以 [开发与运维手册](development/project-guide.md) 为准；数据模型中未接入的 Supabase/社区能力是规划，不是线上功能。
-- 修改路由、发布流程、变量或域名时同步更新文档；只记录变量名，不记录凭据值。
+## 产品与内容
+
+- [产品需求](product/requirements.md) · [产品路线图](product/roadmap.md)
+- [内容维护](development/content-authoring.md) · [分类与文章组织](development/article-organization.md)
+- [内容迁移](product/content-migration.md)
+- [Research 机器人资料库](development/robotics-library.md) · [Notes 画廊](development/notes-gallery.md)
+- [金融笔记](development/finance-notebook.md)
+
+## 架构与安全
+
+- [模块边界](architecture/modules.md) · [数据模型](architecture/data-model.md)
+- [安全基线](architecture/security.md) · [安全维护记录](operations/security-review.md)
+- [架构决策记录](adr/README.md)
+
+## 部署与运行
+
+- [部署指南](operations/deployment.md) · [Vercel 上线清单](operations/vercel-launch.md)
+- [访问问题排查](operations/connectivity.md) · [性能记录](development/performance.md)
+- [上线前检查记录](development/prelaunch-check.md)
+
+## UI 与专项实现
+
+- [视觉系统](development/ink-visual-system.md) · [音乐播放器](development/music-player.md)
+- [编辑器体验](development/experience-improvements.md)
+
+## 项目约定
+
+- 路由组合页面，`src/modules/` 管理内容和领域逻辑，组件负责展示与交互。
+- 文章及资源目录保存在 Git；规划中的 Supabase 和社区功能不视为已上线能力。
+- 新增或修改环境变量、路由、发布流程时同步更新相关文档。文档只记录变量名，不记录凭据值。
+- Next.js 约定以当前安装版本的 `node_modules/next/dist/docs/` 为准；先读仓库根目录的 `AGENTS.md`。

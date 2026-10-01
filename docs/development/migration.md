@@ -80,7 +80,7 @@ Vercel 当前 Production 已配置服务端 Secret。新电脑登录同一有权
 - 文章读取/发布 API：`/api/admin/articles`
 - 自动保存只写入当前浏览器的 localStorage；正式发布需要在二次确认框点击“确认发布”。
 - 没有管理员环境变量时，编辑器不能登录；没有 GitHub 发布变量时，文章不能发布。
-- 发布新文章写入 `content/blog/<slug>.mdx`；更新文章要求匹配 GitHub SHA，以防覆盖他人的新版本。
+- 发布新文章写入 `content/blog/<slug>.mdx`。更新文章默认检查 GitHub SHA；如果管理员在发布确认框确认覆盖，当前草稿会替换 GitHub 最新版本。确认前请保留需要合并的远端内容。
 - Markdown 预览使用 `react-markdown`、GFM 与 HTML 清理；不执行 MDX JSX。
 - 浏览器草稿按网站来源隔离，换域名或设备前从旧浏览器导出 .md。Production 从旧默认域名切换到 www 后，旧域名草稿不会自动迁移。
 - 线上工作台发布会使 main 产生新提交；本地修改前 fetch，禁止 force push 覆盖它们。

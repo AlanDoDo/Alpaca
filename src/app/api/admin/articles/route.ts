@@ -19,10 +19,10 @@ const maxArticleBytes = 500_000;
 
 type ArticleDraft = {
   notesTopic?: unknown; researchTopic?: unknown; contentType?: unknown; id?: unknown; aliases?: unknown; slug?: unknown; title?: unknown; description?: unknown; date?: unknown; category?: unknown;
-  tags?: unknown; author?: unknown; featured?: unknown; cover?: unknown; content?: unknown; expectedSha?: unknown;
+  tags?: unknown; author?: unknown; featured?: unknown; cover?: unknown; content?: unknown; expectedSha?: unknown; forceOverwrite?: unknown;
 };
 
-type ValidatedDraft = { notesTopic?: string; researchTopic?: string; contentType: "blog"; id: string; aliases: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null };
+type ValidatedDraft = { notesTopic?: string; researchTopic?: string; contentType: "blog"; id: string; aliases: string[]; slug: string; title: string; description: string; date: string; category: ArticleCategory; tags: string[]; author: string; featured: boolean; cover: string; content: string; expectedSha: string | null; forceOverwrite: boolean };
 function authorized(request: NextRequest) {
   return adminAuthConfigured() && verifyAdminSessionValue(request.cookies.get(ADMIN_COOKIE)?.value);
 }
@@ -107,9 +107,10 @@ function validateDraft(body: ArticleDraft) {
   if (!content.trim() || Buffer.byteLength(content, "utf8") > maxArticleBytes) return { error: "正文不能为空，且不能超过 500 KB。" };
   if (typeof body.expectedSha !== "string" && body.expectedSha !== null) return { error: "文章版本信息无效，请重新打开文章。" };
   if (typeof body.expectedSha === "string" && !/^[a-f0-9]{40}$/.test(body.expectedSha)) return { error: "文章版本信息无效，请重新打开文章。" };
+  if (body.forceOverwrite !== undefined && typeof body.forceOverwrite !== "boolean") return { error: "覆盖选项无效。" };
   const id = `${contentType}:${slug}`;
   if (body.id !== undefined && body.id !== id) return { error: "内容标识不匹配，请重新打开文章。" };
-  return { value: { notesTopic, researchTopic: topic, contentType, id, aliases, slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null } satisfies ValidatedDraft };
+  return { value: { notesTopic, researchTopic: topic, contentType, id, aliases, slug, title, description, date, category, tags, author: author || "TechAlpaca", featured, cover, content, expectedSha: body.expectedSha as string | null, forceOverwrite: body.forceOverwrite === true } satisfies ValidatedDraft };
 }
 
 function frontmatter(value: ValidatedDraft) {
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     } else if (existingResponse.status !== 404) {
       return NextResponse.json({ error: "检查 GitHub 文章版本失败，请稍后重试。" }, { status: 502 });
     }
-    if (currentSha !== value.expectedSha) return NextResponse.json({ error: "GitHub 上的文章版本已变化。请重新打开文章并合并最新内容后再发布。" }, { status: 409 });
+    if (!value.forceOverwrite && currentSha !== value.expectedSha) return NextResponse.json({ error: "GitHub 上的文章版本已变化。请重新打开文章并合并最新内容后再发布。" }, { status: 409 });
 
     const published = await fetch(url, {
       method: "PUT",

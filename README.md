@@ -1,96 +1,75 @@
 # TechAlpaca
 
-TechAlpaca 是一个以机器人研究为主线，兼顾 AI、金融与个人思考的个人博客。
+TechAlpaca is a personal publication about robotics research, AI, finance, and engineering practice. It is built with Next.js App Router and stores published writing in Git.
 
-正式网站：[www.alandodo.cn](https://www.alandodo.cn/)。管理员工作台：[文章编辑器](https://www.alandodo.cn/admin/articles)。
+- Website: [www.alandodo.cn](https://www.alandodo.cn)
+- Admin studio: `/admin/articles`
+- Research: `/forum` · Notes: `/blog` · Resources: `/resources`
 
-## 当前状态
+## Features
 
-- 已有：Next.js App Router、白昼/暗夜主题、响应式首页、博客分页、Markdown/GFM 文章详情、96 篇博客文章、4 篇金融笔记、搜索、RSS、sitemap 和全局 metadata（2026-09-27 快照）。
-- Research `/forum` 为机器人研究页面；AI `/ai` 与金融 `/finance` 为独立页面。金融分为投机和投资。
-- 文档已定义：模块边界、数据模型、安全策略、阶段路线和部署步骤。
-- 尚未接入：Supabase 用户体系、论坛写入和评论互动。管理员专用登录与 Markdown 文章工作台已实现；论坛与普通用户账户仍明确显示规划状态。
+- Responsive home, Research, Notes, Resources, AI, Finance, and About pages
+- Markdown and MDX article library with search, filters, RSS, sitemap, and article navigation
+- Private article studio with local drafts, Markdown preview, export, and confirmed publishing to GitHub
+- Admin resource manager that adds websites to the Git-backed resources directory
+- Light and dark themes, accessible keyboard controls, and reduced-motion support
 
-## 本地开发
+The admin studio requires server-side credentials. User accounts, community publishing, and Supabase-backed data are not implemented yet.
 
-使用 Node.js 24.x 和 npm，与 Vercel 生产运行时保持一致。
+## Local development
 
-```bash
+Requirements: Node.js 24.x and npm.
+
+```powershell
 npm install
-Copy-Item .env.example .env.local
+if (-not (Test-Path .env.local)) { Copy-Item .env.example .env.local }
 npm run dev
 ```
 
-以上是 PowerShell 示例；已有 `.env.local` 时不要重复复制覆盖。打开 http://localhost:3000 。正式文章放在 `content/blog/*.md` 或 `*.mdx`；正文按安全的 Markdown/GFM 语法渲染，原始 HTML 会先经过清理，不执行 MDX JSX。
+Open [http://localhost:3000](http://localhost:3000). Keep `.env.local` private; `.gitignore` excludes local environment files. The public site can run without Supabase configuration.
 
-## 文档索引
+## Content
 
-- [开发文档总览](docs/README.md)
-- [开发与运维手册](docs/development/project-guide.md)
-- [迁移与 Codex 接手指南](docs/development/migration.md)
-- [当前 Codex 接手摘要](CODEX_HANDOFF.md)
-- [产品需求与范围](docs/product/requirements.md)
-- [文章迁移与分类](docs/product/content-migration.md)
-- [架构与模块职责](docs/architecture/modules.md)
-- [数据模型与演进](docs/architecture/data-model.md)
-- [安全基线](docs/architecture/security.md)
-- [开发流程与质量门槛](docs/development/workflow.md)
-- [部署指南](docs/operations/deployment.md)
-- [路线图](docs/product/roadmap.md)
-- [决策记录](docs/adr/README.md)
+- Blog and research articles: `content/blog/*.md` or `*.mdx`
+- Finance notes: `content/finance/`
+- Local images: `public/images/`
+- Resource directory data: `src/modules/content/resources-data.json`
 
-## 内容 frontmatter
+Article metadata uses YAML frontmatter. For the supported fields, categories, and writing workflow, see [Content authoring](docs/development/content-authoring.md). The app sanitizes rendered HTML and does not execute MDX JSX.
 
-```yaml
----
-title: "文章标题"
-description: "搜索结果和列表使用的摘要。"
-date: "2026-09-25"
-category: "AI"
-tags: ["AI", "研究"]
-author: "TechAlpaca"
-featured: false
----
-```
+## Admin publishing
 
-允许分类：`AI`、`机器人`、`金融`、`产业`、`编程`、`工程技术`、`设计`、`杂谈`。新增文章请放在 `content/blog/`。原 Hexo 文章及线上博客文章的迁移流程见 [迁移记录](docs/product/content-migration.md)。
+Configure the variables in `.env.example` to enable admin login and server-side GitHub publishing:
 
-## 环境变量
+- `ADMIN_EDITOR_PASSWORD`: private admin password
+- `ADMIN_SESSION_SECRET`: random session signing key with at least 32 characters
+- `GITHUB_TOKEN`: fine-grained token with Contents read/write access to this repository
+- `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`: publishing target
 
-复制 `.env.example` 为 `.env.local`。网站展示需要 `NEXT_PUBLIC_SITE_URL`；使用在线文章编辑器还需配置管理员登录和 GitHub 发布变量，详见下方“在线文章编辑器”。Supabase 值在接入身份和社区模块时配置。`SUPABASE_SERVICE_ROLE_KEY` 只允许服务端使用，不能传入客户端组件或提交到 Git。
+The article studio saves drafts in the current browser. Publishing asks for confirmation and writes the current article to GitHub; if the remote version changed, the confirmation flow explicitly allows the current draft to replace it. The resource manager adds HTTPS websites to the repository data file. Both operations trigger the Git-connected Vercel deployment. Never expose these credentials with a `NEXT_PUBLIC_` prefix or commit their values.
 
-## 命令
+## Commands
 
 ```bash
-npm run dev       # 本地开发
-npm run lint      # ESLint
-npm run typecheck # TypeScript 检查
-npm run build     # 生产构建
+npm run dev           # Local development
+npm run lint          # ESLint
+npm run typecheck     # TypeScript
+npm run content:audit # Article metadata and local image references
+npm run build         # Production build
 ```
 
-更详细的数据库配置、Vercel Preview/Production 环境和上线步骤见 [部署指南](docs/operations/deployment.md)。
+For the browser prelaunch check and security regression check, see [Development workflow](docs/development/workflow.md).
 
-右下角快捷操作内的音乐卡片默认使用网易云歌单 `7231928049`。主页面 load 后 1.5 秒加载播放器并尝试自动播放；主动打开音乐时立即加载。用户可换歌单，浏览器或网易云可能阻止自动播放。
+## Documentation
 
-## 在线文章编辑器
+- [Development documentation index](docs/README.md)
+- [Project and operations guide](docs/development/project-guide.md)
+- [Deployment guide](docs/operations/deployment.md)
+- [Security baseline](docs/architecture/security.md)
+- [Product requirements and roadmap](docs/product/requirements.md)
+- [Architecture and data model](docs/architecture/modules.md)
+- [Migration and handoff](docs/development/migration.md)
 
-访问 /admin/articles 进入受保护的文章工作台。管理员登录后可搜索已有文章或新建文章，填写标题、摘要、分类、日期、标签、可选 HTTPS 封面与 Markdown 正文。桌面端提供实时预览，手机端可切换编辑和预览。草稿自动保存在当前浏览器并在刷新后恢复，也可以导出为 .md 文件。发布前需要确认；服务端会将 .mdx 提交到 GitHub 指定分支，随后由 Vercel 自动部署。
+## Deployment
 
-### 本地配置
-
-把 .env.example 复制为 .env.local，并设置：
-
-- ADMIN_EDITOR_PASSWORD：管理员登录密码，建议至少 16 位随机密码。
-- ADMIN_SESSION_SECRET：用于签发 8 小时 HttpOnly 会话，至少 32 个字符。可以使用 Node crypto 模块 randomBytes 方法生成随机密钥。
-- GITHUB_TOKEN：GitHub Fine-grained personal access token，仅授予目标仓库 Contents 读写权限。
-- GITHUB_OWNER、GITHUB_REPO、GITHUB_BRANCH：目标仓库所有者、仓库名和发布分支（例如 main）。
-
-设置后重启 npm run dev，再打开 http://localhost:3000/admin/articles 。未配置 GitHub 凭据时，编辑与草稿仍可用，但发布会说明缺少配置。
-
-### Vercel 配置
-
-首次上线请按照 [Vercel 上线填写清单](docs/operations/vercel-launch.md) 配置框架、运行时、站点地址和后台凭据。
-
-当前项目 `techalpaca-projects/alpaca` 已配置 Production 后台变量，主域名为 `https://www.alandodo.cn`。管理员密码、会话密钥和 GitHub Token 使用服务端 Secret，不配置 NEXT_PUBLIC_ 前缀。Preview 不复制生产凭据；如需后台预览，使用独立测试凭据与测试分支。保存环境变量后重新部署。
-
-发布 API 使用 HttpOnly、SameSite Strict 会话、同源校验、请求流大小限制、输入验证和 GitHub SHA 冲突检测。登录有实例内限流；Vercel 登录监测规则处于观察模式。详见 [安全维护记录](docs/operations/security-review.md)。
+The `main` branch is connected to Vercel. A push to `main` triggers a production build using Node.js 24.x, `npm install`, and `npm run build`. Keep production credentials in Vercel environment variables. Review [the deployment guide](docs/operations/deployment.md) before changing domains, environment variables, or project linkage.

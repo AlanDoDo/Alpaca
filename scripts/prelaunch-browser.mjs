@@ -69,7 +69,7 @@ try {
   await page.keyboard.press("Escape");
   assert.equal(await musicCapsule.getAttribute("aria-expanded"), "false", "Escape should close the player");
   results.push("Music capsule click, close button, and Escape: OK");
-  for (const route of ["/", "/blog", "/forum", "/ai", "/finance", "/about"]) await open(route);
+  for (const route of ["/", "/blog", "/forum", "/ai", "/finance", "/about", "/resources", "/article/stm32"]) await open(route);
   await open("/blog");
   assert.equal(await page.locator(".journal-filters a").count(), 4);
   await page.waitForTimeout(1800);
@@ -96,7 +96,7 @@ try {
   for (const topic of ["essays", "industry", "tools"]) await open(`/blog?topic=${topic}`);
   for (const topic of ["learning", "programming"]) await open(`/forum?topic=${topic}`);
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const route of ["/blog", "/forum", "/about", "/finance"]) await open(route);
+  for (const route of ["/", "/blog", "/forum", "/ai", "/finance", "/about", "/resources", "/article/stm32"]) await open(route);
   await open("/blog");
   assert.equal(await page.locator(".journal-column").count(), 1);
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
@@ -133,6 +133,8 @@ try {
   results.push("Both collections cover all articles without overlap; Notes APIs, finance notes and search: OK");
   const anonymous = await context.request.post(`${base}/api/admin/articles`, { data: {}, headers: { Origin: base } });
   assert.equal(anonymous.status(), 401, "Anonymous publishing must be denied");
+  const anonymousResources = await context.request.get(`${base}/api/resources`);
+  assert.equal(anonymousResources.status(), 401, "Resource management reads must require an admin session");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await open("/admin/login");
   assert(process.env.ADMIN_EDITOR_PASSWORD, "Local admin password is not configured");
@@ -152,8 +154,8 @@ try {
   results.push("Notes classification exported in Markdown: OK");
   await classification.selectOption("programming");
   assert.match(await page.locator(".admin-section-summary").innerText(), /Research.*编程/s);
+  await page.getByRole("tab", { name: /Notes/ }).click();
   await page.getByRole("button", { name: "文章库", exact: true }).click();
-  await page.locator(".admin-library-sections button").filter({ hasText: "Notes" }).click();
   assert(await page.locator(".admin-option-category strong").evaluateAll((elements) => elements.every((element) => element.textContent === "Notes")));
   await page.screenshot({ path: path.join(output, "studio-sections.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -161,9 +163,19 @@ try {
   assert(menuBounds.x >= 0 && menuBounds.x + menuBounds.width <= 390 && menuBounds.y >= 0 && menuBounds.y + menuBounds.height <= 844, "Studio menu clipped on mobile");
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "Studio mobile overflow");
   await page.screenshot({ path: path.join(output, "studio-mobile.png"), fullPage: true });
+  await page.getByRole("tab", { name: "Resources", exact: true }).click();
+  await page.getByRole("heading", { name: "资源管理" }).waitFor();
+  const managedResources = await context.request.get(`${base}/api/resources`);
+  assert.equal(managedResources.status(), 200, "Admin should be able to read the Git-backed resource list");
+  assert(Array.isArray((await managedResources.json()).resources), "Admin resource list should be an array");
+  await page.getByRole("button", { name: "添加网站" }).click();
+  await page.getByLabel("网站名称").waitFor();
+  await page.getByLabel("网站地址").waitFor();
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "Resources workspace overflows on mobile");
+  await page.screenshot({ path: path.join(output, "resources-manager-mobile.png"), fullPage: true });
   const invalid = await context.request.post(`${base}/api/admin/articles`, { headers: { Origin: base }, data: { notesTopic: "essays", researchTopic: "programming" } });
   assert.equal(invalid.status(), 400, "Conflicting sections must be rejected");
-  results.push("Admin login, section selector, Notes library filter, mobile layout, publishing guards: OK");
+  results.push("Admin login, workspace tabs, Notes library, resource manager, mobile layout, publishing guards: OK");
   assert.equal(errors.length, 0, `Browser runtime errors: ${errors.join("; ")}`);
   assert.equal(consoleErrors.length, 0, `First-party browser console errors: ${consoleErrors.map((entry) => `${entry.route}: ${entry.message} (${entry.url})`).join("; ")}`);
   assert.equal(localHttpErrors.length, 0, `First-party HTTP errors: ${localHttpErrors.map((entry) => `${entry.status} ${entry.url}`).join("; ")}`);
