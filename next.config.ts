@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "tianjihub-1315761622.cos.ap-guangzhou.myqcloud.com", port: "", pathname: "/img/**" },
       { protocol: "https", hostname: "alandodo-1315761622.cos.ap-beijing.myqcloud.com" },
       { protocol: "https", hostname: "techalpaca.vercel.app" },
+      { protocol: "https", hostname: "www.google.com", port: "", pathname: "/s2/favicons" },
     ],
   },
 };
