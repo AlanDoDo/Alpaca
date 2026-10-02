@@ -1,6 +1,6 @@
 import { InkArt } from "@/components/visual/ink-art";
 import Link from "next/link";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, ArrowUpRight } from "lucide-react";
 import { getAllArticles } from "@/modules/content";
 import { isRoboticsArticle } from "@/modules/content/research";
 import { HomeArticleRow } from "@/components/blog/home-article-row";
@@ -28,6 +28,12 @@ export default function HomePage() {
       </section>
 
       <div className="site-shell">
+        <div className="home-volume-heading ink-section"><p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">EXPLORE</p><h2 className="mt-2 text-2xl font-semibold tracking-tight sm:mt-3 sm:text-3xl">内容板块</h2></div>
+        <section className="ink-volumes" aria-label="内容板块">
+          <Link href="/forum" className="ink-volume"><div className="ink-volume-top"><span>卷&nbsp; / &nbsp;01</span><ArrowUpRight size={19} aria-hidden="true" /></div><div className="ink-volume-title"><h2>Research</h2><span aria-hidden="true">研</span></div><h3>深入技术，理解产业</h3><p>沿着机器人与人工智能的脉络，研究原理、系统与实践。</p></Link>
+          <Link href="/blog" className="ink-volume"><div className="ink-volume-top"><span>卷&nbsp; / &nbsp;02</span><ArrowUpRight size={19} aria-hidden="true" /></div><div className="ink-volume-title"><h2>Notes</h2><span aria-hidden="true">记</span></div><h3>观察世界，记录思考</h3><p>关于技术、商业与日常的片段。在记录中，让想法慢慢清晰。</p></Link>
+          <Link href="/resources" className="ink-volume"><div className="ink-volume-top"><span>卷&nbsp; / &nbsp;03</span><ArrowUpRight size={19} aria-hidden="true" /></div><div className="ink-volume-title"><h2>Resources</h2><span aria-hidden="true">藏</span></div><h3>收集工具，连接知识</h3><p>值得留存的网站、工具与学习资料，为下一次探索准备。</p></Link>
+        </section>
         <section data-ink-reveal id="latest" className="ink-section py-9 sm:py-12 md:py-16">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-7">
             <div><p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs sm:tracking-[0.2em]">LATEST</p><h2 className="mt-2 text-2xl font-semibold tracking-tight sm:mt-3 sm:text-3xl">最近更新</h2></div>

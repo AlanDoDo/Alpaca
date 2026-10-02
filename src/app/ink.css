@@ -247,3 +247,31 @@
   [data-ink-reveal] { opacity: 1 !important; translate: none !important; transition: none; }
   .ink-link-card,.ink-link-card svg,.ink-article-row::before,.ink-article-row::after,.ink-article-row h2,.ink-article-row h3,.journal-card h2 a,.research-recommendation-copy h2 a,.ai-article-card h3 a,.finance-note-link h3,.article-related-title,.article-toc-mobile summary::after,.site-header nav a::after { transition: none; transform: none; translate: none; }
 }
+.ink-volumes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:1.25rem 0 2rem; }
+.ink-volume { padding:0 1.8rem; border-right:1px solid var(--line); }
+.ink-volume:first-child { padding-left:0; }
+.ink-volume:last-child { padding-right:0; border:0; }
+.ink-volume-top { display:flex; justify-content:space-between; color:var(--muted); font:.65rem var(--font-mono); }
+.ink-volume-top svg { transition:transform 200ms ease; }
+.ink-volume:hover .ink-volume-top svg { transform:translate(2px,-2px); color:var(--accent); }
+.ink-volume-title { display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-top:1.4rem; }
+.ink-volume-title h2 { font-family:var(--font-display); font-size:1.7rem; font-weight:500; letter-spacing:-.025em; }
+.ink-volume-title>span { font-family:"KaiTi","STKaiti",var(--font-display); font-size:2rem; color:var(--muted); opacity:.6; }
+.ink-volume h3 { margin-top:.8rem; font-size:.8rem; font-weight:500; }
+.ink-volume p { margin-top:.7rem; color:var(--muted); font-size:.75rem; line-height:1.9; }
+.home-volume-heading { padding-top:2.25rem; }
+.home-volume-heading.ink-section::before { margin-bottom:20px; }
+#latest.ink-section { padding-top:1.75rem; }
+@media(max-width:900px) { .ink-volume { padding-inline:1.2rem; } .ink-volume-title h2 { font-size:1.4rem; } }
+@media(max-width:639px) {
+  .home-volume-heading { padding-top:1.5rem; }
+  .home-volume-heading.ink-section::before { width:28px; margin-bottom:16px; }
+  .ink-volumes { grid-template-columns:1fr; padding:.75rem 0 1rem; }
+  .ink-volume,.ink-volume:first-child,.ink-volume:last-child { padding:1.5rem 0; border:0; }
+  .ink-volume+.ink-volume { border-top:1px solid var(--line); }
+  .ink-volume-title { margin-top:.7rem; }
+  .ink-volume-title h2 { font-size:1.7rem; }
+  .ink-volume h3 { margin-top:.3rem; }
+  .ink-volume p { max-width:36ch; }
+  #latest.ink-section { padding-top:1.25rem; }
+}
