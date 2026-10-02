@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resources, resourceCategories, type Resource } from "@/modules/content/resources";
+import { resources, resourceCategories, type Resource, type ResourceCategory } from "@/modules/content/resources";
 import { readJsonObject, RequestBodyError } from "@/lib/request-json";
 import { isSameOriginRequest } from "@/lib/request-origin";
 import { ADMIN_COOKIE, adminAuthConfigured, verifyAdminSessionValue } from "@/lib/admin-auth";
@@ -57,12 +57,13 @@ export async function POST(request: NextRequest) {
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const url = typeof body.url === "string" ? body.url.trim() : "";
-  const category = typeof body.category === "string" ? body.category : "";
+  const categoryValue = typeof body.category === "string" ? body.category : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
   if (!name || name.length > 100) return NextResponse.json({ error: "网站名称必填，且不能超过 100 个字符。" }, { status: 400 });
   if (!/^https:\/\//i.test(url) || url.length > 2048) return NextResponse.json({ error: "请填写有效的 HTTPS 网站地址。" }, { status: 400 });
   try { new URL(url); } catch { return NextResponse.json({ error: "请填写有效的网站地址。" }, { status: 400 }); }
-  if (!resourceCategories.includes(category as typeof resourceCategories[number])) return NextResponse.json({ error: "请选择有效分类。" }, { status: 400 });
+  if (!resourceCategories.includes(categoryValue as ResourceCategory)) return NextResponse.json({ error: "请选择有效分类。" }, { status: 400 });
+  const category = categoryValue as ResourceCategory;
   if (!description || description.length > 320) return NextResponse.json({ error: "网站简介必填，且不能超过 320 个字符。" }, { status: 400 });
   const config = githubConfig();
   if (!config) return NextResponse.json({ error: "发布配置尚未完成，请设置 GITHUB_TOKEN、GITHUB_OWNER、GITHUB_REPO 和 GITHUB_BRANCH。" }, { status: 503 });
