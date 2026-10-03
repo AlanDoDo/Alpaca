@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, BookMarked, Plus } from "lucide-react";
+import { ArrowUpRight, BookMarked, CheckCircle2, Plus } from "lucide-react";
 import { resourceCategories, resources as initialResources, type Resource } from "@/modules/content/resources";
 
 export function ResourceManager() {
@@ -64,7 +64,10 @@ export function ResourceManager() {
       </div>
     </header>
     <p className="admin-resource-description">维护资源指南中的网站、开源项目和数据集。新增网站会保存到 GitHub，并触发站点部署。</p>
-    {notice && <p className="admin-resource-notice" role="status">{notice}</p>}
+    {notice && <div className="admin-resource-notice" role="status" aria-live="polite">
+      <CheckCircle2 className="admin-resource-notice-icon" size={19} aria-hidden="true" />
+      <span><strong>上传成功</strong><span>{notice}</span></span>
+    </div>}
     {formError && <p className="admin-resource-error" role="alert">{formError}</p>}
     {showForm && <form className="admin-resource-form" onSubmit={addResource}>
       <div className="admin-resource-form-grid">

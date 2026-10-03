@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
     });
     if (!response.ok) return NextResponse.json({ error: "保存到 GitHub 失败，请检查 Token 权限后重试。" }, { status: 502 });
-    return NextResponse.json({ ok: true, resource, message: "网站已提交，部署完成后会显示在资源指南中。" });
+    return NextResponse.json({ ok: true, resource, message: "已成功保存到 GitHub，Vercel 正在部署；部署完成后会出现在资源指南。" });
   } catch {
     return NextResponse.json({ error: "保存网站时连接 GitHub 失败，请稍后重试。" }, { status: 502 });
   }
