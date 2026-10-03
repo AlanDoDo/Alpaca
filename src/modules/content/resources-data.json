@@ -230,5 +230,12 @@
     "description": "电机和驱动系统知识库，包含电机参数、驱动计算与组件选择指南。",
     "url": "https://www.maxongroup.com/en/knowledge-and-support/support",
     "language": "电机 / 驱动选型"
+  },
+  {
+    "name": "Agent-Reach",
+    "url": "https://github.com/Panniantong/Agent-Reach",
+    "category": "研究与学习资料",
+    "description": "给你的AI代理一键装上互联网的能力，最稳定的接入方式，替你选好、安装好、检查好——接入方式会换代，你不用操心",
+    "kind": "网站"
   }
 ]
